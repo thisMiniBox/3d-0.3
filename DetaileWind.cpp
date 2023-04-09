@@ -19,27 +19,27 @@ DetaileWind::~DetaileWind()
     for (const auto& i : m_ChildControl)
         delete i.second;
     m_ChildControl.clear();
-    // Ïú»Ù´°¿Ú
+    // é”€æ¯çª—å£
     DestroyWindow(m_hWnd);
-    // ×¢Ïú´°¿ÚÀà
+    // æ³¨é”€çª—å£ç±»
     UnregisterClass(WindClassName.c_str(), m_hInstance);
 }
 void DetaileWind::SetRect(RECT Rect)
 {
     m_rect = Rect;
-    int x = m_rect.left;  // ×Ó´°¿ÚµÄ x ×ø±ê
-    int y = 0;   // ×Ó´°¿ÚµÄ y ×ø±ê
-    int width = m_rect.right - m_rect.left;   // ¸¸´°¿ÚµÄ¿í¶È
+    int x = m_rect.left;  // å­çª—å£çš„ x åæ ‡
+    int y = 0;   // å­çª—å£çš„ y åæ ‡
+    int width = m_rect.right - m_rect.left;   // çˆ¶çª—å£çš„å®½åº¦
     for (const auto& i : m_ChildControl)
     {
         if (i.second->IsVisible())
-        y += i.second->MoveWind_ÒÆ¶¯´°¿Ú(x, y, width);
+        y += i.second->MoveWind_ç§»åŠ¨çª—å£(x, y, width);
     }
 }
 HWND DetaileWind::CreateWind(HWND Parent)
 {
     DestroyWindow(m_hWnd);
-    m_hWnd = CreateWindow( //´´½¨±à¼­¿ò
+    m_hWnd = CreateWindow( //åˆ›å»ºç¼–è¾‘æ¡†
         WindClassName.c_str(),
         0,
         WS_CHILD | WS_BORDER | WS_VISIBLE,
@@ -96,10 +96,10 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w)
         switch (type)
         {
         case CT_NAME:
-            m_ChildControl[type] = new Name_¶ÔÏóÃû³Æ¿Ø¼þ(m_hInstance, m_hWnd, x, y, w);
+            m_ChildControl[type] = new Name_å¯¹è±¡åç§°æŽ§ä»¶(m_hInstance, m_hWnd, x, y, w);
             break;
         case CT_POSITION:
-            m_ChildControl[type] = new Position_Î»ÖÃ¿Ø¼þ(m_hInstance, m_hWnd, x, y, w);
+            m_ChildControl[type] = new Position_ä½ç½®æŽ§ä»¶(m_hInstance, m_hWnd, x, y, w);
         }
     ShowWindow(m_ChildControl[type]->GethWnd(), SW_SHOW);
     UpDate();

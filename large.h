@@ -4,15 +4,15 @@ class large
 {
 public:
 	large() {}
-	large(std::string m_str1, char m_ch, std::string m_str2);            //Á½ÊıµÄÔËËã
-	inline int compare(std::string str1, std::string str2); //ÏàµÈ·µ»Ø0£¬´óÓÚ·µ»Ø1£¬Ğ¡ÓÚ·µ»Ø-1
-	std::string SUB_INT(std::string str1, std::string str2);   //¸ß¾«¶È¼õ·¨
-	std::string ADD_INT(std::string str1, std::string str2);         //¸ß¾«¶È¼Ó·¨
-	std::string MUL_INT(std::string str1, std::string str2);     //¸ß¾«¶È³Ë·¨ 
-	std::string DIVIDE_INT(std::string str1, std::string str2, int flag); //¸ß¾«¶È³ı·¨£¬flag==1,·µ»ØÉÌ;flag==0Ê±£¬·µ»ØÓàÊı
-	std::string DIV_INT(std::string str1, std::string str2); //¸ß¾«¶È³ı·¨£¬·µ»ØÉÌ
-	std::string MOD_INT(std::string str1, std::string str2);  //¸ß¾«¶È³ı·¨£¬·µ»ØÓàÊı
-	large(large& e);  //¿½±´¹¹Ôì
-	~large() {};   //Îö¹¹º¯Êı
+	large(std::string m_str1, char m_ch, std::string m_str2);            //ä¸¤æ•°çš„è¿ç®—
+	inline int compare(std::string str1, std::string str2); //ç›¸ç­‰è¿”å›0ï¼Œå¤§äºè¿”å›1ï¼Œå°äºè¿”å›-1
+	std::string SUB_INT(std::string str1, std::string str2);   //é«˜ç²¾åº¦å‡æ³•
+	std::string ADD_INT(std::string str1, std::string str2);         //é«˜ç²¾åº¦åŠ æ³•
+	std::string MUL_INT(std::string str1, std::string str2);     //é«˜ç²¾åº¦ä¹˜æ³• 
+	std::string DIVIDE_INT(std::string str1, std::string str2, int flag); //é«˜ç²¾åº¦é™¤æ³•ï¼Œflag==1,è¿”å›å•†;flag==0æ—¶ï¼Œè¿”å›ä½™æ•°
+	std::string DIV_INT(std::string str1, std::string str2); //é«˜ç²¾åº¦é™¤æ³•ï¼Œè¿”å›å•†
+	std::string MOD_INT(std::string str1, std::string str2);  //é«˜ç²¾åº¦é™¤æ³•ï¼Œè¿”å›ä½™æ•°
+	large(large& e);  //æ‹·è´æ„é€ 
+	~large() {};   //ææ„å‡½æ•°
 };
 

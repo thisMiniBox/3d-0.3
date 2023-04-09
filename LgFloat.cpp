@@ -1,5 +1,5 @@
 #include "LgFloat.h"
-//³õÊ¼»¯Êı×Ö
+//åˆå§‹åŒ–æ•°å­—
 LgFloat::LgFloat(std::string Number)
 {
 	if (Number[0] == '-') {
@@ -34,7 +34,7 @@ LgFloat::~LgFloat()
 {
 	Int.~vector();
 }
-//²é¿´Êı×Ö£¨16½øÖÆ£©
+//æŸ¥çœ‹æ•°å­—ï¼ˆ16è¿›åˆ¶ï¼‰
 void LgFloat::xprint()
 {
 	if (symbol == false)printf_s("-");
@@ -43,7 +43,7 @@ void LgFloat::xprint()
 		printf_s("%0x ", Int[i]);
 	printf_s("\n");
 }
-//²é¿´Êı×Ö£¨10½øÖÆ£©
+//æŸ¥çœ‹æ•°å­—ï¼ˆ10è¿›åˆ¶ï¼‰
 void LgFloat::print()
 {
 	std::string out;
@@ -71,7 +71,7 @@ void LgFloat::print()
 	//if (!symbol)out.insert(out.begin(), '-');
 	//printf_s("%s", out.c_str());
 }
-//·µ»ØÊı¾İ
+//è¿”å›æ•°æ®
 std::string LgFloat::data()
 {
 	std::string out;
@@ -93,7 +93,7 @@ char LgFloat::dataChar()
 {
 	if (Int.size() > 1 || Int[0] > 9)
 	{
-		printf_s("Êı×é¹ı³¤»ò³¬³ö·¶Î§\n");
+		printf_s("æ•°ç»„è¿‡é•¿æˆ–è¶…å‡ºèŒƒå›´\n");
 		return 0;
 	}
 	return (Int[0] + '0');
@@ -104,12 +104,12 @@ int LgFloat::dataInt()
 	{
 		if (Int.size() > sizeof(int))
 		{
-			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 			return 0;
 		}
 		if (Int[sizeof(int) - 1] > 128)
 		{
-			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 			return 0;
 		}
 	}
@@ -121,7 +121,7 @@ unsigned int LgFloat::dataUInt()
 {
 	if (Int.size() > sizeof(int))
 	{
-		printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+		printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 		return 0;
 	}
 	unsigned int out = 0;
@@ -134,12 +134,12 @@ long long LgFloat::dataLL()
 	{
 		if (Int.size() > sizeof(long long))
 		{
-			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 			return 0;
 		}
 		if (Int[sizeof(long long) - 1] > 128)
 		{
-			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 			return 0;
 		}
 	}
@@ -151,14 +151,14 @@ unsigned long long LgFloat::dataULL()
 {
 	if (Int.size() > sizeof(long long))
 	{
-		printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
+		printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
 		return 0;
 	}
 	unsigned long long out = 0;
 	memcpy(Int.data(), &out, sizeof(long long));
 	return out;
 }
-//ĞŞ¸ÄÊı×Ö
+//ä¿®æ”¹æ•°å­—
 LgFloat LgFloat::FixNumber(LgFloat Number) { return *this = Number; }
 LgFloat LgFloat::FixNumber(std::string Number)
 {
@@ -177,7 +177,7 @@ LgFloat LgFloat::FixNumber(std::string Number)
 	return *this;
 }
 LgFloat LgFloat::FixNumber(long long Number) { this->operator=(Number); return *this; }
-//×Ö·û´®×ª256´óÊı×Ö
+//å­—ç¬¦ä¸²è½¬256å¤§æ•°å­—
 LgFloat LgFloat::operator=(std::string Number) { return this->FixNumber(Number); }
 LgFloat LgFloat::operator=(LgFloat Number) { Int = Number.Int; symbol = Number.symbol; return Number; }
 LgFloat LgFloat::operator=(long long Number) { return this->FixNumber(std::to_string(Number)); }
@@ -209,14 +209,14 @@ bool LgFloat::operator!=(long long Number)
 {
 	return *this != LgFloat(Number);
 }
-//±È½Ï
+//æ¯”è¾ƒ
 bool LgFloat::compare(std::string Number1, std::string Number2)
 {
 	if (Number1.size() > Number2.size())
 		return 1;
 	else if (Number1.size() < Number2.size())
 		return -1;
-	else return Number1.compare(Number2);     //Èô³¤¶ÈÏàµÈ£¬Ôò´ÓÍ·µ½Î²°´Î»±È½Ï
+	else return Number1.compare(Number2);     //è‹¥é•¿åº¦ç›¸ç­‰ï¼Œåˆ™ä»å¤´åˆ°å°¾æŒ‰ä½æ¯”è¾ƒ
 }
 bool LgFloat::operator==(LgFloat Number)
 {
@@ -358,32 +358,32 @@ bool LgFloat::operator>=(LgFloat Number)
 		return a ? false : true;
 	}
 }
-//¼Ó
+//åŠ 
 std::string LgFloat::AddNumber(std::string Number1, std::string Number2)
 {
-	int sign = 1;//signÎª·ûºÅÎª
+	int sign = 1;//signä¸ºç¬¦å·ä¸º
 	std::string str;
 	if (Number1[0] == '-')
 	{
-		if (Number2[0] == '-')       //¸º¸º
+		if (Number2[0] == '-')       //è´Ÿè´Ÿ
 		{
 			sign = -1;
-			str = AddNumber(Number1.erase(0, 1), Number2.erase(0, 1));//erase(first,last);É¾³ı´Ófirstµ½lastÖ®¼äµÄ×Ö·û
+			str = AddNumber(Number1.erase(0, 1), Number2.erase(0, 1));//erase(first,last);åˆ é™¤ä»firståˆ°lastä¹‹é—´çš„å­—ç¬¦
 		}
-		else             //¸ºÕı
+		else             //è´Ÿæ­£
 		{
 			str = SubNumber(Number2, Number1.erase(0, 1));
 		}
 	}
 	else
 	{
-		if (Number2[0] == '-')        //Õı¸º
+		if (Number2[0] == '-')        //æ­£è´Ÿ
 		{
 			str = SubNumber(Number1, Number2.erase(0, 1));
 		}
-		else                    //ÕıÕı£¬°ÑÁ½¸öÕûÊı¶ÔÆë£¬¶ÌÕûÊıÇ°Ãæ¼Ó0²¹Æë
+		else                    //æ­£æ­£ï¼ŒæŠŠä¸¤ä¸ªæ•´æ•°å¯¹é½ï¼ŒçŸ­æ•´æ•°å‰é¢åŠ 0è¡¥é½
 		{
-			std::string::size_type L1, L2;  //string::size_type³éÏóÒâÒåÊÇ³ß´çµ¥Î»ÀàĞÍ
+			std::string::size_type L1, L2;  //string::size_typeæŠ½è±¡æ„ä¹‰æ˜¯å°ºå¯¸å•ä½ç±»å‹
 			int i;
 			L1 = Number1.size();
 			L2 = Number2.size();
@@ -397,7 +397,7 @@ std::string LgFloat::AddNumber(std::string Number1, std::string Number2)
 				for (i = 0; i < L1 - L2; i++)
 					Number2 = "0" + Number2;
 			}
-			int int1 = 0, int2 = 0; //int2¼ÇÂ¼½øÎ»
+			int int1 = 0, int2 = 0; //int2è®°å½•è¿›ä½
 			for (i = Number1.size() - 1; i >= 0; i--)
 			{
 				int1 = (int(Number1[i]) - '0' + int(Number2[i]) - '0' + int2) % 10;
@@ -408,7 +408,7 @@ std::string LgFloat::AddNumber(std::string Number1, std::string Number2)
 		}
 
 	}
-	//ÔËËã·û´¦Àí·ûºÅ
+	//è¿ç®—ç¬¦å¤„ç†ç¬¦å·
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
 	return str;
 }
@@ -503,10 +503,10 @@ LgFloat operator+(long long INT1, LgFloat Num2)
 {
 	return Num2 + INT1;
 }
-//¼õ
+//å‡
 std::string LgFloat::SubNumber(std::string Number1, std::string Number2)
 {
-	int sign = 1; //signÎª·ûºÅÎ»
+	int sign = 1; //signä¸ºç¬¦å·ä½
 	std::string str;
 	int i, j;
 	if (Number2[0] == '-')
@@ -528,7 +528,7 @@ std::string LgFloat::SubNumber(std::string Number1, std::string Number2)
 		tempint = Number1.size() - Number2.size();
 		for (i = Number2.size() - 1; i >= 0; i--)
 		{
-			if (Number1[i + tempint] < Number2[i])          //½èÎ»
+			if (Number1[i + tempint] < Number2[i])          //å€Ÿä½
 			{
 				j = 1;
 				while (1)
@@ -554,7 +554,7 @@ std::string LgFloat::SubNumber(std::string Number1, std::string Number2)
 		for (i = tempint - 1; i >= 0; i--)
 			str = Number1[i] + str;
 	}
-	//È¥³ö½á¹ûÖĞ¶àÓàµÄÇ°µ¼0
+	//å»å‡ºç»“æœä¸­å¤šä½™çš„å‰å¯¼0
 	str.erase(0, str.find_first_not_of('0'));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
@@ -630,11 +630,11 @@ LgFloat operator-(long long INT1, LgFloat Num2)
 {
 	return -Num2 + INT1;
 }
-//³Ë
+//ä¹˜
 std::string LgFloat::MulNumber(std::string Number1, std::string Number2)
 {
 	int sign = 1;
-	std::string str = "0";        //¼ÇÂ¼µ±Ç°Öµ
+	std::string str = "0";        //è®°å½•å½“å‰å€¼
 	if (Number1[0] == '-')
 	{
 		sign *= -1;
@@ -649,7 +649,7 @@ std::string LgFloat::MulNumber(std::string Number1, std::string Number2)
 	std::string::size_type L1, L2;
 	L1 = Number1.size();
 	L2 = Number2.size();
-	for (i = L2 - 1; i >= 0; i--)              //Ä£ÄâÊÖ¹¤³Ë·¨ÊúÊ½
+	for (i = L2 - 1; i >= 0; i--)              //æ¨¡æ‹Ÿæ‰‹å·¥ä¹˜æ³•ç«–å¼
 	{
 		std::string tempstr;
 		int int1 = 0, int2 = 0, int3 = int(Number2[i]) - '0';
@@ -667,7 +667,7 @@ std::string LgFloat::MulNumber(std::string Number1, std::string Number2)
 		}
 		str = AddNumber(str, tempstr);
 	}
-	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
+	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
 	str.erase(0, str.find_first_not_of("0"));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
@@ -710,18 +710,18 @@ LgFloat LgFloat::operator*(long long Num)
 LgFloat LgFloat::operator*(std::string str) { return *this * LgFloat(str); }
 LgFloat operator*(std::string str, LgFloat num) { return num * LgFloat(str); }
 LgFloat operator*(long long num1, LgFloat num2) { return num2 * LgFloat(num1); }
-//³ı
+//é™¤
 std::string LgFloat::DivNumber(std::string Number1, std::string Number2)
 {
-	std::string quotient, residue;  //¶¨ÒåÉÌºÍÓàÊı
+	std::string quotient, residue;  //å®šä¹‰å•†å’Œä½™æ•°
 	int sign1 = 1, sign2 = 1;
-	if (Number2 == "0")   //ÅĞ¶Ï³ıÊıÊÇ·ñÎª0
+	if (Number2 == "0")   //åˆ¤æ–­é™¤æ•°æ˜¯å¦ä¸º0
 	{
 		quotient = "ERROR!";
 		residue = "ERROR!";
 		return quotient;
 	}
-	if (Number1 == "0")     //ÅĞ¶Ï±»³ıÊıÊÇ·ñÎª0
+	if (Number1 == "0")     //åˆ¤æ–­è¢«é™¤æ•°æ˜¯å¦ä¸º0
 	{
 		quotient = "0";
 		residue = "0";
@@ -754,13 +754,13 @@ std::string LgFloat::DivNumber(std::string Number1, std::string Number2)
 		L1 = Number1.size();
 		L2 = Number2.size();
 		std::string tempstr;
-		tempstr.append(Number1, 0, L2 - 1); //½«str1ÖĞÎªÖµ0µ½L2-1µÄ×Ö·û´®×·¼Óµ½tempstr
-		for (int i = L2 - 1; i < L1; i++)  //Ä£ÄâÊÖ¹¤³ı·¨ÊúÊ½
+		tempstr.append(Number1, 0, L2 - 1); //å°†str1ä¸­ä¸ºå€¼0åˆ°L2-1çš„å­—ç¬¦ä¸²è¿½åŠ åˆ°tempstr
+		for (int i = L2 - 1; i < L1; i++)  //æ¨¡æ‹Ÿæ‰‹å·¥é™¤æ³•ç«–å¼
 		{
 			tempstr = tempstr + Number1[i];
-			tempstr.erase(0, tempstr.find_first_not_of('0')); //ÔÚ×Ö·û´®ÖĞ²éÕÒµÚÒ»¸öÓë'0'²»Æ¥ÅäµÄ×Ö·û£¬·µ»ØËüµÄÎ»ÖÃ
-			if (tempstr.empty())tempstr = "0";  //q.empty()£¬µ±¶ÓÁĞ¿ÕÊ±£¬·µ»Øtrue
-			for (char ch = '9'; ch >= '0'; ch--) //ÊÔÉÌ
+			tempstr.erase(0, tempstr.find_first_not_of('0')); //åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾ç¬¬ä¸€ä¸ªä¸'0'ä¸åŒ¹é…çš„å­—ç¬¦ï¼Œè¿”å›å®ƒçš„ä½ç½®
+			if (tempstr.empty())tempstr = "0";  //q.empty()ï¼Œå½“é˜Ÿåˆ—ç©ºæ—¶ï¼Œè¿”å›true
+			for (char ch = '9'; ch >= '0'; ch--) //è¯•å•†
 			{
 				std::string str;
 				str = str + ch;
@@ -774,7 +774,7 @@ std::string LgFloat::DivNumber(std::string Number1, std::string Number2)
 		}
 		residue = tempstr;
 	}
-	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
+	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
 	quotient.erase(0, quotient.find_first_not_of("0"));
 	if (quotient.empty())quotient = "0";
 	if ((sign1 == -1) && (quotient[0] != '0'))quotient = "-" + quotient;
@@ -820,18 +820,18 @@ LgFloat LgFloat::operator/(std::string str) { return *this / LgFloat(str); }
 LgFloat operator/(std::string str, LgFloat num) { return num / LgFloat(str); }
 LgFloat operator/(long long num1, LgFloat num2) { return num2 / LgFloat(num1); }
 
-//Óà
+//ä½™
 std::string LgFloat::ModNumber(std::string Number1, std::string Number2)
 {
-	std::string quotient, residue;  //¶¨ÒåÉÌºÍÓàÊı
+	std::string quotient, residue;  //å®šä¹‰å•†å’Œä½™æ•°
 	int sign1 = 1, sign2 = 1;
-	if (Number2 == "0")   //ÅĞ¶Ï³ıÊıÊÇ·ñÎª0
+	if (Number2 == "0")   //åˆ¤æ–­é™¤æ•°æ˜¯å¦ä¸º0
 	{
 		quotient = "ERROR!";
 		residue = "ERROR!";
 		return residue;
 	}
-	if (Number1 == "0")     //ÅĞ¶Ï±»³ıÊıÊÇ·ñÎª0
+	if (Number1 == "0")     //åˆ¤æ–­è¢«é™¤æ•°æ˜¯å¦ä¸º0
 	{
 		quotient = "0";
 		residue = "0";
@@ -864,13 +864,13 @@ std::string LgFloat::ModNumber(std::string Number1, std::string Number2)
 		L1 = Number1.size();
 		L2 = Number2.size();
 		std::string tempstr;
-		tempstr.append(Number1, 0, L2 - 1); //½«str1ÖĞÎªÖµ0µ½L2-1µÄ×Ö·û´®×·¼Óµ½tempstr
-		for (int i = L2 - 1; i < L1; i++)  //Ä£ÄâÊÖ¹¤³ı·¨ÊúÊ½
+		tempstr.append(Number1, 0, L2 - 1); //å°†str1ä¸­ä¸ºå€¼0åˆ°L2-1çš„å­—ç¬¦ä¸²è¿½åŠ åˆ°tempstr
+		for (int i = L2 - 1; i < L1; i++)  //æ¨¡æ‹Ÿæ‰‹å·¥é™¤æ³•ç«–å¼
 		{
 			tempstr = tempstr + Number1[i];
-			tempstr.erase(0, tempstr.find_first_not_of('0')); //ÔÚ×Ö·û´®ÖĞ²éÕÒµÚÒ»¸öÓë'0'²»Æ¥ÅäµÄ×Ö·û£¬·µ»ØËüµÄÎ»ÖÃ
-			if (tempstr.empty())tempstr = "0";  //q.empty()£¬µ±¶ÓÁĞ¿ÕÊ±£¬·µ»Øtrue
-			for (char ch = '9'; ch >= '0'; ch--) //ÊÔÉÌ
+			tempstr.erase(0, tempstr.find_first_not_of('0')); //åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾ç¬¬ä¸€ä¸ªä¸'0'ä¸åŒ¹é…çš„å­—ç¬¦ï¼Œè¿”å›å®ƒçš„ä½ç½®
+			if (tempstr.empty())tempstr = "0";  //q.empty()ï¼Œå½“é˜Ÿåˆ—ç©ºæ—¶ï¼Œè¿”å›true
+			for (char ch = '9'; ch >= '0'; ch--) //è¯•å•†
 			{
 				std::string str;
 				str = str + ch;
@@ -884,7 +884,7 @@ std::string LgFloat::ModNumber(std::string Number1, std::string Number2)
 		}
 		residue = tempstr;
 	}
-	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
+	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
 	quotient.erase(0, quotient.find_first_not_of("0"));
 	if (quotient.empty())quotient = "0";
 	if ((sign1 == -1) && (quotient[0] != '0'))quotient = "-" + quotient;
@@ -926,7 +926,7 @@ LgFloat LgFloat::operator%(long long Num) { return *this % (LgFloat::LgFloat(std
 LgFloat LgFloat::operator%(std::string str) { return *this % LgFloat(str); }
 LgFloat operator%(std::string str, LgFloat num) { return num % LgFloat(str); }
 LgFloat operator%(long long num1, LgFloat num2) { return num2 % LgFloat(num1); }
-//´Î·½
+//æ¬¡æ–¹
 LgFloat LgFloat::operator^(LgFloat Number)
 {
 	LgFloat out(1);

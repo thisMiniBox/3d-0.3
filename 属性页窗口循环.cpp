@@ -1,12 +1,12 @@
-#include"��Ϣѭ������.h"
-// �Ի�����̺���
+#include"消息循环声明.h"
+// 对话框过程函数
 //LRESULT CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //{
 //	switch (uMsg)
 //	{
 //	case WM_COMMAND:
 //	{
-//		// �����ؼ���Ϣ
+//		// 处理控件消息
 //		switch (LOWORD(wParam))
 //		{
 //		case IDCANCEL:
@@ -18,7 +18,7 @@
 //
 //	case WM_DESTROY:
 //	{
-//		// �ͷ���Դ
+//		// 释放资源
 //		PostQuitMessage(0);
 //		return TRUE;
 //	}

@@ -139,19 +139,19 @@ class BigDecimal {
 public:
 	BigDecimal() : negative(false), exponent(0) {}
 
-	// ¹¹Ôìº¯Êı
+	// æ„é€ å‡½æ•°
 	BigDecimal(const std::string& str) : negative(false), exponent(0)
 	{
-		// È¥µôÇ°µ¼ÁãºÍ½áÎ²µÄ¿Õ¸ñ
+		// å»æ‰å‰å¯¼é›¶å’Œç»“å°¾çš„ç©ºæ ¼
 		std::string s = trim(str);
 
-		// ´¦Àí¸ººÅ
+		// å¤„ç†è´Ÿå·
 		if (!s.empty() && s[0] == '-') {
 			negative = true;
 			s.erase(0, 1);
 		}
 
-		// ·ÖÀëÕûÊı²¿·ÖºÍĞ¡Êı²¿·Ö
+		// åˆ†ç¦»æ•´æ•°éƒ¨åˆ†å’Œå°æ•°éƒ¨åˆ†
 		std::string intPart, fracPart;
 		size_t pos = s.find('.');
 		if (pos == std::string::npos) {
@@ -163,13 +163,13 @@ public:
 			fracPart = s.substr(pos + 1);
 		}
 
-		// ¹¹ÔìÕûÊı²¿·Ö
+		// æ„é€ æ•´æ•°éƒ¨åˆ†
 		digits.reserve(intPart.size());
 		for (size_t i = 0; i < intPart.size(); i++) {
 			digits.push_back(intPart[i] - '0');
 		}
 
-		// ¹¹ÔìĞ¡Êı²¿·Ö
+		// æ„é€ å°æ•°éƒ¨åˆ†
 		if (!fracPart.empty()) {
 			std::reverse(fracPart.begin(), fracPart.end());
 			for (size_t i = 0; i < fracPart.size(); i++) {
@@ -178,12 +178,12 @@ public:
 			}
 		}
 
-		// È¥µôÄ©Î²µÄÁã
+		// å»æ‰æœ«å°¾çš„é›¶
 		while (!digits.empty() && digits.back() == 0) {
 			digits.pop_back();
 		}
 
-		// Èç¹û½á¹ûÎªÁã£¬ÔòÖØÖÃ·ûºÅºÍÖ¸Êı
+		// å¦‚æœç»“æœä¸ºé›¶ï¼Œåˆ™é‡ç½®ç¬¦å·å’ŒæŒ‡æ•°
 		if (digits.empty()) {
 			negative = false;
 			exponent = 0;
@@ -215,7 +215,7 @@ public:
 		}
 		return oss.str();
 	}
-	// Êä³öº¯Êı
+	// è¾“å‡ºå‡½æ•°
 	friend std::ostream& operator<<(std::ostream& os, const BigDecimal& v)
 	{
 		if (v.negative) {
@@ -243,11 +243,11 @@ public:
 	}
 
 private:
-	bool negative;              // ·ûºÅÎ»
-	std::vector<int> digits;    // ÊıÖµÊı×é
-	int exponent;               // Ö¸Êı
+	bool negative;              // ç¬¦å·ä½
+	std::vector<int> digits;    // æ•°å€¼æ•°ç»„
+	int exponent;               // æŒ‡æ•°
 
-	// ¸¨Öúº¯Êı£ºÈ¥µô×Ö·û´®Ç°ºóµÄ¿Õ¸ñ
+	// è¾…åŠ©å‡½æ•°ï¼šå»æ‰å­—ç¬¦ä¸²å‰åçš„ç©ºæ ¼
 	static std::string trim(const std::string& s)
 	{
 		size_t first = s.find_first_not_of(' ');

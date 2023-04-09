@@ -1,8 +1,8 @@
 #pragma once
 #include<Windows.h>
 #include"Object.h"
-#include"EditControl_±à¼­¿ò¿Ø¼ş.h"
-#include"DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ.h"
+#include"EditControl_ç¼–è¾‘æ¡†æ§ä»¶.h"
+#include"DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ.h"
 #include"resource.h"
 #include<string>
 #include<unordered_map>
@@ -13,7 +13,7 @@ class DetaileWind
 	HINSTANCE m_hInstance;
 	const int HI = 100;
 	HWND m_hWnd;
-	std::unordered_map<int,DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ*> m_ChildControl;
+	std::unordered_map<int,DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ*> m_ChildControl;
 	Object* m_target;
 	RECT m_rect;
 	std::wstring WindClassName;

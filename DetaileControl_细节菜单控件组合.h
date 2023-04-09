@@ -1,14 +1,14 @@
 #pragma once
-#include"EditControl_±à¼­¿ò¿Ø¼ş.h"
+#include"EditControl_ç¼–è¾‘æ¡†æ§ä»¶.h"
 #include<windows.h>
-#include"vector_ÏòÁ¿.h"
+#include"vector_å‘é‡.h"
 #include"resource.h"
 enum _ControlType
 {
 	CT_NAME,
 	CT_POSITION
 };
-class DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ
+class DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ
 {
 protected:
 	HWND m_hWnd;
@@ -16,29 +16,29 @@ public:
 	HWND GethWnd()const { return m_hWnd; }
 	void Hide()const { ShowWindow(m_hWnd, SW_HIDE); }
 	bool IsVisible() const { return IsWindowVisible(m_hWnd); }
-	DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ() :m_hWnd(nullptr) {}
-	virtual ~DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ();
-	int MoveWind_ÒÆ¶¯´°¿Ú(int x, int y, int w);
+	DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ() :m_hWnd(nullptr) {}
+	virtual ~DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ();
+	int MoveWind_ç§»åŠ¨çª—å£(int x, int y, int w);
 	int GetHeight();
 	static bool IsNumeric(const std::wstring& str);
 };
-class Position_Î»ÖÃ¿Ø¼ş :public DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ
+class Position_ä½ç½®æ§ä»¶ :public DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ
 {
 public:
-	Position_Î»ÖÃ¿Ø¼ş(HINSTANCE,HWND parent, int x, int y, int w);
-	~Position_Î»ÖÃ¿Ø¼ş();
+	Position_ä½ç½®æ§ä»¶(HINSTANCE,HWND parent, int x, int y, int w);
+	~Position_ä½ç½®æ§ä»¶();
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
 	vec::Vector3 m_Position;
 };
-class Name_¶ÔÏóÃû³Æ¿Ø¼ş : public DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ
+class Name_å¯¹è±¡åç§°æ§ä»¶ : public DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ
 {
 public:
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	Name_¶ÔÏóÃû³Æ¿Ø¼ş(HINSTANCE hIns, HWND parent, int x, int y, int w);
+	Name_å¯¹è±¡åç§°æ§ä»¶(HINSTANCE hIns, HWND parent, int x, int y, int w);
 };
-class Rotation_Ğı×ª¿Ø¼ş :public DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ
+class Rotation_æ—‹è½¬æ§ä»¶ :public DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ
 {
-	Rotation_Ğı×ª¿Ø¼ş(HINSTANCE, HWND parent, int x, int y, int w);
+	Rotation_æ—‹è½¬æ§ä»¶(HINSTANCE, HWND parent, int x, int y, int w);
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

@@ -11,11 +11,11 @@
 #include <queue>
 
 
-//²Ëµ¥ÏûÏ¢´¦Àí
+//èœå•æ¶ˆæ¯å¤„ç†
 LRESULT __stdcall Menu(HINSTANCE, HWND, UINT, WPARAM, LPARAM, project*);
-//¡°¹ØÓÚ¡±´°¿ÚÏûÏ¢Ñ­»·
+//â€œå…³äºŽâ€çª—å£æ¶ˆæ¯å¾ªçŽ¯
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
-//µ÷Õû´óÐ¡´°¿Ú
+//è°ƒæ•´å¤§å°çª—å£
 INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
-//´ò¿ªÎÄ¼þ£¬·µ»ØµØÖ·
+//æ‰“å¼€æ–‡ä»¶ï¼Œè¿”å›žåœ°å€
 std::wstring MenuGetPath(void);

@@ -8,34 +8,34 @@ void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
     {
     case 1:
     {
-        current_project->upMsg(L"Ä£ĞÍ¼ÓÔØÍê±Ï" + path, _Message);
+        current_project->upMsg(L"æ¨¡å‹åŠ è½½å®Œæ¯•" + path, _Message);
         current_project->Model_att = 0x01;
         InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
         break;
     }
     case 0:
     {
-        current_project->upMsg(L"ÎÄ¼ş´ò¿ªÊ§°Ü" + path, _Warning);
+        current_project->upMsg(L"æ–‡ä»¶æ‰“å¼€å¤±è´¥" + path, _Warning);
         break;
     }
     case -1:
     {
-        current_project->upMsg(L"ÎÄ¼şÊı¾İ´íÎó" + path, _Error);
+        current_project->upMsg(L"æ–‡ä»¶æ•°æ®é”™è¯¯" + path, _Error);
         break;
     }
     case -2:
     {
-        current_project->upMsg(L"²»Ö§³Ö´Ë¸ñÊ½" + path, _Warning);
+        current_project->upMsg(L"ä¸æ”¯æŒæ­¤æ ¼å¼" + path, _Warning);
         break;
     }
     case -3:
     {
-        current_project->upMsg(L"ÎÄ¼şÖĞÎ´º¬ÓĞÄ£ĞÍÊı¾İ" + path, _Warning);
+        current_project->upMsg(L"æ–‡ä»¶ä¸­æœªå«æœ‰æ¨¡å‹æ•°æ®" + path, _Warning);
         break;
     }
     default:
     {
-        current_project->upMsg(L"Î´ÖªÔ­ÒòÔØÈëÊ§°Ü" + path, _Warning);
+        current_project->upMsg(L"æœªçŸ¥åŸå› è½½å…¥å¤±è´¥" + path, _Warning);
         break;
     }
     }
@@ -45,7 +45,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
 {
     cp = current_project;
     int wmId = LOWORD(wP);
-    // ·ÖÎö²Ëµ¥Ñ¡Ôñ:
+    // åˆ†æèœå•é€‰æ‹©:
     switch (wmId)
     {
     case IDM_ABOUT:
@@ -66,7 +66,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     case IDM_OPEN:
     {
         std::wstring path = MenuGetPath();
-        if (path == L"")current_project->upMsg(L"µØÖ·»ñÈ¡Ê§°Ü", _Error);
+        if (path == L"")current_project->upMsg(L"åœ°å€è·å–å¤±è´¥", _Error);
         else
         {
             std::thread loadthread(loadModelThread,hWnd,current_project,path);
@@ -76,7 +76,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     }
     case ID_GDI:
     {
-        current_project->upMsg("Ê¹ÓÃGDI»æÍ¼");
+        current_project->upMsg("ä½¿ç”¨GDIç»˜å›¾");
         delete current_project->MAINWND;
         current_project->MAINWND = new GDIWND;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
@@ -84,19 +84,19 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         ShowWindow(current_project->MAINWND->CreateWind(current_project->hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
 
-        // ½ûÓÃµ÷Õû´°¿Ú´óĞ¡¹¦ÄÜ
+        // ç¦ç”¨è°ƒæ•´çª—å£å¤§å°åŠŸèƒ½
         style |= WS_THICKFRAME;
         style |= WS_MAXIMIZEBOX;
 
-        // ¸üĞÂ´°¿ÚÑùÊ½
+        // æ›´æ–°çª—å£æ ·å¼
         SetWindowLong(hWnd, GWL_STYLE, style);
         break;
     }
     case ID_OPENGL:
     {
-        current_project->upMsg("Ê¹ÓÃOpenGL»æÍ¼");
-        current_project->upMsg("ÓÉÓÚÒ»Ö±äÖÈ¾»á×èÈûÏûÏ¢£¬ËùÒÔ½öµ±ÓÒ¼ü´°¿Ú½øÈë¿ØÖÆ×´Ì¬²Å»á³ÖĞøäÖÈ¾");
-        current_project->upMsg("ÍÏ×§µ÷Õû´°¿Ú´óĞ¡ÒÑ±»½ûÓÃµ÷Õû´°¿Ú´óĞ¡ÇëÇ°ÍùÉèÖÃ");
+        current_project->upMsg("ä½¿ç”¨OpenGLç»˜å›¾");
+        current_project->upMsg("ç”±äºä¸€ç›´æ¸²æŸ“ä¼šé˜»å¡æ¶ˆæ¯ï¼Œæ‰€ä»¥ä»…å½“å³é”®çª—å£è¿›å…¥æ§åˆ¶çŠ¶æ€æ‰ä¼šæŒç»­æ¸²æŸ“");
+        current_project->upMsg("æ‹–æ‹½è°ƒæ•´çª—å£å¤§å°å·²è¢«ç¦ç”¨è°ƒæ•´çª—å£å¤§å°è¯·å‰å¾€è®¾ç½®");
         delete current_project->MAINWND;
         current_project->MAINWND = new OpenGLWnd;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
@@ -104,11 +104,11 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         current_project->MAINWND->CreateWind(current_project->hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
 
-        // ½ûÓÃµ÷Õû´°¿Ú´óĞ¡¹¦ÄÜ
+        // ç¦ç”¨è°ƒæ•´çª—å£å¤§å°åŠŸèƒ½
         style &= ~WS_THICKFRAME;
         style &= ~WS_MAXIMIZEBOX;
 
-        // ¸üĞÂ´°¿ÚÑùÊ½
+        // æ›´æ–°çª—å£æ ·å¼
         SetWindowLong(hWnd, GWL_STYLE, style);
         break;
     }
@@ -119,7 +119,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     }
     return 0;
 }
-// ¡°¹ØÓÚ¡±¿òµÄÏûÏ¢´¦Àí³ÌĞò¡£
+// â€œå…³äºâ€æ¡†çš„æ¶ˆæ¯å¤„ç†ç¨‹åºã€‚
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UNREFERENCED_PARAMETER(lParam);
@@ -214,11 +214,11 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             buffer = new wchar_t[length + 1];
             GetWindowText(hwndEdith, buffer, length + 1);
             int height = std::wcstol(buffer, nullptr, 10);
-            // Ê¹ÓÃ»ñÈ¡µ½µÄÎÄ±¾½øĞĞÏàÓ¦²Ù×÷
+            // ä½¿ç”¨è·å–åˆ°çš„æ–‡æœ¬è¿›è¡Œç›¸åº”æ“ä½œ
             delete[] buffer;
             if (width < 640 || height < 480)
             {
-                cp->upMsg(" ¿í¶È²»ÄÜĞ¡ÓÚ640£¬¸ß¶È²»ÄÜĞ¡ÓÚ480");
+                cp->upMsg(" å®½åº¦ä¸èƒ½å°äº640ï¼Œé«˜åº¦ä¸èƒ½å°äº480");
                 EndDialog(hDlg, LOWORD(wParam));
                 return (INT_PTR)TRUE;
             }
@@ -244,17 +244,17 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             wp.length = sizeof(WINDOWPLACEMENT);
             GetWindowPlacement(cp->hWnd, &wp);
 
-            if (wp.showCmd == SW_SHOWMAXIMIZED) // Èç¹û´°¿ÚÒÑ±»×î´ó»¯
+            if (wp.showCmd == SW_SHOWMAXIMIZED) // å¦‚æœçª—å£å·²è¢«æœ€å¤§åŒ–
             {
-                ShowWindow(cp->hWnd, SW_RESTORE); // »¹Ô­´°¿Ú´óĞ¡
+                ShowWindow(cp->hWnd, SW_RESTORE); // è¿˜åŸçª—å£å¤§å°
                 if (OpenGLWnd* OW = dynamic_cast<OpenGLWnd*>(cp->MAINWND))
                 {
                     OW->ResetOpenGLViewport();
                 }
             }
-            else // ·ñÔò´°¿ÚÎ´±»×î´ó»¯
+            else // å¦åˆ™çª—å£æœªè¢«æœ€å¤§åŒ–
             {
-                ShowWindow(cp->hWnd, SW_MAXIMIZE); // ×î´ó»¯´°¿Ú
+                ShowWindow(cp->hWnd, SW_MAXIMIZE); // æœ€å¤§åŒ–çª—å£
                 if (OpenGLWnd* OW = dynamic_cast<OpenGLWnd*>(cp->MAINWND))
                 {
                     OW->ResetOpenGLViewport();
@@ -282,9 +282,9 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         SetWindowText(hwndEdith, wstr.c_str());
         HWND hwndMaximize = GetDlgItem(hDlg, IDC_MAXIMIZE);
         if(IsMaximized(cp->hWnd))
-            SetWindowText(hwndMaximize, L"»¹Ô­");
+            SetWindowText(hwndMaximize, L"è¿˜åŸ");
         else
-            SetWindowText(hwndMaximize, L"È«ÆÁ");
+            SetWindowText(hwndMaximize, L"å…¨å±");
         break;
     }
     }

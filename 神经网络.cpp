@@ -1,5 +1,5 @@
-#include "神经网络.h"
-NeuralNetwork_神经网络::NeuralNetwork_神经网络(std::vector<int> architecture) {
+#include "绁炵粡缃戠粶.h"
+NeuralNetwork_绁炵粡缃戠粶::NeuralNetwork_绁炵粡缃戠粶(std::vector<int> architecture) {
     this->architecture = architecture;
     for (int i = 0; i < architecture.size() - 1; i++) {
         weights.push_back(std::vector<std::vector<double>>(architecture[i], std::vector<double>(architecture[i + 1])));
@@ -7,7 +7,7 @@ NeuralNetwork_神经网络::NeuralNetwork_神经网络(std::vector<int> architecture) {
     }
     init_weights();
 }
-void NeuralNetwork_神经网络::train(std::vector<std::vector<double>> inputs, std::vector<std::vector<double>> expected_outputs, int epochs, double learning_rate) {
+void NeuralNetwork_绁炵粡缃戠粶::train(std::vector<std::vector<double>> inputs, std::vector<std::vector<double>> expected_outputs, int epochs, double learning_rate) {
     for (int i = 0; i < epochs; i++) {
         for (int j = 0; j < inputs.size(); j++) {
             std::vector<std::vector<double>> layer_outputs = forward(inputs[j]);
@@ -15,7 +15,7 @@ void NeuralNetwork_神经网络::train(std::vector<std::vector<double>> inputs, std:
         }
     }
 }
-void NeuralNetwork_神经网络::init_weights() {
+void NeuralNetwork_绁炵粡缃戠粶::init_weights() {
     std::default_random_engine generator;
     std::normal_distribution<double> distribution(0.0, 1.0);
     for (int i = 0; i < weights.size(); i++) {
@@ -26,7 +26,7 @@ void NeuralNetwork_神经网络::init_weights() {
         }
     }
 }
-std::vector<std::vector<double>> NeuralNetwork_神经网络::calculate_errors(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs) {
+std::vector<std::vector<double>> NeuralNetwork_绁炵粡缃戠粶::calculate_errors(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs) {
     std::vector<std::vector<double>> errors;
     int num_layers = architecture.size();
     for (int i = num_layers - 1; i >= 0; i--) {
@@ -50,7 +50,7 @@ std::vector<std::vector<double>> NeuralNetwork_神经网络::calculate_errors(std::v
     }
     return errors;
 }
-void NeuralNetwork_神经网络::backward(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs, double learning_rate) {
+void NeuralNetwork_绁炵粡缃戠粶::backward(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs, double learning_rate) {
     std::vector<std::vector<double>> errors = calculate_errors(expected_output, layer_outputs);
     int num_layers = architecture.size();
     for (int i = num_layers - 1; i >= 1; i--) {
@@ -63,7 +63,7 @@ void NeuralNetwork_神经网络::backward(std::vector<double> expected_output, std::
         }
     }
 }
-std::vector<std::vector<double>> NeuralNetwork_神经网络::forward(std::vector<double> input) {
+std::vector<std::vector<double>> NeuralNetwork_绁炵粡缃戠粶::forward(std::vector<double> input) {
     std::vector<std::vector<double>> activations = { input };
     for (int i = 0; i < weights.size(); i++) {
         std::vector<double> layer_activations;

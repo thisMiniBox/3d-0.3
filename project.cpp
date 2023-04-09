@@ -27,15 +27,15 @@ HWND project::CreateWind(HINSTANCE hInst)
 	if (!RegisterClassEx(&wcex))
 	{
 		MessageBox(nullptr,
-			L"´°¿ÚÀà×¢²áÊ§°Ü£¡",
-			L"´íÎó",
+			L"çª—å£ç±»æ³¨å†Œå¤±è´¥ï¼",
+			L"é”™è¯¯",
 			MB_ICONERROR);
 	}
 
-	// Ö´ÐÐÓ¦ÓÃ³ÌÐò³õÊ¼»¯:
+	// æ‰§è¡Œåº”ç”¨ç¨‹åºåˆå§‹åŒ–:
 	hWnd = CreateWindowW(
 		L"szWindowClass",
-		L"win32Ä£ÐÍ¿ò¼Ü",
+		L"win32æ¨¡åž‹æ¡†æž¶",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		0,
@@ -47,29 +47,29 @@ HWND project::CreateWind(HINSTANCE hInst)
 		nullptr);
 	m_hInst = hInst;
 	FILEWND->CreateWind(hWnd);
-	Folder* a = new Folder("ÐÂ½¨ÏîÄ¿");
+	Folder* a = new Folder("æ–°å»ºé¡¹ç›®");
 	view = new Camera(
-		"ÐÂ½¨ÉãÏñ»ú", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
+		"æ–°å»ºæ‘„åƒæœº", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
 	AddObject(a, "0");
 	AddObject(view);
 	MAINWND->CreateWind(hWnd);
 	DETAWND->CreateWind(hWnd);
-	upMsg("Ê¹ÓÃGDI»æÍ¼Ê±£¬ÏÈµã»÷Ò»ÏÂÉãÏñ»ú¼ÓÔØ²à±ß¿ò¿Ø¼þ£¬·ñÔòÎÞ·¨Õý³£äÖÈ¾´°¿Ú£¬");
-	upMsg("ÎÒÒ²²»ÖªµÀÎªÊ²Ã´£¬ÏûÏ¢Ñ­»·ÊÇÍ¬Ò»¸ö£¬opengl¾ÍÃ»ÎÊÌâ");
+	upMsg("ä½¿ç”¨GDIç»˜å›¾æ—¶ï¼Œå…ˆç‚¹å‡»ä¸€ä¸‹æ‘„åƒæœºåŠ è½½ä¾§è¾¹æ¡†æŽ§ä»¶ï¼Œå¦åˆ™æ— æ³•æ­£å¸¸æ¸²æŸ“çª—å£ï¼Œ");
+	upMsg("æˆ‘ä¹Ÿä¸çŸ¥é“ä¸ºä»€ä¹ˆï¼Œæ¶ˆæ¯å¾ªçŽ¯æ˜¯åŒä¸€ä¸ªï¼Œopenglå°±æ²¡é—®é¢˜");
 	RECT m_rect;
 	GetClientRect(hWnd, &m_rect);
-	int cxClient = m_rect.right - m_rect.left;  // »ñµÃ¿Í»§Çø¿í¶È
+	int cxClient = m_rect.right - m_rect.left;  // èŽ·å¾—å®¢æˆ·åŒºå®½åº¦
 	int cyClient = m_rect.bottom - m_rect.top;
-	TEXTWND.hWnd = CreateWindow( //´´½¨±à¼­¿ò
+	TEXTWND.hWnd = CreateWindow( //åˆ›å»ºç¼–è¾‘æ¡†
 		TEXTWND.className.c_str(),
-		TEXT("ÏûÏ¢"),
+		TEXT("æ¶ˆæ¯"),
 		WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE,
 		0, cyClient - 150, cxClient / 5 * 4, 150,
 		hWnd,
 		(HMENU)1,
 		hInst,
 		nullptr);
-	SETWND.hWnd = CreateWindowW( //´´½¨±à¼­¿ò
+	SETWND.hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
 		SETWND.className.c_str(),
 		0,
 		WS_CHILD | WS_BORDER | WS_VISIBLE | ES_MULTILINE,
@@ -87,7 +87,7 @@ project::~project()
 	if (MAINWND)delete MAINWND;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
-	m_RootFolder.ClearFolder_Çå¿ÕÎÄ¼þ¼Ð();
+	m_RootFolder.ClearFolder_æ¸…ç©ºæ–‡ä»¶å¤¹();
 
 }
 HINSTANCE project::GethInstance()const
@@ -123,9 +123,9 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"¾¯¸æ ";
-			else if (p->data.Type == 1)out += L"ÏûÏ¢ ";
-			else out += L"´íÎó ";
+			if (p->data.Type == 2)out += L"è­¦å‘Š ";
+			else if (p->data.Type == 1)out += L"æ¶ˆæ¯ ";
+			else out += L"é”™è¯¯ ";
 			out += (p->data.Time);
 			out += (p->data.Str);
 			p = p->above;
@@ -140,7 +140,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 3)out += L"´íÎó ";
+			if (p->data.Type == 3)out += L"é”™è¯¯ ";
 			else
 			{
 				p = p->above;
@@ -160,7 +160,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"¾¯¸æ ";
+			if (p->data.Type == 2)out += L"è­¦å‘Š ";
 			else
 			{
 				p = p->above;
@@ -180,7 +180,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 1)out += L"ÏûÏ¢ ";
+			if (p->data.Type == 1)out += L"æ¶ˆæ¯ ";
 			else
 			{
 				p = p->above;
@@ -198,13 +198,13 @@ void project::updateMsg(const HDC& hdc)
 HTREEITEM project::AddObject(Object* a, std::string address)
 {
 	m_Models.clear();
-	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(a);
+	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(a);
 	return FILEWND->AddItem(*a, address);
 }
 HTREEITEM project::AddObject(Object* a, HTREEITEM parent)
 {
 	m_Models.clear();
-	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(a);
+	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(a);
 	return FILEWND->AddItem(*a, parent);
 }
 void project::SetRect(RECT rect)
@@ -218,7 +218,7 @@ RECT project::GetRect()const
 std::vector<Model*>& project::GetModels()
 {
 	if (!m_Models.empty())return m_Models;
-	m_Models = m_RootFolder.GetAllModleFile_ÕÒµ½ËùÓÐÄ£ÐÍ();
+	m_Models = m_RootFolder.GetAllModleFile_æ‰¾åˆ°æ‰€æœ‰æ¨¡åž‹();
 	return m_Models;
 }
 std::vector<Model*>& project::UpdateModels()
@@ -229,7 +229,7 @@ std::vector<Model*>& project::UpdateModels()
 
 void project::DeleteObject(Object* obj,HTREEITEM hTree)
 {
-	m_RootFolder.DeleteFile_É¾³ýÎÄ¼þ(obj);
+	m_RootFolder.DeleteFile_åˆ é™¤æ–‡ä»¶(obj);
 	UpdateModels();
 	if (hTree)
 		FILEWND->DeleteItem(hTree);
@@ -238,8 +238,8 @@ void project::DeleteObject(Object* obj,HTREEITEM hTree)
 int project::loadModel(const std::wstring& path)
 {
 	Model* model = new Model;
-	int error = model->loadModelFile_¼ÓÔØÄ£ÐÍÎÄ¼þ(path);
-	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(model);
+	int error = model->loadModelFile_åŠ è½½æ¨¡åž‹æ–‡ä»¶(path);
+	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(model);
 	FILEWND->AddItem(*model);
 	return error;
 }

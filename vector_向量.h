@@ -12,100 +12,100 @@ namespace vec {
         double x;
         double y;
         double z;
-        // Ä¬ÈÏ¹¹Ôìº¯Êı£¬³õÊ¼»¯ÎªÁãÏòÁ¿
+        // é»˜è®¤æ„é€ å‡½æ•°ï¼Œåˆå§‹åŒ–ä¸ºé›¶å‘é‡
         Vector();
         Vector(double a);
-        // ´ø²ÎÊıµÄ¹¹Ôìº¯Êı£¬¸ù¾İ¸ø¶¨µÄ·ÖÁ¿³õÊ¼»¯ÏòÁ¿
+        // å¸¦å‚æ•°çš„æ„é€ å‡½æ•°ï¼Œæ ¹æ®ç»™å®šçš„åˆ†é‡åˆå§‹åŒ–å‘é‡
         Vector(double x, double y, double z);
-        // Îö¹¹º¯Êı£¬ÊÍ·ÅÄÚ´æ
+        // ææ„å‡½æ•°ï¼Œé‡Šæ”¾å†…å­˜
         ~Vector() {}
-        // ¶¨ÒåÒ»¸ö¾²Ì¬º¯Êı£¬¼ÆËãÁ½¸öÏòÁ¿µã³Ë£¨ÄÚ»ı£©£¬·µ»ØÒ»¸ö±êÁ¿Öµ
+        // å®šä¹‰ä¸€ä¸ªé™æ€å‡½æ•°ï¼Œè®¡ç®—ä¸¤ä¸ªå‘é‡ç‚¹ä¹˜ï¼ˆå†…ç§¯ï¼‰ï¼Œè¿”å›ä¸€ä¸ªæ ‡é‡å€¼
         static double dot(const Vector& v1, const Vector& v2) {
             return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
         }
-        // »ñÈ¡x·ÖÁ¿µÄÖµ
+        // è·å–xåˆ†é‡çš„å€¼
         double GetX() const {
             return x;
         }
-        // »ñÈ¡y·ÖÁ¿µÄÖµ
+        // è·å–yåˆ†é‡çš„å€¼
         double GetY() const {
             return y;
         }
-        // »ñÈ¡z·ÖÁ¿µÄÖµ
+        // è·å–zåˆ†é‡çš„å€¼
         double GetZ() const {
             return z;
         }
-        // ÉèÖÃx·ÖÁ¿µÄÖµ
+        // è®¾ç½®xåˆ†é‡çš„å€¼
         void SetX(double x) {
             this->x = x;
         }
-        // ÉèÖÃy·ÖÁ¿µÄÖµ
+        // è®¾ç½®yåˆ†é‡çš„å€¼
         void SetY(double y) {
             this->y = y;
         }
-        // ÉèÖÃz·ÖÁ¿µÄÖµ
+        // è®¾ç½®zåˆ†é‡çš„å€¼
         void SetZ(double z) {
             this->z = z;
         }
-        // ¼ÆËãÏòÁ¿µÄÄ£³¤£¨³¤¶È£©
+        // è®¡ç®—å‘é‡çš„æ¨¡é•¿ï¼ˆé•¿åº¦ï¼‰
         double Length() const {
             return sqrt(x * x + y * y + z * z);
         }
-        // ¼ÆËãÁ½¸öÏòÁ¿Ö®¼äµÄ¼Ğ½Ç£¨»¡¶ÈÖÆ£©
+        // è®¡ç®—ä¸¤ä¸ªå‘é‡ä¹‹é—´çš„å¤¹è§’ï¼ˆå¼§åº¦åˆ¶ï¼‰
         static double Angle(const Vector& v1, const Vector& v2) {
             return acos(dot(v1, v2) / (v1.Length() * v2.Length()));
         }
-        // ¼ÆËãÁ½¸öÏòÁ¿Ö®¼äµÄ¾àÀë£¨Å·ÊÏ¾àÀë£©
+        // è®¡ç®—ä¸¤ä¸ªå‘é‡ä¹‹é—´çš„è·ç¦»ï¼ˆæ¬§æ°è·ç¦»ï¼‰
         static double Distance(const Vector& v1, const Vector& v2) {
             return (v1 - v2).Length();
         }
         Vector Normalize()const;
         Vector Rotate(const Vector& v, const Vector& axis, double angle);
-        // ÖØÔØÔËËã·û£¬ÊµÏÖ¼Ó¼õ£¬µã³Ë²æ³Ë£¬±¶ÊıÉìËõ£¬µ¥Î»ÏòÁ¿»»ËãµÈ²Ù×÷
+        // é‡è½½è¿ç®—ç¬¦ï¼Œå®ç°åŠ å‡ï¼Œç‚¹ä¹˜å‰ä¹˜ï¼Œå€æ•°ä¼¸ç¼©ï¼Œå•ä½å‘é‡æ¢ç®—ç­‰æ“ä½œ
         Vector Rotate(const Vector& axis, double angle);
-        // ÖØÔØ+ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿Ïà¼Ó£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½+è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ç›¸åŠ ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator+(const Vector& v1, const Vector& v2) {
             return Vector(v1.x + v2.x,
                 v1.y + v2.y,
                 v1.z + v2.z);
         }
-        // ÖØÔØ+=ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿Ïà¼Ó
+        // é‡è½½+=è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ç›¸åŠ 
         Vector operator+=(const Vector& v) {
             return *this = *this + v;
         }
 
-        // ÖØÔØ-ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿Ïà¼õ£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½-è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ç›¸å‡ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator-(const Vector& v1, const Vector& v2) {
             return Vector(v1.x - v2.x,
                 v1.y - v2.y,
                 v1.z - v2.z);
         }
-        // ÖØÔØ-=ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿Ïà¼Ó
+        // é‡è½½-=è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ç›¸åŠ 
         Vector operator-=(const Vector& v) {
             return *this = *this - v;
         }
-        // ÖØÔØ-ÔËËã·û£¬ÊµÏÖÏòÁ¿È¡·´£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½-è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡å–åï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator-(const Vector& v) {
             return !v;
         }
 
-        // ÖØÔØ*ÔËËã·û£¬ÊµÏÖÒ»¸öÏòÁ¿³ËÒÔÒ»¸ö±êÁ¿£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½*è¿ç®—ç¬¦ï¼Œå®ç°ä¸€ä¸ªå‘é‡ä¹˜ä»¥ä¸€ä¸ªæ ‡é‡ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend double operator*(const Vector& v1, const Vector& v2) {
             return dot(v1, v2);
         }
-        // ÖØÔØ*ÔËËã·û£¬ÊµÏÖÒ»¸öÏòÁ¿³ËÒÔÒ»¸ö±êÁ¿£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½*è¿ç®—ç¬¦ï¼Œå®ç°ä¸€ä¸ªå‘é‡ä¹˜ä»¥ä¸€ä¸ªæ ‡é‡ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator*(const Vector& v, double k) {
             return Vector(v.x * k,
                 v.y * k,
                 v.z * k);
         }
 
-        // ÖØÔØ*ÔËËã·û£¬ÊµÏÖÒ»¸ö±êÁ¿³ËÒÔÒ»¸öÏòÁ¿£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½*è¿ç®—ç¬¦ï¼Œå®ç°ä¸€ä¸ªæ ‡é‡ä¹˜ä»¥ä¸€ä¸ªå‘é‡ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator*(double k, const Vector& v) {
             return (v * k);
         }
 
-        // ÖØÔØ/ÔËËã·û£¬ÊµÏÖÒ»¸öÏòÁ¿³ıÒÔÒ»¸ö±êÁ¿£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½/è¿ç®—ç¬¦ï¼Œå®ç°ä¸€ä¸ªå‘é‡é™¤ä»¥ä¸€ä¸ªæ ‡é‡ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator/(const Vector& v, double k) {
             if (k == 0) {
                 throw "division by zero";
@@ -116,33 +116,33 @@ namespace vec {
         }
 
 
-        // ÏòÁ¿µã³Ë
+        // å‘é‡ç‚¹ä¹˜
         double dot(const Vector& v) const {
             return x * v.x + y * v.y + z * v.z;
         }
-        // ÖØÔØ^ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿²æ³Ë£¨Íâ»ı£©£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½^è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡å‰ä¹˜ï¼ˆå¤–ç§¯ï¼‰ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator^(const Vector& v1, const Vector& v2) {
             return cross(v1, v2);
         }
 
-        // ¶¨ÒåÒ»¸ö¾²Ì¬º¯Êı£¬¼ÆËãÁ½¸öÏòÁ¿²æ³Ë£¨Íâ»ı£©£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // å®šä¹‰ä¸€ä¸ªé™æ€å‡½æ•°ï¼Œè®¡ç®—ä¸¤ä¸ªå‘é‡å‰ä¹˜ï¼ˆå¤–ç§¯ï¼‰ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         static Vector cross(const Vector& v1, const Vector& v2) {
             return Vector(v1.y * v2.z - v1.z * v2.y,
                 v1.z * v2.x - v1.x * v2.z,
                 v1.x * v2.y - v1.y * v2.x);
         }
-        // ¶¨ÒåÒ»¸öº¯Êı£¬¼ÆËãÁ½¸öÏòÁ¿²æ³Ë£¨Íâ»ı£©£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // å®šä¹‰ä¸€ä¸ªå‡½æ•°ï¼Œè®¡ç®—ä¸¤ä¸ªå‘é‡å‰ä¹˜ï¼ˆå¤–ç§¯ï¼‰ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         Vector cross(const Vector& v1)const {
             return Vector(v1.y * z - v1.z * y,
                 v1.z * x - v1.x * z,
                 v1.x * y - v1.y * x);
         }
-        // ÖØÔØ!ÔËËã·û£¬ÊµÏÖÏòÁ¿È¡·´£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½!è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡å–åï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator!(const Vector& v) {
             return Vector(-v.x, -v.y, -v.z);
         }
 
-        // ÖØÔØ~ÔËËã·û£¬ÊµÏÖÏòÁ¿µ¥Î»»¯£¬·µ»ØÒ»¸öĞÂµÄÏòÁ¿¶ÔÏó
+        // é‡è½½~è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡å•ä½åŒ–ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„å‘é‡å¯¹è±¡
         friend Vector operator~(const Vector& v) {
             double len = v.Length();
             if (len == 0) {
@@ -153,28 +153,28 @@ namespace vec {
             }
         }
 
-        // ¶¨ÒåÒ»¸ö¾²Ì¬º¯Êı ·µ»Ø±íÊ¾·½ÏòµÄµ¥Î»Ê¸
+        // å®šä¹‰ä¸€ä¸ªé™æ€å‡½æ•° è¿”å›è¡¨ç¤ºæ–¹å‘çš„å•ä½çŸ¢
 
         static Vector unit(const Vector& v) {
             return ~v;
         }
 
-        // ÖØÔØ==ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿ÏàµÈµÄÅĞ¶Ï£¬·µ»ØÒ»¸ö²¼¶ûÖµ
+        // é‡è½½==è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ç›¸ç­‰çš„åˆ¤æ–­ï¼Œè¿”å›ä¸€ä¸ªå¸ƒå°”å€¼
         friend bool operator==(const Vector& v1, const Vector& v2) {
             return (v1.x == v2.x && v1.y == v2.y && v1.z == v2.z);
         }
 
-        // ÖØÔØ!=ÔËËã·û£¬ÊµÏÖÁ½¸öÏòÁ¿²»µÈµÄÅĞ¶Ï£¬·µ»ØÒ»¸ö²¼¶ûÖµ
+        // é‡è½½!=è¿ç®—ç¬¦ï¼Œå®ç°ä¸¤ä¸ªå‘é‡ä¸ç­‰çš„åˆ¤æ–­ï¼Œè¿”å›ä¸€ä¸ªå¸ƒå°”å€¼
         friend bool operator!=(const Vector& v1, const Vector& v2) {
             return !(v1 == v2);
         }
 
-        // ÖØÔØ<<ÔËËã·û£¬ÊµÏÖÏòÁ¿µÄÊä³ö¸ñÊ½»¯£¬·µ»ØÒ»¸öÊä³öÁ÷¶ÔÏó
+        // é‡è½½<<è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡çš„è¾“å‡ºæ ¼å¼åŒ–ï¼Œè¿”å›ä¸€ä¸ªè¾“å‡ºæµå¯¹è±¡
         friend std::ostream& operator<<(std::ostream& os, const Vector& v) {
             os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
             return os;
         }
-        // ¿í×Ö·û±ê×¼Êä³öº¯Êı
+        // å®½å­—ç¬¦æ ‡å‡†è¾“å‡ºå‡½æ•°
         friend std::wostream& operator<<(std::wostream& os, const Vector& v) {
             os << L"(" << std::setw(8) << std::fixed << std::setprecision(2) << v.x << L", "
                 << std::setw(8) << std::fixed << std::setprecision(2) << v.y << L", "
@@ -182,7 +182,7 @@ namespace vec {
             return os;
         }
 
-        // ÖØÔØ>>ÔËËã·û£¬ÊµÏÖÏòÁ¿µÄÊäÈë¸ñÊ½»¯£¬·µ»ØÒ»¸öÊäÈëÁ÷¶ÔÏó
+        // é‡è½½>>è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡çš„è¾“å…¥æ ¼å¼åŒ–ï¼Œè¿”å›ä¸€ä¸ªè¾“å…¥æµå¯¹è±¡
         friend std::istream& operator>>(std::istream& is, Vector& v) {
             is >> v.x >> v.y >> v.z;
             return is;
@@ -198,59 +198,59 @@ namespace vec {
     };
     typedef Vector Vector3;
     class Vector2 {
-        // Ë½ÓĞ³ÉÔ±±äÁ¿
+        // ç§æœ‰æˆå‘˜å˜é‡
     private:
-        double x; // x·ÖÁ¿
-        double y; // y·ÖÁ¿
-        // ¹«ÓĞ³ÉÔ±º¯Êı
+        double x; // xåˆ†é‡
+        double y; // yåˆ†é‡
+        // å…¬æœ‰æˆå‘˜å‡½æ•°
     public:
-        // ¹¹Ôìº¯Êı£¬³õÊ¼»¯xºÍy
+        // æ„é€ å‡½æ•°ï¼Œåˆå§‹åŒ–xå’Œy
         Vector2(double x = 0, double y = 0) {
             this->x = x;
             this->y = y;
         }
-        // »ñÈ¡x·ÖÁ¿µÄº¯Êı
+        // è·å–xåˆ†é‡çš„å‡½æ•°
         double getX() const {
             return x;
         }
-        // »ñÈ¡y·ÖÁ¿µÄº¯Êı
+        // è·å–yåˆ†é‡çš„å‡½æ•°
         double getY() const {
             return y;
         }
-        // ÉèÖÃx·ÖÁ¿µÄº¯Êı
+        // è®¾ç½®xåˆ†é‡çš„å‡½æ•°
         void setX(double x) {
             this->x = x;
         }
-        // ÉèÖÃy·ÖÁ¿µÄº¯Êı
+        // è®¾ç½®yåˆ†é‡çš„å‡½æ•°
         void setY(double y) {
             this->y = y;
         }
 
-        // ¼ÆËãÏòÁ¿µÄÄ££¨³¤¶È£©µÄº¯Êı
+        // è®¡ç®—å‘é‡çš„æ¨¡ï¼ˆé•¿åº¦ï¼‰çš„å‡½æ•°
         double magnitude() const {
             return sqrt(x * x + y * y);
         }
-        // ¼ÆËãÏòÁ¿µÄ·½Ïò£¨½Ç¶È£©µÄº¯Êı£¬·µ»Ø»¡¶ÈÖµ
+        // è®¡ç®—å‘é‡çš„æ–¹å‘ï¼ˆè§’åº¦ï¼‰çš„å‡½æ•°ï¼Œè¿”å›å¼§åº¦å€¼
         double angle() const {
             return atan2(y, x);
         }
 
-        // ÖØÔØ+ÔËËã·û£¬ÊµÏÖÏòÁ¿Ïà¼ÓµÄ¹¦ÄÜ£¬·µ»ØÒ»¸öĞÂµÄVector2D¶ÔÏó
+        // é‡è½½+è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡ç›¸åŠ çš„åŠŸèƒ½ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„Vector2Då¯¹è±¡
         Vector2 operator+(const Vector2& v) const {
             return Vector2(x + v.x, y + v.y);
         }
 
-        // ÖØÔØ-ÔËËã·û£¬ÊµÏÖÏòÁ¿Ïà¼õµÄ¹¦ÄÜ£¬·µ»ØÒ»¸öĞÂµÄVector2D¶ÔÏó
+        // é‡è½½-è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡ç›¸å‡çš„åŠŸèƒ½ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„Vector2Då¯¹è±¡
         Vector2 operator-(const Vector2& v) const {
             return Vector2(x - v.x, y - v.y);
         }
 
-        // ÖØÔØ*ÔËËã·û£¬ÊµÏÖÏòÁ¿Óë±êÁ¿Ïà³ËµÄ¹¦ÄÜ£¬·µ»ØÒ»¸öĞÂµÄVector2D¶ÔÏó
+        // é‡è½½*è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡ä¸æ ‡é‡ç›¸ä¹˜çš„åŠŸèƒ½ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„Vector2Då¯¹è±¡
         Vector2 operator*(double k) const {
             return Vector2(x * k, y * k);
         }
 
-        // ÖØÔØ/ÔËËã·û£¬ÊµÏÖÏòÁ¿Óë±êÁ¿Ïà³ıµÄ¹¦ÄÜ£¬·µ»ØÒ»¸öĞÂµÄVector2D¶ÔÏó 
+        // é‡è½½/è¿ç®—ç¬¦ï¼Œå®ç°å‘é‡ä¸æ ‡é‡ç›¸é™¤çš„åŠŸèƒ½ï¼Œè¿”å›ä¸€ä¸ªæ–°çš„Vector2Då¯¹è±¡ 
         Vector2 operator/(double k) const {
             if (k != 0) {
                 return Vector2(x / k, y / k);
@@ -260,12 +260,12 @@ namespace vec {
             }
         }
 
-        // ÖØÔØ==ÔËËã·û£¬ÅĞ¶ÏÁ½¸öÏòÁ¿ÊÇ·ñÏàµÈ£¨·Ö±ğ±È½ÏxºÍyÊÇ·ñÏàµÈ£©
+        // é‡è½½==è¿ç®—ç¬¦ï¼Œåˆ¤æ–­ä¸¤ä¸ªå‘é‡æ˜¯å¦ç›¸ç­‰ï¼ˆåˆ†åˆ«æ¯”è¾ƒxå’Œyæ˜¯å¦ç›¸ç­‰ï¼‰
         bool operator==(const Vector2& v) const {
             return (x == v.x && y == v.y);
         }
 
-        // ÖØÔØ!=ÔËËã·û£¬ÅĞ¶ÏÁ½¸öÏòÁ¿ÊÇ·ñ²»µÈ£¨È¡==ÔËËã·û½á¹ûµÄ·´Öµ£©
+        // é‡è½½!=è¿ç®—ç¬¦ï¼Œåˆ¤æ–­ä¸¤ä¸ªå‘é‡æ˜¯å¦ä¸ç­‰ï¼ˆå–==è¿ç®—ç¬¦ç»“æœçš„åå€¼ï¼‰
         bool operator!=(const Vector2& v) const {
             return !(*this == v);
         }
@@ -281,11 +281,11 @@ namespace vec {
         double z;
         double w;
 
-        // ¹¹Ôìº¯Êı
+        // æ„é€ å‡½æ•°
         Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
         Vector4(double a, double b, double c, double d) : x(a), y(b), z(c), w(d) {}
 
-        // ¸³ÖµÔËËã·û
+        // èµ‹å€¼è¿ç®—ç¬¦
         Vector4& operator=(const Vector4& other) {
             x = other.x;
             y = other.y;
@@ -294,22 +294,22 @@ namespace vec {
             return *this;
         }
 
-        // ÏòÁ¿¼Ó·¨
+        // å‘é‡åŠ æ³•
         Vector4 operator+(const Vector4& other) const {
             return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
         }
 
-        // ÏòÁ¿¼õ·¨
+        // å‘é‡å‡æ³•
         Vector4 operator-(const Vector4& other) const {
             return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
         }
 
-        // ÏòÁ¿µã³Ë
+        // å‘é‡ç‚¹ä¹˜
         double dot(const Vector4& other) const {
             return x * other.x + y * other.y + z * other.z + w * other.w;
         }
 
-        // ÏòÁ¿²æ³Ë£¨½öÏŞÓÚÈıÎ¬ÏòÁ¿£©
+        // å‘é‡å‰ä¹˜ï¼ˆä»…é™äºä¸‰ç»´å‘é‡ï¼‰
         Vector4 cross(const Vector4& other) const {
             return Vector4(
                 y * other.z - z * other.y,
@@ -319,12 +319,12 @@ namespace vec {
             );
         }
 
-        // ÏòÁ¿³¤¶È
+        // å‘é‡é•¿åº¦
         double length() const {
             return sqrt(dot(*this));
         }
 
-        // ÏòÁ¿¹éÒ»»¯
+        // å‘é‡å½’ä¸€åŒ–
         void normalize() {
             double len = length();
             if (len > 0.0f) {
@@ -344,7 +344,7 @@ namespace vec {
         double m_data[4][4];
 
     public:
-        // ¹¹Ôìº¯Êı
+        // æ„é€ å‡½æ•°
         Matrix4x4();
         Matrix4x4(double a, double b, double c, double d,
             double e, double f, double g, double h,
@@ -381,27 +381,27 @@ namespace vec {
 
 
 
-        // ÉèÖÃÔªËØÖµ
+        // è®¾ç½®å…ƒç´ å€¼
         void Set(int row, int col, double value) {
             m_data[row][col] = value;
         }
 
-        // »ñÈ¡ÔªËØÖµ
+        // è·å–å…ƒç´ å€¼
         double Get(int row, int col) const {
             return m_data[row][col];
         }
 
-        // ·Ç³£Á¿°æ±¾µÄÏÂ±êÔËËã·û
+        // éå¸¸é‡ç‰ˆæœ¬çš„ä¸‹æ ‡è¿ç®—ç¬¦
         double* operator[](int row) {
             return m_data[row];
         }
 
-        // ³£Á¿°æ±¾µÄÏÂ±êÔËËã·û
+        // å¸¸é‡ç‰ˆæœ¬çš„ä¸‹æ ‡è¿ç®—ç¬¦
         const double* operator[](int row) const {
             return m_data[row];
         }
 
-        // ¾ØÕó¼Ó·¨
+        // çŸ©é˜µåŠ æ³•
         Matrix4x4 operator+(const Matrix4x4& other) const {
             Matrix4x4 result;
             for (int i = 0; i < 4; i++) {
@@ -412,7 +412,7 @@ namespace vec {
             return result;
         }
 
-        // ¾ØÕó³Ë·¨
+        // çŸ©é˜µä¹˜æ³•
         Matrix4x4 operator*(const Matrix4x4& other) const {
             Matrix4x4 result;
             for (int i = 0; i < 4; i++) {
@@ -456,14 +456,14 @@ namespace vec {
             return Vector4(x, y, z, w);
         }
 
-        // ÇóÄæ¾ØÕó
+        // æ±‚é€†çŸ©é˜µ
         Matrix4x4 Inverse() const {
-            // TODO: ÊµÏÖÇóÄæ¾ØÕóµÄËã·¨
-            // ÕâÀïÖ»ÊÇ·µ»ØÒ»¸ö¿ÕµÄ¾ØÕó
+            // TODO: å®ç°æ±‚é€†çŸ©é˜µçš„ç®—æ³•
+            // è¿™é‡Œåªæ˜¯è¿”å›ä¸€ä¸ªç©ºçš„çŸ©é˜µ
             return Matrix4x4();
         }
 
-        // Çó×ªÖÃ¾ØÕó
+        // æ±‚è½¬ç½®çŸ©é˜µ
         Matrix4x4 Transpose() const {
             Matrix4x4 result;
             for (int i = 0; i < 4; i++) {
@@ -473,7 +473,7 @@ namespace vec {
             }
             return result;
         }
-        // ÒÆ¶¯¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç§»åŠ¨çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 translate(double x, double y, double z) {
             Matrix4x4 mat;
             mat.m_data[0][0] = mat.m_data[1][1] = mat.m_data[2][2] = mat.m_data[3][3] = 1.0;
@@ -483,7 +483,7 @@ namespace vec {
             return mat;
         }
 
-        // Ëõ·Å¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç¼©æ”¾çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 scale(double sx, double sy, double sz) {
             Matrix4x4 mat;
             mat.m_data[0][0] = sx;
@@ -493,7 +493,7 @@ namespace vec {
             return mat;
         }
 
-        // ÈÆ X ÖáĞı×ª¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç»• X è½´æ—‹è½¬çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 rotateX(double angle) {
             double rad = angle * PI / 180.0;
             double c = cos(rad);
@@ -508,7 +508,7 @@ namespace vec {
             return mat;
         }
 
-        // ÈÆ Y ÖáĞı×ª¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç»• Y è½´æ—‹è½¬çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 rotateY(double angle) {
             double rad = angle * PI / 180.0;
             double c = cos(rad);
@@ -523,7 +523,7 @@ namespace vec {
             return mat;
         }
 
-        // ÈÆ Z ÖáĞı×ª¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç»• Z è½´æ—‹è½¬çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 rotateZ(double angle) {
             double rad = angle * PI / 180.0;
             double c = cos(rad);
@@ -537,7 +537,7 @@ namespace vec {
             mat.m_data[3][3] = 1.0;
             return mat;
         }
-        // ÒÆ¶¯¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç§»åŠ¨çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 translate(const vec::Vector& v) {
             Matrix4x4 mat;
             mat.m_data[0][0] = mat.m_data[1][1] = mat.m_data[2][2] = mat.m_data[3][3] = 1.0;
@@ -547,7 +547,7 @@ namespace vec {
             return mat;
         }
 
-        // Ëõ·Å¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç¼©æ”¾çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 scale(const vec::Vector& v) {
             Matrix4x4 mat;
             mat.m_data[0][0] = v.x;
@@ -556,9 +556,9 @@ namespace vec {
             mat.m_data[3][3] = 1.0;
             return mat;
         }
-        // ÈÆÈÎÒâÖáĞı×ª¾ØÕóµÄ¾²Ì¬º¯Êı
+        // ç»•ä»»æ„è½´æ—‹è½¬çŸ©é˜µçš„é™æ€å‡½æ•°
         static Matrix4x4 rotate(const vec::Vector& axis, double angle) {
-            // ¼ÆËãĞı×ª¾ØÕó
+            // è®¡ç®—æ—‹è½¬çŸ©é˜µ
             double rad = angle * PI / 180.0;
             double c = cos(rad);
             double s = sin(rad);
@@ -574,7 +574,7 @@ namespace vec {
             double m32 = t * y * z + s * x;
             double m33 = t * z * z + c;
 
-            // ½«Ğı×ª¾ØÕó´æ´¢µ½ 4x4 ¾ØÕóÖĞ
+            // å°†æ—‹è½¬çŸ©é˜µå­˜å‚¨åˆ° 4x4 çŸ©é˜µä¸­
             Matrix4x4 mat;
             mat.m_data[0][0] = m11;
             mat.m_data[0][1] = m12;
@@ -595,27 +595,27 @@ namespace vec {
 
             return mat;
         }
-        // ÉèÖÃËõ·Å¾ØÕó
+        // è®¾ç½®ç¼©æ”¾çŸ©é˜µ
         void SetScale(const Vector3& scale);
 
-        // ÉèÖÃĞı×ª¾ØÕó
+        // è®¾ç½®æ—‹è½¬çŸ©é˜µ
         void SetRotation(const Vector3& axis, double angle);
 
-        // »ñÈ¡Æ½ÒÆÏòÁ¿
+        // è·å–å¹³ç§»å‘é‡
         Vector3 GetTranslation() const;
 
-        // ÉèÖÃÆ½ÒÆ¾ØÕó
+        // è®¾ç½®å¹³ç§»çŸ©é˜µ
         void SetTranslation(const Vector3& pos);
 
-        // »ñÈ¡Ëõ·ÅÏòÁ¿
+        // è·å–ç¼©æ”¾å‘é‡
         Vector3 GetScale() const;
 
-        // »ñÈ¡Äæ¾ØÕó
+        // è·å–é€†çŸ©é˜µ
         Matrix4x4 GetInverse() const;
 
-        // ÉèÖÃÍ¸ÊÓÍ¶Ó°¾ØÕó
+        // è®¾ç½®é€è§†æŠ•å½±çŸ©é˜µ
         void SetPerspective(double fov, double aspect, double nearClip, double farClip);
-        // Êä³öµ½±ê×¼Êä³öÁ÷
+        // è¾“å‡ºåˆ°æ ‡å‡†è¾“å‡ºæµ
         friend std::ostream& operator<<(std::ostream& os, const Matrix4x4& matrix) {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
@@ -654,7 +654,7 @@ namespace vec {
         Quaternion(const Quaternion& other);
         ~Quaternion();
 
-        // ÖØÔØÔËËã·û
+        // é‡è½½è¿ç®—ç¬¦
         Quaternion operator+(const Quaternion& other) const;
         Quaternion operator-(const Quaternion& other) const;
         Quaternion operator*(const Quaternion& other) const;
@@ -671,7 +671,7 @@ namespace vec {
         bool operator==(const Quaternion& other) const;
         bool operator!=(const Quaternion& other) const;
 
-        // ÆäËû³ÉÔ±º¯Êı
+        // å…¶ä»–æˆå‘˜å‡½æ•°
         void normalize();
         double norm() const;
         double normSquared() const;
@@ -683,15 +683,15 @@ namespace vec {
         Quaternion lerp(const Quaternion& other, double t) const;
         Quaternion slerp(const Quaternion& other, double t) const;
 
-        // ¾²Ì¬³ÉÔ±º¯Êı
+        // é™æ€æˆå‘˜å‡½æ•°
         static Quaternion fromEulerAngles(double pitch, double yaw, double roll);
         static Quaternion fromAxisAngle(const Vector& axis, double angle);
 
-        // ³ÉÔ±±äÁ¿
-        double r; // Êµ²¿
-        double i; // Ğé²¿ i
-        double j; // Ğé²¿ j
-        double k; // Ğé²¿ k
+        // æˆå‘˜å˜é‡
+        double r; // å®éƒ¨
+        double i; // è™šéƒ¨ i
+        double j; // è™šéƒ¨ j
+        double k; // è™šéƒ¨ k
     };
 
     Vector3 Transform(const Vector3& v, const Matrix4x4& worldToCamera);

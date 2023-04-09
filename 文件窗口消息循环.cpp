@@ -1,4 +1,4 @@
- #include"ÏûÏ¢Ñ­»·ÉùÃ÷.h"
+ #include"æ¶ˆæ¯å¾ªç¯å£°æ˜.h"
 LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
 {
     switch (message)
@@ -6,11 +6,11 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     case WM_NOTIFY:
     {
         LPNMHDR lphr = (LPNMHDR)lParam;
-        if (lphr->hwndFrom == current_project->FILEWND->GetTree())//ÅĞ¶ÏÊÇ·ñÊÇÊ÷ĞÎ¿Ø¼ş·¢À´µÄÏûÏ¢
+        if (lphr->hwndFrom == current_project->FILEWND->GetTree())//åˆ¤æ–­æ˜¯å¦æ˜¯æ ‘å½¢æ§ä»¶å‘æ¥çš„æ¶ˆæ¯
         {
             switch (lphr->code)
             {
-            case NM_CLICK://Êó±êµ¥»÷
+            case NM_CLICK://é¼ æ ‡å•å‡»
             {
                 Object* o = current_project->FILEWND->GetMousePositionItemData();
                 if (!o)break;
@@ -20,7 +20,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             break;
             //case NM_DBLCLK:
             //{
-            //    Object* o = current_project->FileTree_ÎÄ¼şÊ÷.GetOption_»ñÈ¡±»Ñ¡ÖĞ½Úµã();
+            //    Object* o = current_project->FileTree_æ–‡ä»¶æ ‘.GetOption_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹();
             //    if (!o)break;
             //    
             //    break;
@@ -31,15 +31,15 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     }
     case WM_CONTEXTMENU: 
     {
-        // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
+        // è·å–é¼ æ ‡å½“å‰ä½ç½®
         POINT pt;
         GetCursorPos(&pt);
 
-        // ¼ÓÔØ²Ëµ¥×ÊÔ´
+        // åŠ è½½èœå•èµ„æº
         HMENU hMenu = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_FILERIGHT));
         HMENU hPopup = GetSubMenu(hMenu, 0);
 
-        // ÏÔÊ¾²Ëµ¥²¢µÈ´ıÓÃ»§Ñ¡Ôñ
+        // æ˜¾ç¤ºèœå•å¹¶ç­‰å¾…ç”¨æˆ·é€‰æ‹©
         int r = TrackPopupMenuEx(hPopup, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, hWnd, NULL);
         switch (r)
         {
@@ -53,7 +53,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 Camera* v = dynamic_cast<Camera*>(ta);
                 if (v == current_project->view)
                 {
-                    current_project->upMsg("²»ÄÜÉ¾³ıµ±Ç°ÊÓ½ÇÉãÏñ»ú",_Error);
+                    current_project->upMsg("ä¸èƒ½åˆ é™¤å½“å‰è§†è§’æ‘„åƒæœº",_Error);
                     break;
                 }    
             }
@@ -68,13 +68,13 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         default:
             break;
         }
-        // Ïú»Ù²Ëµ¥
+        // é”€æ¯èœå•
         DestroyMenu(hMenu);
         break;
     }
     case WM_SIZE:
     {
-        int cxClient = LOWORD(lParam);  // »ñµÃ¿Í»§Çø¿í¶È
+        int cxClient = LOWORD(lParam);  // è·å¾—å®¢æˆ·åŒºå®½åº¦
         int cyClient = HIWORD(lParam);
         current_project->FILEWND->MoveTree(0, 0, cxClient, cyClient);
         break;

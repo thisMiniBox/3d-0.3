@@ -3,9 +3,9 @@
 #include <vector>
 #include <cmath>
 #include <random>
-class NeuralNetwork_Éñ¾­ÍøÂç {
+class NeuralNetwork_ç¥ç»ç½‘ç»œ {
 public:
-    NeuralNetwork_Éñ¾­ÍøÂç(std::vector<int> architecture);
+    NeuralNetwork_ç¥ç»ç½‘ç»œ(std::vector<int> architecture);
 
     void train(std::vector<std::vector<double>> inputs, std::vector<std::vector<double>> expected_outputs, int epochs, double learning_rate);
     std::vector<double> predict(std::vector<double> input) {
@@ -15,20 +15,20 @@ public:
 private:
     std::vector<int> architecture;
     std::vector<std::vector<double>> biases;
-    // ¶¨Òå¼¤»îº¯Êı
+    // å®šä¹‰æ¿€æ´»å‡½æ•°
     double sigmoid(double x) {
         return 1 / (1 + exp(-x));
     }
 
-    // ¶¨Òå¼¤»îº¯ÊıµÄµ¼Êı
+    // å®šä¹‰æ¿€æ´»å‡½æ•°çš„å¯¼æ•°
     double sigmoid_derivative(double x) {
         return sigmoid(x) * (1 - sigmoid(x));
     }
-    //³õÊ¼»¯È¨ÖØ
+    //åˆå§‹åŒ–æƒé‡
     void init_weights();
-    //Îó²î·ÖÎö
+    //è¯¯å·®åˆ†æ
     std::vector<std::vector<double>> calculate_errors(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs);
-    //·´Ïò´«²¥
+    //åå‘ä¼ æ’­
     void backward(std::vector<double> expected_output, std::vector<std::vector<double>> layer_outputs, double learning_rate);
     std::vector<std::vector<double>> forward(std::vector<double> input);
 

@@ -2,24 +2,24 @@
 Model::Model()
 {
 	m_Scale = Vector(1.0, 1.0, 1.0);
-	parent_¸¸Ä£ĞÍÖ¸Õë = nullptr;
-	mtl_²ÄÖÊ = nullptr;
+	parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ = nullptr;
+	mtl_æè´¨ = nullptr;
 }
 Model::~Model()
 {
-	vertex_¶¥µã×ø±êÊı¾İ.~vector();
-	normal_·¨ÏòÁ¿Êı¾İ.~vector();
-	texCoords_ÌùÍ¼×ø±êÊı¾İ.~vector();
-	for (const auto& i : child_×ÓÄ£ĞÍÖ¸Õë)
+	vertex_é¡¶ç‚¹åæ ‡æ•°æ®.~vector();
+	normal_æ³•å‘é‡æ•°æ®.~vector();
+	texCoords_è´´å›¾åæ ‡æ•°æ®.~vector();
+	for (const auto& i : child_å­æ¨¡å‹æŒ‡é’ˆ)
 	{
-		i->parent_¸¸Ä£ĞÍÖ¸Õë = parent_¸¸Ä£ĞÍÖ¸Õë;
+		i->parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ = parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ;
 	}
-	if (mtl_²ÄÖÊ)delete mtl_²ÄÖÊ;
-	child_×ÓÄ£ĞÍÖ¸Õë.~vector();
-	face_ÃæµÄ¶ÁÈ¡Î»ÖÃ.~vector();
+	if (mtl_æè´¨)delete mtl_æè´¨;
+	child_å­æ¨¡å‹æŒ‡é’ˆ.~vector();
+	face_é¢çš„è¯»å–ä½ç½®.~vector();
 }
-inline FaceData_ÃæĞÅÏ¢ faceData(std::string cin) {
-	FaceData_ÃæĞÅÏ¢ result;
+inline FaceData_é¢ä¿¡æ¯ faceData(std::string cin) {
+	FaceData_é¢ä¿¡æ¯ result;
 	std::stringstream ss(cin);
 	std::string token;
 	int index = 0;
@@ -43,7 +43,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 	Model* NewModel = nullptr;
 	vec::Vector vector;
 	vec::Vector2 vector2d;
-	FaceData_ÃæĞÅÏ¢ Face;
+	FaceData_é¢ä¿¡æ¯ Face;
 	std::string FileData;
 	std::string w;
 	while (1)
@@ -54,7 +54,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 		{
 			if (FileData.size() > 0)
 			{
-				//»ñÈ¡ÁËÒ»ĞĞĞÅÏ¢ºó½øĞĞ½âÎö
+				//è·å–äº†ä¸€è¡Œä¿¡æ¯åè¿›è¡Œè§£æ
 				n = FileData.find_first_of(' ');
 				if (n == -1)
 				{
@@ -71,7 +71,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 					vector.SetY(std::stod((w = FileData.substr(0, n)).c_str()));
 					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
 					vector.SetZ(std::stod((w = FileData.substr(0, n)).c_str()));
-					vertex_¶¥µã×ø±êÊı¾İ.push_back(vector);
+					vertex_é¡¶ç‚¹åæ ‡æ•°æ®.push_back(vector);
 				}
 				else if (w == "vn")
 				{
@@ -82,7 +82,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 					vector.SetY(std::stod((w = FileData.substr(0, n)).c_str()));
 					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
 					vector.SetZ(std::stod((w = FileData.substr(0, n)).c_str()));
-					normal_·¨ÏòÁ¿Êı¾İ.push_back(vector);
+					normal_æ³•å‘é‡æ•°æ®.push_back(vector);
 				}
 				else if (w == "vt")
 				{
@@ -91,25 +91,25 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 					vector2d.setX(std::stod((w = FileData.substr(0, n)).c_str()));
 					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
 					vector2d.setY(std::stod((w = FileData.substr(0, n)).c_str()));
-					texCoords_ÌùÍ¼×ø±êÊı¾İ.push_back(vector2d);
+					texCoords_è´´å›¾åæ ‡æ•°æ®.push_back(vector2d);
 				}
 				else if (w == "f")
 				{
 					if (!NewModel)return -1;
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
 					n = (FileData = FileData.substr(n)).find_first_of(' ');
-					NewModel->face_ÃæµÄ¶ÁÈ¡Î»ÖÃ.push_back(faceData(FileData));
+					NewModel->face_é¢çš„è¯»å–ä½ç½®.push_back(faceData(FileData));
 				}
 				else if (w == "g" || w == "o" || w == "mg")
 				{
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
 					FileData = FileData.substr(n);
 					NewModel = CreateChildModel(FileData);
-					child_×ÓÄ£ĞÍÖ¸Õë.push_back(NewModel);
+					child_å­æ¨¡å‹æŒ‡é’ˆ.push_back(NewModel);
 				}
 				else if (w == "usemtl")
 				{
-					if (!mtl_²ÄÖÊ)
+					if (!mtl_æè´¨)
 					{
 						FileData.clear();
 						continue;
@@ -117,16 +117,16 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 					if (!NewModel)return -1;
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
 					FileData = FileData.substr(n);
-					NewModel->mtl = mtl_²ÄÖÊ->get_materials(FileData);
+					NewModel->mtl = mtl_æè´¨->get_materials(FileData);
 				}
 				else if (w == "mtllib")
 				{
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					if (mtl_²ÄÖÊ)
-						if (!mtl_²ÄÖÊ->read(mtl_²ÄÖÊ->file.c_str() + FileData.substr(n)))
+					if (mtl_æè´¨)
+						if (!mtl_æè´¨->read(mtl_æè´¨->file.c_str() + FileData.substr(n)))
 						{
-							delete mtl_²ÄÖÊ;
-							mtl_²ÄÖÊ = nullptr;
+							delete mtl_æè´¨;
+							mtl_æè´¨ = nullptr;
 						}
 				}
 				FileData.clear();
@@ -135,22 +135,22 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 		}
 		FileData.push_back(c);
 	}
-	if (child_×ÓÄ£ĞÍÖ¸Õë.size() == 0)return -3;
+	if (child_å­æ¨¡å‹æŒ‡é’ˆ.size() == 0)return -3;
 	return 1;
 }
-int Model::loadModelFile_¼ÓÔØÄ£ĞÍÎÄ¼ş(const std::wstring& filename)
+int Model::loadModelFile_åŠ è½½æ¨¡å‹æ–‡ä»¶(const std::wstring& filename)
 {
 	FILE* file = nullptr;
 	int error = -2;
-	mtl_²ÄÖÊ = new ModelShader_Ä£ĞÍ×ÅÉ«Æ÷;
+	mtl_æè´¨ = new ModelShader_æ¨¡å‹ç€è‰²å™¨;
 	_wfopen_s(&file, filename.c_str(), L"r");
 	if (!file)return 0;
 	std::wstring suffix;
 	int meshNum = filename.find_last_of(L"/");
 	if (meshNum == -1)meshNum = filename.find_last_of(L"\\");
 	m_Name = wstr_str(filename.substr(meshNum + 1, filename.find_last_of(L'.') - meshNum - 1));
-	mtl_²ÄÖÊ->file = wstr_str(filename.substr(0, meshNum + 1));
-	fileAddress = mtl_²ÄÖÊ->file;
+	mtl_æè´¨->file = wstr_str(filename.substr(0, meshNum + 1));
+	fileAddress = mtl_æè´¨->file;
 	meshNum = filename.find_last_of(L'.');
 	if (meshNum >= 0)suffix = filename.substr(meshNum);
 	if (suffix == L".obj")error = loadobj(filename, file);
@@ -158,7 +158,7 @@ int Model::loadModelFile_¼ÓÔØÄ£ĞÍÎÄ¼ş(const std::wstring& filename)
 	if (error)DistributeDataToChildModels();
 	return error;
 }
-bool ModelShader_Ä£ĞÍ×ÅÉ«Æ÷::read(const std::string& filename) {
+bool ModelShader_æ¨¡å‹ç€è‰²å™¨::read(const std::string& filename) {
 	std::ifstream file(filename);
 	if (!file.is_open()) {
 		std::cerr << "Failed to open file: " << filename << std::endl;
@@ -220,7 +220,7 @@ Folder::Folder(std::string NAME)
 {
 	m_Name = NAME;
 }
-auto Folder::FindFile_Ñ°ÕÒÎÄ¼ş(const std::string& Name)const
+auto Folder::FindFile_å¯»æ‰¾æ–‡ä»¶(const std::string& Name)const
 {
 	return m_Child.equal_range(Name);
 }
@@ -235,9 +235,9 @@ std::vector<Object*> Folder::GetTheCurrentDirectoryFile()const
 }
 void Folder::DeleteChildObject()
 {
-	ClearFolder_Çå¿ÕÎÄ¼ş¼Ğ();
+	ClearFolder_æ¸…ç©ºæ–‡ä»¶å¤¹();
 }
-void Folder::ClearFolder_Çå¿ÕÎÄ¼ş¼Ğ()
+void Folder::ClearFolder_æ¸…ç©ºæ–‡ä»¶å¤¹()
 {
 	for (const auto& i : m_Child)
 	{
@@ -246,7 +246,7 @@ void Folder::ClearFolder_Çå¿ÕÎÄ¼ş¼Ğ()
 	}
 	m_Child.clear();
 }
-std::vector<Model*> Folder::GetAllModleFile_ÕÒµ½ËùÓĞÄ£ĞÍ()const
+std::vector<Model*> Folder::GetAllModleFile_æ‰¾åˆ°æ‰€æœ‰æ¨¡å‹()const
 {
 	std::vector<Model*> out;
 	
@@ -264,7 +264,7 @@ std::vector<Model*> Folder::GetAllModleFile_ÕÒµ½ËùÓĞÄ£ĞÍ()const
 		case OT_FOLDER:
 		{
 			Folder* fod= dynamic_cast<Folder*>(kv.second);
-			std::vector<Model*> fc = fod->GetAllModleFile_ÕÒµ½ËùÓĞÄ£ĞÍ();
+			std::vector<Model*> fc = fod->GetAllModleFile_æ‰¾åˆ°æ‰€æœ‰æ¨¡å‹();
 			out.insert(out.end(), fc.begin(), fc.end());
 		}
 		default:
@@ -273,11 +273,11 @@ std::vector<Model*> Folder::GetAllModleFile_ÕÒµ½ËùÓĞÄ£ĞÍ()const
 	}
 	return out;
 }
-void Folder::AddFile_Ìí¼ÓÎÄ¼ş(Object* obj)
+void Folder::AddFile_æ·»åŠ æ–‡ä»¶(Object* obj)
 {
 	m_Child.insert(std::make_pair(obj->GetName(), obj));
 }
-void Folder::CreateFile_´´½¨ÎÄ¼ş(std::string Name, int type)
+void Folder::CreateFile_åˆ›å»ºæ–‡ä»¶(std::string Name, int type)
 {
 	switch (type)
 	{
@@ -306,9 +306,9 @@ int Folder::GetType()
 {
 	return OT_FOLDER;
 }
-void Folder::DeleteFile_É¾³ıÎÄ¼ş(Object* obj)
+void Folder::DeleteFile_åˆ é™¤æ–‡ä»¶(Object* obj)
 {
-	auto range = FindFile_Ñ°ÕÒÎÄ¼ş(obj->GetName());
+	auto range = FindFile_å¯»æ‰¾æ–‡ä»¶(obj->GetName());
 	for (auto it = range.first; it != range.second; ++it) {
 		if ((*it).second == obj)
 		{
@@ -323,63 +323,63 @@ void Folder::DeleteFile_É¾³ıÎÄ¼ş(Object* obj)
 Model::Model(std::string NAME)
 {
 	m_Name = NAME;
-	parent_¸¸Ä£ĞÍÖ¸Õë = nullptr;
-	mtl_²ÄÖÊ = nullptr;
+	parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ = nullptr;
+	mtl_æè´¨ = nullptr;
 }
 Model* Model::CreateChildModel(std::string NAME)
 {
 	Model* child = new Model;
 	child->m_Name = NAME;
-	child->parent_¸¸Ä£ĞÍÖ¸Õë = this;
+	child->parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ = this;
 	return child;
 }
-// Ä¬ÈÏ¹¹Ôìº¯Êı
+// é»˜è®¤æ„é€ å‡½æ•°
 Object::Object()
 	: m_Name("")
 {
 }
 
-// ¹¹Ôìº¯Êı£¬¿ÉÖ¸¶¨ÎïÌåÃû³Æ
+// æ„é€ å‡½æ•°ï¼Œå¯æŒ‡å®šç‰©ä½“åç§°
 Object::Object(std::string nam)
 	: m_Name(nam)
 {
 }
 
-// Îö¹¹º¯Êı
+// ææ„å‡½æ•°
 Object::~Object()
 {
 }
 
-// »ñÈ¡ÎïÌåÃû³Æ
+// è·å–ç‰©ä½“åç§°
 const std::string Object::GetName() const
 {
 	return m_Name;
 }
 
-// ÉèÖÃÎïÌåÃû³Æ
+// è®¾ç½®ç‰©ä½“åç§°
 void Object::SetName(std::string NewName)
 {
 	m_Name = NewName;
 }
 
-// »ñÈ¡ÎïÌåÎ»ÖÃ£¬·µ»ØÄ¬ÈÏÖµ
+// è·å–ç‰©ä½“ä½ç½®ï¼Œè¿”å›é»˜è®¤å€¼
 Vector Object::GetPosition() const
 {
 	return Vector(0, 0, 0);
 }
 
-// »ñÈ¡ÎïÌåÊÀ½ç×ø±ê£¬·µ»ØÄ¬ÈÏÖµ
+// è·å–ç‰©ä½“ä¸–ç•Œåæ ‡ï¼Œè¿”å›é»˜è®¤å€¼
 Vector Object::GetWorldPosition() const
 {
 	return Vector(0, 0, 0);
 }
 
-// ÉèÖÃÎïÌåÎ»ÖÃ£¬¿ÕÊµÏÖ
+// è®¾ç½®ç‰©ä½“ä½ç½®ï¼Œç©ºå®ç°
 void Object::SetPosition(vec::Vector)
 {
 }
 
-// ÒÆ¶¯ÎïÌå£¬¿ÕÊµÏÖ
+// ç§»åŠ¨ç‰©ä½“ï¼Œç©ºå®ç°
 void Object::Move(const Vector3&)
 {
 }
@@ -389,35 +389,35 @@ void Object::DeleteChildObject()
 }
 Vector Model::GetWorldPosition()const
 {
-	if (parent_¸¸Ä£ĞÍÖ¸Õë)
-		return m_Position + parent_¸¸Ä£ĞÍÖ¸Õë->GetWorldPosition();
+	if (parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ)
+		return m_Position + parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ->GetWorldPosition();
 	return m_Position;
 }
 void Model::SetPosition(vec::Vector p)
 {
 	m_Position = p;
-	for (const auto& i : child_×ÓÄ£ĞÍÖ¸Õë)
+	for (const auto& i : child_å­æ¨¡å‹æŒ‡é’ˆ)
 		i->UpdateFACEdata();
 
 }
 const std::vector<FACE>& Model::GetTriFace()
 {
 	if (!ModelVertex.empty())ModelVertex.clear();
-	if (face_ÃæµÄ¶ÁÈ¡Î»ÖÃ.empty())return TriFace;
+	if (face_é¢çš„è¯»å–ä½ç½®.empty())return TriFace;
 	if (TriFace.empty())
 	{
 		FACE outf;
-		for (const FaceData_ÃæĞÅÏ¢& fi : face_ÃæµÄ¶ÁÈ¡Î»ÖÃ)
+		for (const FaceData_é¢ä¿¡æ¯& fi : face_é¢çš„è¯»å–ä½ç½®)
 		{
-			outf.vertexA = vertex_¶¥µã×ø±êÊı¾İ[fi.a[0] - 1] + GetWorldPosition();
-			outf.vertexB = vertex_¶¥µã×ø±êÊı¾İ[fi.a[3] - 1] + GetWorldPosition();
-			outf.vertexC = vertex_¶¥µã×ø±êÊı¾İ[fi.a[6] - 1] + GetWorldPosition();
-			outf.texCoordA = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[1]-1];
-			outf.texCoordB = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[4]-1];
-			outf.texCoordC = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[7]-1];
-			outf.normalA = normal_·¨ÏòÁ¿Êı¾İ[fi.a[2]-1];
-			outf.normalB = normal_·¨ÏòÁ¿Êı¾İ[fi.a[5]-1];
-			outf.normalC = normal_·¨ÏòÁ¿Êı¾İ[fi.a[8]-1];
+			outf.vertexA = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[0] - 1] + GetWorldPosition();
+			outf.vertexB = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[3] - 1] + GetWorldPosition();
+			outf.vertexC = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[6] - 1] + GetWorldPosition();
+			outf.texCoordA = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[1]-1];
+			outf.texCoordB = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[4]-1];
+			outf.texCoordC = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[7]-1];
+			outf.normalA = normal_æ³•å‘é‡æ•°æ®[fi.a[2]-1];
+			outf.normalB = normal_æ³•å‘é‡æ•°æ®[fi.a[5]-1];
+			outf.normalC = normal_æ³•å‘é‡æ•°æ®[fi.a[8]-1];
 			if (mtl.Kd)
 				outf.color = RGB(mtl.Kd[0] * 255, mtl.Kd[1] * 255, mtl.Kd[2] * 255);
 			else
@@ -433,13 +433,13 @@ void Model::DistributeDataToChildModels()
 	std::vector<vec::Vector> child_vertex_data;
 	std::vector<vec::Vector> child_normal_data;
 	std::vector<vec::Vector2> child_texcoord_data;
-	std::vector<FaceData_ÃæĞÅÏ¢> child_face_data;
+	std::vector<FaceData_é¢ä¿¡æ¯> child_face_data;
 	std::unordered_map<int, int> vertex_index;
 	std::unordered_map<int, int> normal_index;
 	std::unordered_map<int, int> texcoord_index;
 
-	// ±éÀú×ÓÄ£ĞÍ
-	for (auto child : child_×ÓÄ£ĞÍÖ¸Õë)
+	// éå†å­æ¨¡å‹
+	for (auto child : child_å­æ¨¡å‹æŒ‡é’ˆ)
 	{
 		child->fileAddress = fileAddress;
 		vertex_index.clear();
@@ -450,13 +450,13 @@ void Model::DistributeDataToChildModels()
 		child_texcoord_data.clear();
 		child_face_data.clear();
 
-		// »ñÈ¡×ÓÄ£ĞÍĞèÒªµÄ¶¥µã¡¢·¨ÏòÁ¿ºÍÎÆÀí×ø±êÊı¾İ
+		// è·å–å­æ¨¡å‹éœ€è¦çš„é¡¶ç‚¹ã€æ³•å‘é‡å’Œçº¹ç†åæ ‡æ•°æ®
 		for (const auto& face : child->GetFaceData())
 		{
-			FaceData_ÃæĞÅÏ¢ new_face = face;  // ¸´ÖÆÔ­Ê¼Èı½ÇÃæ
+			FaceData_é¢ä¿¡æ¯ new_face = face;  // å¤åˆ¶åŸå§‹ä¸‰è§’é¢
 
-			// ĞŞ¸ÄÈı½ÇÃæÖĞµÄË÷Òı£¬ÒÔ·´Ó³ĞÂµÄÊı¾İÎ»ÖÃ
-			for (int i = 0; i < 3; ++i)  // ¶¥µãË÷Òı
+			// ä¿®æ”¹ä¸‰è§’é¢ä¸­çš„ç´¢å¼•ï¼Œä»¥åæ˜ æ–°çš„æ•°æ®ä½ç½®
+			for (int i = 0; i < 3; ++i)  // é¡¶ç‚¹ç´¢å¼•
 			{
 				int index = new_face.a[3 * i];
 				if (0 != vertex_index[index])
@@ -464,12 +464,12 @@ void Model::DistributeDataToChildModels()
 					new_face.a[3 * i] = vertex_index[index];
 					continue;
 				}
-				child_vertex_data.push_back(vertex_¶¥µã×ø±êÊı¾İ[index-1]);
+				child_vertex_data.push_back(vertex_é¡¶ç‚¹åæ ‡æ•°æ®[index-1]);
 				new_face.a[3 * i] = (int)child_vertex_data.size();
 				vertex_index[index] = new_face.a[3 * i];
 			}
 
-			for (int i = 0; i < 3; ++i)  // ·¨ÏòÁ¿Ë÷Òı
+			for (int i = 0; i < 3; ++i)  // æ³•å‘é‡ç´¢å¼•
 			{
 				int index = new_face.a[3 * i + 2];
 				if (0 != normal_index[index])
@@ -477,12 +477,12 @@ void Model::DistributeDataToChildModels()
 					new_face.a[3 * i + 2] = normal_index[index];
 					continue;
 				}
-				child_normal_data.push_back(normal_·¨ÏòÁ¿Êı¾İ[index-1]);
+				child_normal_data.push_back(normal_æ³•å‘é‡æ•°æ®[index-1]);
 				new_face.a[3 * i + 2] = (int)child_normal_data.size();
 				normal_index[index] = new_face.a[3 * i + 2];
 			}
 
-			for (int i = 0; i < 3; ++i)  // ÎÆÀí×ø±êË÷Òı
+			for (int i = 0; i < 3; ++i)  // çº¹ç†åæ ‡ç´¢å¼•
 			{
 				int index = new_face.a[3 * i + 1];
 				if (0 != texcoord_index[index])
@@ -490,44 +490,44 @@ void Model::DistributeDataToChildModels()
 					new_face.a[3 * i + 1] = texcoord_index[index];
 					continue;
 				}
-				child_texcoord_data.push_back(texCoords_ÌùÍ¼×ø±êÊı¾İ[index-1]);
+				child_texcoord_data.push_back(texCoords_è´´å›¾åæ ‡æ•°æ®[index-1]);
 				new_face.a[3 * i + 1] = (int)child_texcoord_data.size();
 				texcoord_index[index] = new_face.a[3 * i + 1];
 			}
 
-			// ½«ĞŞ¸ÄºóµÄÈı½ÇÃæÌí¼Óµ½×ÓÄ£ĞÍµÄÃæÊı¾İÖĞ
+			// å°†ä¿®æ”¹åçš„ä¸‰è§’é¢æ·»åŠ åˆ°å­æ¨¡å‹çš„é¢æ•°æ®ä¸­
 			child_face_data.push_back(new_face);
 		}
 
-		// ½«Êı¾İ·ÖÅä¸ø×ÓÄ£ĞÍ
-		child->vertex_¶¥µã×ø±êÊı¾İ = (child_vertex_data);
-		child->normal_·¨ÏòÁ¿Êı¾İ = (child_normal_data);
-		child->texCoords_ÌùÍ¼×ø±êÊı¾İ = (child_texcoord_data);
-		child->face_ÃæµÄ¶ÁÈ¡Î»ÖÃ = (child_face_data);
+		// å°†æ•°æ®åˆ†é…ç»™å­æ¨¡å‹
+		child->vertex_é¡¶ç‚¹åæ ‡æ•°æ® = (child_vertex_data);
+		child->normal_æ³•å‘é‡æ•°æ® = (child_normal_data);
+		child->texCoords_è´´å›¾åæ ‡æ•°æ® = (child_texcoord_data);
+		child->face_é¢çš„è¯»å–ä½ç½® = (child_face_data);
 	}
-	vertex_¶¥µã×ø±êÊı¾İ.clear();
-	normal_·¨ÏòÁ¿Êı¾İ.clear();
-	texCoords_ÌùÍ¼×ø±êÊı¾İ.clear();
-	face_ÃæµÄ¶ÁÈ¡Î»ÖÃ.clear();
+	vertex_é¡¶ç‚¹åæ ‡æ•°æ®.clear();
+	normal_æ³•å‘é‡æ•°æ®.clear();
+	texCoords_è´´å›¾åæ ‡æ•°æ®.clear();
+	face_é¢çš„è¯»å–ä½ç½®.clear();
 }
 const std::vector<Vertex>& Model::GetVertices()
 {
 	if (!TriFace.empty())TriFace.clear();
-	if (face_ÃæµÄ¶ÁÈ¡Î»ÖÃ.empty())return ModelVertex;
+	if (face_é¢çš„è¯»å–ä½ç½®.empty())return ModelVertex;
 	if (ModelVertex.empty())
 	{
 		Vertex v0, v1, v2;
-		for (const FaceData_ÃæĞÅÏ¢& fi : face_ÃæµÄ¶ÁÈ¡Î»ÖÃ)
+		for (const FaceData_é¢ä¿¡æ¯& fi : face_é¢çš„è¯»å–ä½ç½®)
 		{
-			v0.position = vertex_¶¥µã×ø±êÊı¾İ[fi.a[0] - 1];
-			v1.position = vertex_¶¥µã×ø±êÊı¾İ[fi.a[3] - 1];
-			v2.position = vertex_¶¥µã×ø±êÊı¾İ[fi.a[6] - 1];
-			v0.texCoord = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[1] - 1];
-			v1.texCoord = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[4] - 1];
-			v2.texCoord = texCoords_ÌùÍ¼×ø±êÊı¾İ[fi.a[7] - 1];
-			v0.normal = normal_·¨ÏòÁ¿Êı¾İ[fi.a[2] - 1];
-			v1.normal = normal_·¨ÏòÁ¿Êı¾İ[fi.a[5] - 1];
-			v2.normal = normal_·¨ÏòÁ¿Êı¾İ[fi.a[8] - 1];
+			v0.position = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[0] - 1];
+			v1.position = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[3] - 1];
+			v2.position = vertex_é¡¶ç‚¹åæ ‡æ•°æ®[fi.a[6] - 1];
+			v0.texCoord = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[1] - 1];
+			v1.texCoord = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[4] - 1];
+			v2.texCoord = texCoords_è´´å›¾åæ ‡æ•°æ®[fi.a[7] - 1];
+			v0.normal = normal_æ³•å‘é‡æ•°æ®[fi.a[2] - 1];
+			v1.normal = normal_æ³•å‘é‡æ•°æ®[fi.a[5] - 1];
+			v2.normal = normal_æ³•å‘é‡æ•°æ®[fi.a[8] - 1];
 			ModelVertex.push_back(v0);
 			ModelVertex.push_back(v1);
 			ModelVertex.push_back(v2);
@@ -536,7 +536,7 @@ const std::vector<Vertex>& Model::GetVertices()
 	return ModelVertex;
 }
 Camera::Camera() {
-	m_Name = "ÉãÏñÍ·";
+	m_Name = "æ‘„åƒå¤´";
 	m_Position = vec::Vector3(0, 0, 3);
 	m_Target = vec::Vector(0, 0, 0);
 	m_Direction = (m_Target-m_Position).Normalize();

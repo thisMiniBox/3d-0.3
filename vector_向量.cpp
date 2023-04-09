@@ -1,4 +1,4 @@
-#include "vector_ÏòÁ¿.h"
+#include "vector_å‘é‡.h"
 vec::Vector::Vector() {
     x = 0.0;
     y = 0.0;
@@ -14,23 +14,23 @@ vec::Vector::Vector(double x, double y, double z) {
     this->y = y;
     this->z = z;
 }
-//¶¨ÒåÒ»¸öĞı×ªº¯Êı
+//å®šä¹‰ä¸€ä¸ªæ—‹è½¬å‡½æ•°
 vec::Vector vec::Vector::Rotate(const Vector& v, const Vector& axis, double angle) {
-    //¼ÆËãĞı×ª¹«Ê½ÖĞµÄÈı½Çº¯ÊıÖµ
+    //è®¡ç®—æ—‹è½¬å…¬å¼ä¸­çš„ä¸‰è§’å‡½æ•°å€¼
     double cos_theta = cos(angle);
     double sin_theta = sin(angle);
-    //¼ÆËãĞı×ªºóµÄÏòÁ¿
+    //è®¡ç®—æ—‹è½¬åçš„å‘é‡
     Vector rotated = v * cos_theta + (axis ^ v) * sin_theta + axis * (axis * v) * (1 - cos_theta);
-    //·µ»ØĞı×ªºóµÄÏòÁ¿
+    //è¿”å›æ—‹è½¬åçš„å‘é‡
     return rotated;
 }
 vec::Vector vec::Vector::Rotate(const Vector& axis, double angle) {
-    //¼ÆËãĞı×ª¹«Ê½ÖĞµÄÈı½Çº¯ÊıÖµ
+    //è®¡ç®—æ—‹è½¬å…¬å¼ä¸­çš„ä¸‰è§’å‡½æ•°å€¼
     double cos_theta = cos(angle);
     double sin_theta = sin(angle);
-    //¼ÆËãĞı×ªºóµÄÏòÁ¿
+    //è®¡ç®—æ—‹è½¬åçš„å‘é‡
     *this = *this * cos_theta + (axis ^ *this) * sin_theta + axis * (axis * *this) * (1 - cos_theta);
-    //·µ»ØĞı×ªºóµÄÏòÁ¿
+    //è¿”å›æ—‹è½¬åçš„å‘é‡
     return *this;
 }
 vec::Vector vec::Vector::Normalize()const
@@ -39,7 +39,7 @@ vec::Vector vec::Vector::Normalize()const
 }
 namespace vec {
     Matrix4x4::Matrix4x4() {
-        // Ä¬ÈÏ¹¹Ôìº¯Êı½«¾ØÕó³õÊ¼»¯Îªµ¥Î»¾ØÕó
+        // é»˜è®¤æ„é€ å‡½æ•°å°†çŸ©é˜µåˆå§‹åŒ–ä¸ºå•ä½çŸ©é˜µ
         m_data[0][0] = 1.0;
         m_data[1][1] = 1.0;
         m_data[2][2] = 1.0;
@@ -47,14 +47,14 @@ namespace vec {
     }
 
     void Matrix4x4::SetScale(const Vector3& scale) {
-        // ¸ù¾İ¸ø¶¨µÄËõ·ÅÏòÁ¿ÉèÖÃËõ·Å¾ØÕó
+        // æ ¹æ®ç»™å®šçš„ç¼©æ”¾å‘é‡è®¾ç½®ç¼©æ”¾çŸ©é˜µ
         m_data[0][0] = scale.GetX();
         m_data[1][1] = scale.GetY();
         m_data[2][2] = scale.GetZ();
     }
 
     void Matrix4x4::SetRotation(const Vector3& axis, double angle) {
-        // ¸ù¾İ¸ø¶¨µÄĞı×ªÖáºÍĞı×ª½Ç¶ÈÉèÖÃĞı×ª¾ØÕó
+        // æ ¹æ®ç»™å®šçš„æ—‹è½¬è½´å’Œæ—‹è½¬è§’åº¦è®¾ç½®æ—‹è½¬çŸ©é˜µ
         double rad = angle * PI / 180.0;
         double cosA = cos(rad);
         double sinA = sin(rad);
@@ -76,31 +76,31 @@ namespace vec {
     }
 
     Vector3 Matrix4x4::GetTranslation() const {
-        // »ñÈ¡¾ØÕóµÄÆ½ÒÆÏòÁ¿
+        // è·å–çŸ©é˜µçš„å¹³ç§»å‘é‡
         return Vector3(m_data[3][0], m_data[3][1], m_data[3][2]);
     }
 
     void Matrix4x4::SetTranslation(const Vector3& pos) {
-        // ¸ù¾İ¸ø¶¨µÄÆ½ÒÆÏòÁ¿ÉèÖÃÆ½ÒÆ¾ØÕó
+        // æ ¹æ®ç»™å®šçš„å¹³ç§»å‘é‡è®¾ç½®å¹³ç§»çŸ©é˜µ
         m_data[3][0] = pos.GetX();
         m_data[3][1] = pos.GetY();
         m_data[3][2] = pos.GetZ();
     }
 
     Vector3 Matrix4x4::GetScale() const {
-        // »ñÈ¡¾ØÕóµÄËõ·ÅÏòÁ¿
+        // è·å–çŸ©é˜µçš„ç¼©æ”¾å‘é‡
         return Vector3(m_data[0][0], m_data[1][1], m_data[2][2]);
     }
 
     Matrix4x4 Matrix4x4::GetInverse() const {
-        // ¼ÆËã¾ØÕóµÄÄæ¾ØÕó
+        // è®¡ç®—çŸ©é˜µçš„é€†çŸ©é˜µ
         double det =
             m_data[0][0] * (m_data[1][1] * m_data[2][2] - m_data[2][1] * m_data[1][2])
             - m_data[1][0] * (m_data[0][1] * m_data[2][2] - m_data[2][1] * m_data[0][2])
             + m_data[2][0] * (m_data[0][1] * m_data[1][2] - m_data[1][1] * m_data[0][2]);
 
         if (det == 0.0) {
-            // Èç¹û¾ØÕó²»¿ÉÄæ£¬Ôò·µ»Øµ¥Î»¾ØÕó
+            // å¦‚æœçŸ©é˜µä¸å¯é€†ï¼Œåˆ™è¿”å›å•ä½çŸ©é˜µ
             return Matrix4x4();
         }
 
@@ -118,7 +118,7 @@ namespace vec {
     }
 
     void Matrix4x4::SetPerspective(double fov, double aspect, double nearClip, double farClip) {
-        // ¸ù¾İ¸ø¶¨µÄÊÓÒ°¡¢¿í¸ß±È¡¢½ü¼ô²ÃÃæºÍÔ¶¼ô²ÃÃæÉèÖÃÍ¸ÊÓÍ¶Ó°¾ØÕó
+        // æ ¹æ®ç»™å®šçš„è§†é‡ã€å®½é«˜æ¯”ã€è¿‘å‰ªè£é¢å’Œè¿œå‰ªè£é¢è®¾ç½®é€è§†æŠ•å½±çŸ©é˜µ
         double f = 1.0 / tan(fov * PI / 360.0);
         double zDiff = nearClip - farClip;
 
@@ -135,7 +135,7 @@ namespace vec {
     }
     Vector3 Transform(const Vector3& v, const Matrix4x4& worldToCamera)
     {
-        // ½«ÏòÁ¿´ÓÊÀ½ç×ø±êÏµ×ª»»µ½Ïà»ú×ø±êÏµ
+        // å°†å‘é‡ä»ä¸–ç•Œåæ ‡ç³»è½¬æ¢åˆ°ç›¸æœºåæ ‡ç³»
         Vector4 v4(v.x, v.y, v.z, 1.0f);
         Vector4 vCamera = v4 * worldToCamera;
         return Vector3(vCamera.x, vCamera.y, vCamera.z);

@@ -1,4 +1,4 @@
-﻿// 机器学习win.cpp : 定义应用程序的入口点。
+// 机器学习win.cpp : 定义应用程序的入口点。
 //
 
 #include "framework.h"

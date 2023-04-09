@@ -1,6 +1,6 @@
 #pragma once
 #include<Windows.h>
-#include"Tree_Ê÷¿Ø¼ş.h"
+#include"Tree_æ ‘æ§ä»¶.h"
 #include"Object.h"
 #include<string>
 class FileWind
@@ -9,14 +9,14 @@ class FileWind
 	HWND m_hWnd;
 	HWND m_Tree;
 	std::wstring m_ClassName;
-	Tree_Ê÷¿Ø¼ş m_FileTree_ÎÄ¼şÊ÷;
+	Tree_æ ‘æ§ä»¶ m_FileTree_æ–‡ä»¶æ ‘;
 public:
 	FileWind(HINSTANCE hIns);
 	~FileWind();
 	HWND CreateWind(HWND parent);
-	//½ÚµãµÄÎ»ÖÃÓÃ¡¾1£¬2¡¿¸ñÊ½±íÊ¾£¬´Ë¸ñÊ½±íÊ¾Ìí¼Óµ½µÚÒ»¸ö½ÚµãÏÂµÄµÚ¶ş¸ö½ÚµãÖĞ£¬
-	//¡¾1.0¡¿Ôò±íÊ¾Ìí¼Óµ½µÚÒ»¸ö½ÚµãÏÂ£¬Èô0Ğ´ÔÚÇ°ÃæºóÃæµÄĞÅÏ¢½«±»ºöÂÔ,
-	//·ÇÕıÊı¶¼»á±»µ±×÷0´¦Àí
+	//èŠ‚ç‚¹çš„ä½ç½®ç”¨ã€1ï¼Œ2ã€‘æ ¼å¼è¡¨ç¤ºï¼Œæ­¤æ ¼å¼è¡¨ç¤ºæ·»åŠ åˆ°ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ä¸‹çš„ç¬¬äºŒä¸ªèŠ‚ç‚¹ä¸­ï¼Œ
+	//ã€1.0ã€‘åˆ™è¡¨ç¤ºæ·»åŠ åˆ°ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ä¸‹ï¼Œè‹¥0å†™åœ¨å‰é¢åé¢çš„ä¿¡æ¯å°†è¢«å¿½ç•¥,
+	//éæ­£æ•°éƒ½ä¼šè¢«å½“ä½œ0å¤„ç†
 	HTREEITEM AddItem(const Object&, const std::string& address);
 	HTREEITEM AddItem(const Object&, HTREEITEM parent = TVI_ROOT);
 	void DeleteItem(HTREEITEM);

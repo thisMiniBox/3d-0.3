@@ -2,7 +2,7 @@
 #define LINK_ABOVE 0
 #define LINK_NEXT 1
 template <typename T>
-//这是循环链表
+//杩欐槸寰幆閾捐〃
 class LinkList
 {
 public:

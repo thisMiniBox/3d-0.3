@@ -2,9 +2,9 @@
 using namespace DirectX;
 MainWind::~MainWind()
 {
-    // Ïú»Ù´°¿Ú
+    // é”€æ¯çª—å£
     DestroyWindow(m_hWnd);
-    // ×¢Ïú´°¿ÚÀà
+    // æ³¨é”€çª—å£ç±»
     UnregisterClass(WndClassName.c_str(), m_hInstance);
 }
 HWND MainWind::GethWnd()
@@ -33,7 +33,7 @@ GDIWND::GDIWND()
     m_hdc = nullptr;
     m_rect = {};
     WndClassName = L"GDIMainWnd";
-    // ¶¨Òå´°¿ÚÀàÃèÊö½á¹¹
+    // å®šä¹‰çª—å£ç±»æè¿°ç»“æ„
     WNDCLASSEX wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -41,7 +41,7 @@ GDIWND::GDIWND()
     wcex.hInstance = m_hInstance;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = WndClassName.c_str();
-    // ×¢²á´°¿ÚÀà
+    // æ³¨å†Œçª—å£ç±»
     RegisterClassEx(&wcex);
 }
 GDIWND::~GDIWND()
@@ -51,7 +51,7 @@ GDIWND::~GDIWND()
 HWND GDIWND::CreateWind(HWND Parent, int x, int y, int w, int h)
 {
     DestroyWindow(m_hWnd);
-    m_hWnd = CreateWindowW( //´´½¨±à¼­¿ò
+    m_hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
         WndClassName.c_str(),
         0,
         WS_CHILD | WS_BORDER | WS_VISIBLE,
@@ -81,60 +81,60 @@ bool compareFace(const Outface& p1, const Outface& p2) {
 }
 void GDIWND::Draw(const std::vector<Model*>& model, const Camera& camera)
 {
-    // »ñÈ¡Éè±¸ÉÏÏÂÎÄ¾ä±ú
+    // è·å–è®¾å¤‡ä¸Šä¸‹æ–‡å¥æŸ„
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(m_hWnd, &ps);
 
-    // ´´½¨¼æÈİDCºÍÎ»Í¼
+    // åˆ›å»ºå…¼å®¹DCå’Œä½å›¾
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP memBitmap = CreateCompatibleBitmap(hdc, m_width, m_height);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, memBitmap);
 
-    // ×¼±¸»æÖÆÈı½ÇĞÎ
+    // å‡†å¤‡ç»˜åˆ¶ä¸‰è§’å½¢
     std::vector<Outface> faces;
     for (const auto& m : model)
     {
-        // ¼ÆËãÄ£ĞÍÍ¶Ó°ºóµÄËùÓĞÈı½ÇĞÎÃæ
+        // è®¡ç®—æ¨¡å‹æŠ•å½±åçš„æ‰€æœ‰ä¸‰è§’å½¢é¢
         std::vector<FACE> triFaces = m->GetTriFace();
         std::vector<Outface> outfaces = ProjectTriangles(triFaces, camera);
 
-        // ½«Èı½ÇĞÎÃæÌí¼Óµ½´ı»æÖÆÁĞ±íÖĞ
+        // å°†ä¸‰è§’å½¢é¢æ·»åŠ åˆ°å¾…ç»˜åˆ¶åˆ—è¡¨ä¸­
         faces.insert(faces.end(), outfaces.begin(), outfaces.end());
     }
     std::sort(faces.begin(), faces.end(), compareFace);
-    // Öğ¸ö»æÖÆÈı½ÇĞÎÃæ
+    // é€ä¸ªç»˜åˆ¶ä¸‰è§’å½¢é¢
     for (const auto& face : faces)
     {
-        // ´´½¨»­Ë¢²¢ÉèÖÃÑÕÉ«
+        // åˆ›å»ºç”»åˆ·å¹¶è®¾ç½®é¢œè‰²
         HBRUSH brush = CreateSolidBrush(face.color);
         SelectObject(memDC, brush);
 
         Polygon(memDC, face.point, 3);
 
-        // ÊÍ·Å»­Ë¢
+        // é‡Šæ”¾ç”»åˆ·
         DeleteObject(brush);
     }
 
-    // ½«»æÖÆµÄÎ»Í¼¿½±´µ½Éè±¸ÉÏÏÂÎÄÖĞ
+    // å°†ç»˜åˆ¶çš„ä½å›¾æ‹·è´åˆ°è®¾å¤‡ä¸Šä¸‹æ–‡ä¸­
     BitBlt(hdc, 0, 0, m_width, m_height, memDC, 0, 0, SRCCOPY);
 
-    // ÊÍ·ÅÎ»Í¼ºÍÉè±¸ÉÏÏÂÎÄ×ÊÔ´
+    // é‡Šæ”¾ä½å›¾å’Œè®¾å¤‡ä¸Šä¸‹æ–‡èµ„æº
     SelectObject(memDC, oldBitmap);
     DeleteObject(memBitmap);
     DeleteDC(memDC);
 
-    // ½áÊø»æÖÆ
+    // ç»“æŸç»˜åˆ¶
     EndPaint(m_hWnd, &ps);
 }
 
 
 std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, const Camera& camera)
 {
-    // ¼ÆËãÊÓÍ¼¾ØÕóºÍÍ¶Ó°¾ØÕó
+    // è®¡ç®—è§†å›¾çŸ©é˜µå’ŒæŠ•å½±çŸ©é˜µ
     Matrix4x4 viewMat = camera.GetView();
     Matrix4x4 projMat = camera.GetProjection();
 
-    // ¶ÔÓÚÃ¿¸öÃæ£¬½«ÆäÈı¸ö¶¥µã½øĞĞÍ¶Ó°£¬²¢½«½á¹û´æ´¢µ½Êä³öÁĞ±íÖĞ
+    // å¯¹äºæ¯ä¸ªé¢ï¼Œå°†å…¶ä¸‰ä¸ªé¡¶ç‚¹è¿›è¡ŒæŠ•å½±ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åˆ°è¾“å‡ºåˆ—è¡¨ä¸­
     std::vector<Outface> outfaces;
     Vector dir;
     Outface outface;
@@ -164,7 +164,7 @@ std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, co
         outface.point[2].y = -(dir * CUp) / CUp.Length() * fov / di + (float)m_height / 2;
         outface.color = face.color;
 
-        // ½«Í¶Ó°ºóµÄÃæÌí¼Óµ½Êä³öÁĞ±íÖĞ
+        // å°†æŠ•å½±åçš„é¢æ·»åŠ åˆ°è¾“å‡ºåˆ—è¡¨ä¸­
         outfaces.push_back(outface);
     }
 
@@ -181,7 +181,7 @@ D3DWND11::D3DWND11()
 
 HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
 {
-    // ´´½¨´°¿Ú
+    // åˆ›å»ºçª—å£
 
     WndClassName = L"D3D11WindowClass";
 
@@ -213,7 +213,7 @@ HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
 
-    // ³õÊ¼»¯Direct3D 11Éè±¸ºÍ½»»»Á´
+    // åˆå§‹åŒ–Direct3D 11è®¾å¤‡å’Œäº¤æ¢é“¾
 
     InitDeviceAndSwapChain(m_hWnd);
 
@@ -222,17 +222,17 @@ HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
 
 void D3DWND11::Draw(const std::vector<Model*>& models, const Camera& camera)
 {
-    // Çå¿Õ±³¾°
+    // æ¸…ç©ºèƒŒæ™¯
     float clearColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     m_immediateContext->ClearRenderTargetView(m_renderTargetView, clearColor);
 
-    // ÉèÖÃäÖÈ¾×´Ì¬
+    // è®¾ç½®æ¸²æŸ“çŠ¶æ€
 
-    // TODO: ÉèÖÃ¶¥µãºÍÏñËØ×ÅÉ«Æ÷
+    // TODO: è®¾ç½®é¡¶ç‚¹å’Œåƒç´ ç€è‰²å™¨
 
-    // TODO: ÉèÖÃ»º³åÇø¡¢ÎÆÀíµÈ
+    // TODO: è®¾ç½®ç¼“å†²åŒºã€çº¹ç†ç­‰
 
-    // ÉèÖÃÊÓ¿Ú
+    // è®¾ç½®è§†å£
     D3D11_VIEWPORT vp;
     vp.Width = (FLOAT)m_width;
     vp.Height = (FLOAT)m_height;
@@ -243,16 +243,16 @@ void D3DWND11::Draw(const std::vector<Model*>& models, const Camera& camera)
 
     m_immediateContext->RSSetViewports(1, &vp);
 
-    // Ö´ĞĞ»æÖÆµ÷ÓÃ
+    // æ‰§è¡Œç»˜åˆ¶è°ƒç”¨
 
-    // TODO: µ÷ÓÃID3D11DeviceContext::DrawIndexed()»òDraw()µÈº¯ÊıÀ´Ö´ĞĞ»æÖÆµ÷ÓÃ
+    // TODO: è°ƒç”¨ID3D11DeviceContext::DrawIndexed()æˆ–Draw()ç­‰å‡½æ•°æ¥æ‰§è¡Œç»˜åˆ¶è°ƒç”¨
 
-    // ½áÊøäÖÈ¾
+    // ç»“æŸæ¸²æŸ“
     m_swapChain->Present(0, 0);
 }
 void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
 {
-    // ´´½¨Éè±¸ºÍ½»»»Á´
+    // åˆ›å»ºè®¾å¤‡å’Œäº¤æ¢é“¾
 
     DXGI_SWAP_CHAIN_DESC scd;
     ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -281,7 +281,7 @@ void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
         return;
     }
 
-    // ´´½¨äÖÈ¾Ä¿±êÊÓÍ¼
+    // åˆ›å»ºæ¸²æŸ“ç›®æ ‡è§†å›¾
 
     ID3D11Texture2D* pBackBuffer = nullptr;
     hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
@@ -303,9 +303,9 @@ void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
 
     m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView, nullptr);
 
-    // ÆäËû³õÊ¼»¯¹¤×÷
+    // å…¶ä»–åˆå§‹åŒ–å·¥ä½œ
 
-    // TODO: ³õÊ¼»¯ÆäËû×ÊÔ´£¬ÀıÈç³£Á¿»º³åÇø¡¢ÎÆÀíµÈ
+    // TODO: åˆå§‹åŒ–å…¶ä»–èµ„æºï¼Œä¾‹å¦‚å¸¸é‡ç¼“å†²åŒºã€çº¹ç†ç­‰
 }
 
 void D3DWND11::ReleaseResources()
@@ -376,7 +376,7 @@ OpenGLWnd::~OpenGLWnd()
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
 
-    // ´´½¨´°¿Ú
+    // åˆ›å»ºçª—å£
     m_hWnd = CreateWindowEx(0,
         WndClassName.c_str(), NULL,
         WS_CHILD | WS_VISIBLE,
@@ -391,10 +391,10 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     m_width = w;
     m_height = h;
 
-    // »ñÈ¡Éè±¸ÉÏÏÂÎÄ¾ä±ú
+    // è·å–è®¾å¤‡ä¸Šä¸‹æ–‡å¥æŸ„
     HDC hdc = GetDC(m_hWnd);
 
-    // ÉèÖÃÏñËØ¸ñÊ½
+    // è®¾ç½®åƒç´ æ ¼å¼
     PIXELFORMATDESCRIPTOR pfd;
     ZeroMemory(&pfd, sizeof(pfd));
     pfd.nSize = sizeof(pfd);
@@ -406,18 +406,18 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     int format = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, format, &pfd);//
 
-    // ´´½¨OpenGLÉÏÏÂÎÄ²¢Ê¹Æä³ÉÎªµ±Ç°ÉÏÏÂÎÄ
+    // åˆ›å»ºOpenGLä¸Šä¸‹æ–‡å¹¶ä½¿å…¶æˆä¸ºå½“å‰ä¸Šä¸‹æ–‡
     m_hglrc = wglCreateContext(hdc);
     wglMakeCurrent(hdc, m_hglrc);//
 
-    // ¼ÓÔØËùÓĞµÄOpenGLº¯ÊıÖ¸Õë
+    // åŠ è½½æ‰€æœ‰çš„OpenGLå‡½æ•°æŒ‡é’ˆ
     if (!gladLoadGL()) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return NULL;
     }
 
-    // ÉèÖÃÊÓ¿Ú´óĞ¡
-    glViewport(0, 0, w, h); // wºÍh·Ö±ğÊÇ´°¿ÚµÄ¿í¶ÈºÍ¸ß¶È
+    // è®¾ç½®è§†å£å¤§å°
+    glViewport(0, 0, w, h); // wå’Œhåˆ†åˆ«æ˜¯çª—å£çš„å®½åº¦å’Œé«˜åº¦
     m_ModelShader = new OpenGLShader("Shader/ModelShader.vs", "Shader/ModelShader.fs");
     m_LightShader = new OpenGLShader("Shader/LightShader.vs", "Shader/LightShader.fs");
 

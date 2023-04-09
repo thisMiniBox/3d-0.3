@@ -10,12 +10,12 @@ FileWind::FileWind(HINSTANCE hInst)
     wcex.hInstance = hInst;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = m_ClassName.c_str();
-    // ×¢²á´°¿ÚÀà
+    // æ³¨å†Œçª—å£ç±»
     RegisterClassEx(&wcex);
 }
 HWND FileWind::CreateWind(HWND parent)
 {
-    m_hWnd = CreateWindowW( //´´½¨±à¼­¿ò
+    m_hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
         m_ClassName.c_str(),
         0,
         WS_CHILD | WS_BORDER | WS_VISIBLE,
@@ -25,49 +25,49 @@ HWND FileWind::CreateWind(HWND parent)
         m_hInst,
         nullptr);
     if (m_hWnd)
-        m_Tree = m_FileTree_ÎÄ¼şÊ÷.Creat_´´½¨Ê÷ÁĞ±í(m_hWnd);
+        m_Tree = m_FileTree_æ–‡ä»¶æ ‘.Creat_åˆ›å»ºæ ‘åˆ—è¡¨(m_hWnd);
     else
     {
         m_Tree = nullptr;
-        std::cout << "ÎÄ¼ş´°¿Ú´´½¨Ê§°Ü" << std::endl;
+        std::cout << "æ–‡ä»¶çª—å£åˆ›å»ºå¤±è´¥" << std::endl;
         return nullptr;
     }
     return m_hWnd;
 }
 FileWind::~FileWind()
 {
-    // Ïú»Ù´°¿Ú
+    // é”€æ¯çª—å£
     DestroyWindow(m_hWnd);
-    // ×¢Ïú´°¿ÚÀà
+    // æ³¨é”€çª—å£ç±»
     UnregisterClass(m_ClassName.c_str(), m_hInst);
 }
 HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
 {
-    return m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(obj, add);
+    return m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(obj, add);
 }
 HTREEITEM FileWind::AddItem(const Object& obj, HTREEITEM ptree)
 {
-    return m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(obj, ptree);
+    return m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(obj, ptree);
 }
 void FileWind::DeleteItem(HTREEITEM a)
 {
-    m_FileTree_ÎÄ¼şÊ÷.DeleteItem_É¾³ı½Úµã(a);
+    m_FileTree_æ–‡ä»¶æ ‘.DeleteItem_åˆ é™¤èŠ‚ç‚¹(a);
 }
 HTREEITEM FileWind::GetSelectedItem()
 {
-    return m_FileTree_ÎÄ¼şÊ÷.GetItem_»ñÈ¡±»Ñ¡ÖĞ½Úµã();
+    return m_FileTree_æ–‡ä»¶æ ‘.GetItem_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹();
 }
 Object* FileWind::GetSelectedItemData()
 {
-    return m_FileTree_ÎÄ¼şÊ÷.GetOption_»ñÈ¡±»Ñ¡ÖĞ½Úµã¶ÔÏó();
+    return m_FileTree_æ–‡ä»¶æ ‘.GetOption_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹å¯¹è±¡();
 }
 HTREEITEM FileWind::GetMousePositionItem()
 {
-    return m_FileTree_ÎÄ¼şÊ÷.GetMouseItem_»ñÈ¡Êó±êÎ»ÖÃÊ÷½Úµã();
+    return m_FileTree_æ–‡ä»¶æ ‘.GetMouseItem_è·å–é¼ æ ‡ä½ç½®æ ‘èŠ‚ç‚¹();
 }
 Object* FileWind::GetMousePositionItemData()
 {
-    return m_FileTree_ÎÄ¼şÊ÷.GetMouseOption_»ñÈ¡Êó±êÎ»ÖÃ½Úµã¶ÔÏó();
+    return m_FileTree_æ–‡ä»¶æ ‘.GetMouseOption_è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹å¯¹è±¡();
 }
 HWND FileWind::GethWnd()
 {
@@ -79,14 +79,14 @@ HWND FileWind::GetTree()
 }
 void FileWind::FixItemName(HTREEITEM ht, const std::wstring Name)
 {
-    m_FileTree_ÎÄ¼şÊ÷.SetItemText_ĞŞ¸Ä½ÚµãÃû³Æ(ht, Name);
+    m_FileTree_æ–‡ä»¶æ ‘.SetItemText_ä¿®æ”¹èŠ‚ç‚¹åç§°(ht, Name);
 }
 #include<queue>
 void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
 {
-    m_FileTree_ÎÄ¼şÊ÷.ClearTree_Çå¿ÕÊ÷();
+    m_FileTree_æ–‡ä»¶æ ‘.ClearTree_æ¸…ç©ºæ ‘();
     std::string folderName = folder.GetName();
-    HTREEITEM hFolder = m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(folder, Parent);
+    HTREEITEM hFolder = m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(folder, Parent);
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
         switch (file->GetType())
@@ -104,7 +104,7 @@ void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
         default:
         { 
             std::string fileName = file->GetName();
-            m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(*file, Parent);
+            m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(*file, Parent);
             break;
         }
         }

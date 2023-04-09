@@ -1,5 +1,5 @@
 #pragma once
-#include"�ַ�ת��.h"
+#include"×Ö·û×ª»».h"
 std::string wstr_str(const std::wstring& str)
 {
 	int cLen = WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, NULL, 0, 0, NULL);

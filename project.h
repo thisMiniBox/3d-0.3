@@ -1,6 +1,6 @@
 #pragma once
 
-#include"×Ö·û×ª»».h"
+#include"å­—ç¬¦è½¬æ¢.h"
 #include"LinkList.h"
 //#include"Camera.h"
 #include"WndData.h"
@@ -10,7 +10,7 @@
 #include<time.h>
 #include<math.h>
 #include<CommCtrl.h>
-#include"Tree_Ê÷¿Ø¼ş.h"
+#include"Tree_æ ‘æ§ä»¶.h"
 #include"FileWind.h"
 #define _Error 0x03
 #define _Warning 0x02
@@ -23,7 +23,7 @@ class project
 	std::vector<Model*>m_Models;
 	RECT m_rect;
 public:
-	//´°¿ÚĞÅÏ¢
+	//çª—å£ä¿¡æ¯
 	HWND hWnd;
 	MainWind* MAINWND;
 	WndMsg TEXTWND;
@@ -31,40 +31,40 @@ public:
 	FileWind* FILEWND;
 	DetaileWind* DETAWND;
 	
-	//ÏûÏ¢ĞÅÏ¢
-	int MSG_att;//ÏûÏ¢ÏÔÊ¾×´Ì¬
-	int MAX_runMSG;//×î´óÏûÏ¢´¢´æ³¤¶È
+	//æ¶ˆæ¯ä¿¡æ¯
+	int MSG_att;//æ¶ˆæ¯æ˜¾ç¤ºçŠ¶æ€
+	int MAX_runMSG;//æœ€å¤§æ¶ˆæ¯å‚¨å­˜é•¿åº¦
 	LinkList<runMsg>runMSG;
-	//Ä£ĞÍÊı¾İ
-	char Model_att;//ÏÔÊ¾Ä£Ê½
-	//std::vector<POINT>PerPIT_µãËõ·Åµ½ÆÁÄ»;
-	std::list<ModelTriData>ModelPoint3;//ÀûÓÃ2däÖÈ¾Ê±Èı½ÇÃæÍ¶Ó°ĞÅÏ¢
-	//ÉãÏñ»ú£¨µ±Ç°ÊÓ½Ç£©
+	//æ¨¡å‹æ•°æ®
+	char Model_att;//æ˜¾ç¤ºæ¨¡å¼
+	//std::vector<POINT>PerPIT_ç‚¹ç¼©æ”¾åˆ°å±å¹•;
+	std::list<ModelTriData>ModelPoint3;//åˆ©ç”¨2dæ¸²æŸ“æ—¶ä¸‰è§’é¢æŠ•å½±ä¿¡æ¯
+	//æ‘„åƒæœºï¼ˆå½“å‰è§†è§’ï¼‰
 	Camera* view;
 
 	project();
 	~project();
 	HWND CreateWind(HINSTANCE hInst);
-	//ÉÏ´«ÏûÏ¢
+	//ä¸Šä¼ æ¶ˆæ¯
 	void upMsg(const std::string&, const char& mode = _Message);
-	//ÉÏ´«ÏûÏ¢
+	//ä¸Šä¼ æ¶ˆæ¯
 	void upMsg(const std::wstring& str, const char& mode = _Message);
-	//¸üĞÂÏûÏ¢´°¿Ú
+	//æ›´æ–°æ¶ˆæ¯çª—å£
 	void updateMsg(const HDC&);
 	std::vector<Model*>& UpdateModels();
 	void SetRect(RECT rect);
 	RECT GetRect()const;
-	//¼ÓÔØÄ£ĞÍ·µ»Ø´íÎóÂë
+	//åŠ è½½æ¨¡å‹è¿”å›é”™è¯¯ç 
 	int loadModel(const std::wstring& path);
-	//·µ»ØËùÓĞ¶ÔÏó
+	//è¿”å›æ‰€æœ‰å¯¹è±¡
 	std::vector<Model*>& GetModels();
-	//Ìí¼Ó¶ÔÏó
+	//æ·»åŠ å¯¹è±¡
 	HTREEITEM AddObject(Object*, std::string address = "0");
-	//Ìí¼Ó¶ÔÏóµ½´Î½ÚµãÏÂ
+	//æ·»åŠ å¯¹è±¡åˆ°æ¬¡èŠ‚ç‚¹ä¸‹
 	HTREEITEM AddObject(Object* a, HTREEITEM parent);
-	//É¾³ı¶ÔÏó
+	//åˆ é™¤å¯¹è±¡
 	void DeleteObject(Object* obj,HTREEITEM=nullptr);
-	//»ñÈ¡µ±Ç°ÊµÀı
+	//è·å–å½“å‰å®ä¾‹
 	HINSTANCE GethInstance()const;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

@@ -1,10 +1,10 @@
 #pragma once
 #include<windows.h>
 #include<string>
-class EditControl_±à¼­¿ò¿Ø¼ş
+class EditControl_ç¼–è¾‘æ¡†æ§ä»¶
 {
 public:
-    EditControl_±à¼­¿ò¿Ø¼ş(HINSTANCE hInstance, HWND hWndParent, int x, int y, int width, int height, DWORD Style,bool isNumeric = false) {
+    EditControl_ç¼–è¾‘æ¡†æ§ä»¶(HINSTANCE hInstance, HWND hWndParent, int x, int y, int width, int height, DWORD Style,bool isNumeric = false) {
         m_hInstance = hInstance;
         m_hWndParent = hWndParent;
         m_x = x;
@@ -13,39 +13,39 @@ public:
         m_height = height;
         m_isNumeric = isNumeric;
 
-        // ´´½¨±à¼­¿ò¿Ø¼ş
+        // åˆ›å»ºç¼–è¾‘æ¡†æ§ä»¶
         m_hWnd = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", Style | WS_CHILD,
             m_x, m_y, m_width, m_height, m_hWndParent, NULL, m_hInstance, NULL);
     }
 
-    // »ñÈ¡±à¼­¿òÖĞµÄÎÄ±¾
+    // è·å–ç¼–è¾‘æ¡†ä¸­çš„æ–‡æœ¬
     std::wstring GetText() const {
         wchar_t buffer[1024];
         GetWindowText(m_hWnd, buffer, sizeof(buffer) / sizeof(wchar_t));
         return std::wstring(buffer);
     }
 
-    // ÉèÖÃ±à¼­¿òÖĞµÄÎÄ±¾
+    // è®¾ç½®ç¼–è¾‘æ¡†ä¸­çš„æ–‡æœ¬
     void SetText(const std::wstring& text) {
         SetWindowText(m_hWnd, text.c_str());
     }
 
-    // »ñÈ¡±à¼­¿òµÄ¾ä±ú
+    // è·å–ç¼–è¾‘æ¡†çš„å¥æŸ„
     HWND GetHandle() const {
         return m_hWnd;
     }
 
-    // µ÷Õû±à¼­¿òµÄ´óĞ¡ºÍÎ»ÖÃ
+    // è°ƒæ•´ç¼–è¾‘æ¡†çš„å¤§å°å’Œä½ç½®
     void SetPosition(int x, int y, int width, int height) {
         MoveWindow(m_hWnd, x, y, width, height, TRUE);
     }
 
-    // ½ûÓÃ±à¼­¿ò
+    // ç¦ç”¨ç¼–è¾‘æ¡†
     void Disable() {
         EnableWindow(m_hWnd, FALSE);
     }
 
-    // ÆôÓÃ±à¼­¿ò
+    // å¯ç”¨ç¼–è¾‘æ¡†
     void Enable() {
         EnableWindow(m_hWnd, TRUE);
     }

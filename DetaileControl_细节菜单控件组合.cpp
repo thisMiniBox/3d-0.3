@@ -1,16 +1,16 @@
-#include "DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ.h"
-Position_Î»ÖÃ¿Ø¼ş::Position_Î»ÖÃ¿Ø¼ş(HINSTANCE hIns,HWND parent, int x, int y, int w)
+#include "DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ.h"
+Position_ä½ç½®æ§ä»¶::Position_ä½ç½®æ§ä»¶(HINSTANCE hIns,HWND parent, int x, int y, int w)
 {
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_POSITION), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
-int DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::GetHeight()
+int DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ::GetHeight()
 {
 	RECT m_rect = {};
 	GetClientRect(m_hWnd, &m_rect);
 	return m_rect.bottom - m_rect.top;
 }
-int DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::MoveWind_ÒÆ¶¯´°¿Ú(int x, int y, int w)
+int DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ::MoveWind_ç§»åŠ¨çª—å£(int x, int y, int w)
 {
 	if (IsWindowVisible(m_hWnd))
 	{
@@ -20,15 +20,15 @@ int DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::MoveWind_ÒÆ¶¯´°¿Ú(int x, int y, int w)
 	}
 	return 0;
 }
-Position_Î»ÖÃ¿Ø¼ş::~Position_Î»ÖÃ¿Ø¼ş()
+Position_ä½ç½®æ§ä»¶::~Position_ä½ç½®æ§ä»¶()
 {
 	DestroyWindow(m_hWnd);
 }
-DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::~DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ()
+DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ::~DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ()
 {
 	DestroyWindow(m_hWnd);
 }
-bool DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::IsNumeric(const std::wstring& str)
+bool DetaileControl_ç»†èŠ‚èœå•æ§ä»¶ç»„åˆ::IsNumeric(const std::wstring& str)
 {
 	if (str.empty())
 	{
@@ -36,17 +36,17 @@ bool DetaileControl_Ï¸½Ú²Ëµ¥¿Ø¼ş×éºÏ::IsNumeric(const std::wstring& str)
 	}
 	try
 	{
-		// Ê¹ÓÃ stod º¯Êı½øĞĞ×ª»»£¬Èç¹û×ª»»³É¹¦ÔòËµÃ÷¸Ã×Ö·û´®ÊÇÊıÖµÀàĞÍ
+		// ä½¿ç”¨ stod å‡½æ•°è¿›è¡Œè½¬æ¢ï¼Œå¦‚æœè½¬æ¢æˆåŠŸåˆ™è¯´æ˜è¯¥å­—ç¬¦ä¸²æ˜¯æ•°å€¼ç±»å‹
 		double a = std::stod(std::wstring(str.begin(), str.end()));
 		return true;
 	}
 	catch (const std::exception&)
 	{
-		return false; // ×ª»»Ê§°Ü£¬×Ö·û´®²»ÊÇÊıÖµÀàĞÍ
+		return false; // è½¬æ¢å¤±è´¥ï¼Œå­—ç¬¦ä¸²ä¸æ˜¯æ•°å€¼ç±»å‹
 	}
 }
 #include <tchar.h> 
-Name_¶ÔÏóÃû³Æ¿Ø¼ş::Name_¶ÔÏóÃû³Æ¿Ø¼ş(HINSTANCE hIns, HWND parent, int x, int y, int w)
+Name_å¯¹è±¡åç§°æ§ä»¶::Name_å¯¹è±¡åç§°æ§ä»¶(HINSTANCE hIns, HWND parent, int x, int y, int w)
 {
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_CNAME), parent, Dlgproc);
 #ifdef _DEBUG
@@ -54,14 +54,14 @@ Name_¶ÔÏóÃû³Æ¿Ø¼ş::Name_¶ÔÏóÃû³Æ¿Ø¼ş(HINSTANCE hIns, HWND parent, int x, int y, 
 	{
 		DWORD dwErrorCode = GetLastError();
 		TCHAR szBuf[100];
-		_stprintf_s(szBuf, _countof(szBuf), TEXT("CreateDialogº¯Êı´íÎó %d"), dwErrorCode);
+		_stprintf_s(szBuf, _countof(szBuf), TEXT("CreateDialogå‡½æ•°é”™è¯¯ %d"), dwErrorCode);
 		OutputDebugString(szBuf);
 		std::cout << dwErrorCode << std::endl;
 	}
 #endif // DEBUG
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
-Rotation_Ğı×ª¿Ø¼ş::Rotation_Ğı×ª¿Ø¼ş(HINSTANCE hIns, HWND parent, int x, int y, int w)
+Rotation_æ—‹è½¬æ§ä»¶::Rotation_æ—‹è½¬æ§ä»¶(HINSTANCE hIns, HWND parent, int x, int y, int w)
 {
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_ROTATE), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
