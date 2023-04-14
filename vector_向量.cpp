@@ -1,4 +1,4 @@
-#include "vector_å‘é‡.h"
+#include "vector_ÏòÁ¿.h"
 vec::Vector::Vector() {
     x = 0.0;
     y = 0.0;
@@ -14,47 +14,50 @@ vec::Vector::Vector(double x, double y, double z) {
     this->y = y;
     this->z = z;
 }
-//å®šä¹‰ä¸€ä¸ªæ—‹è½¬å‡½æ•°
+//¶¨ÒåÒ»¸öĞı×ªº¯Êı
 vec::Vector vec::Vector::Rotate(const Vector& v, const Vector& axis, double angle) {
-    //è®¡ç®—æ—‹è½¬å…¬å¼ä¸­çš„ä¸‰è§’å‡½æ•°å€¼
+    //¼ÆËãĞı×ª¹«Ê½ÖĞµÄÈı½Çº¯ÊıÖµ
     double cos_theta = cos(angle);
     double sin_theta = sin(angle);
-    //è®¡ç®—æ—‹è½¬åçš„å‘é‡
+    //¼ÆËãĞı×ªºóµÄÏòÁ¿
     Vector rotated = v * cos_theta + (axis ^ v) * sin_theta + axis * (axis * v) * (1 - cos_theta);
-    //è¿”å›æ—‹è½¬åçš„å‘é‡
+    //·µ»ØĞı×ªºóµÄÏòÁ¿
     return rotated;
 }
 vec::Vector vec::Vector::Rotate(const Vector& axis, double angle) {
-    //è®¡ç®—æ—‹è½¬å…¬å¼ä¸­çš„ä¸‰è§’å‡½æ•°å€¼
+    //¼ÆËãĞı×ª¹«Ê½ÖĞµÄÈı½Çº¯ÊıÖµ
     double cos_theta = cos(angle);
     double sin_theta = sin(angle);
-    //è®¡ç®—æ—‹è½¬åçš„å‘é‡
+    //¼ÆËãĞı×ªºóµÄÏòÁ¿
     *this = *this * cos_theta + (axis ^ *this) * sin_theta + axis * (axis * *this) * (1 - cos_theta);
-    //è¿”å›æ—‹è½¬åçš„å‘é‡
+    //·µ»ØĞı×ªºóµÄÏòÁ¿
     return *this;
 }
 vec::Vector vec::Vector::Normalize()const
 {
-    return *this / Length();
+    double l = Length();
+    if (l != 0)
+    return *this / l;
+    return *this;
 }
 namespace vec {
-    Matrix4x4::Matrix4x4() {
-        // é»˜è®¤æ„é€ å‡½æ•°å°†çŸ©é˜µåˆå§‹åŒ–ä¸ºå•ä½çŸ©é˜µ
+    Matrix4::Matrix4() {
+        // Ä¬ÈÏ¹¹Ôìº¯Êı½«¾ØÕó³õÊ¼»¯Îªµ¥Î»¾ØÕó
         m_data[0][0] = 1.0;
         m_data[1][1] = 1.0;
         m_data[2][2] = 1.0;
         m_data[3][3] = 1.0;
     }
 
-    void Matrix4x4::SetScale(const Vector3& scale) {
-        // æ ¹æ®ç»™å®šçš„ç¼©æ”¾å‘é‡è®¾ç½®ç¼©æ”¾çŸ©é˜µ
+    void Matrix4::SetScale(const Vector3& scale) {
+        // ¸ù¾İ¸ø¶¨µÄËõ·ÅÏòÁ¿ÉèÖÃËõ·Å¾ØÕó
         m_data[0][0] = scale.GetX();
         m_data[1][1] = scale.GetY();
         m_data[2][2] = scale.GetZ();
     }
 
-    void Matrix4x4::SetRotation(const Vector3& axis, double angle) {
-        // æ ¹æ®ç»™å®šçš„æ—‹è½¬è½´å’Œæ—‹è½¬è§’åº¦è®¾ç½®æ—‹è½¬çŸ©é˜µ
+    void Matrix4::SetRotation(const Vector3& axis, double angle) {
+        // ¸ù¾İ¸ø¶¨µÄĞı×ªÖáºÍĞı×ª½Ç¶ÈÉèÖÃĞı×ª¾ØÕó
         double rad = angle * PI / 180.0;
         double cosA = cos(rad);
         double sinA = sin(rad);
@@ -75,36 +78,36 @@ namespace vec {
         m_data[2][2] = cosA + (1 - cosA) * z * z;
     }
 
-    Vector3 Matrix4x4::GetTranslation() const {
-        // è·å–çŸ©é˜µçš„å¹³ç§»å‘é‡
+    Vector3 Matrix4::GetTranslation() const {
+        // »ñÈ¡¾ØÕóµÄÆ½ÒÆÏòÁ¿
         return Vector3(m_data[3][0], m_data[3][1], m_data[3][2]);
     }
 
-    void Matrix4x4::SetTranslation(const Vector3& pos) {
-        // æ ¹æ®ç»™å®šçš„å¹³ç§»å‘é‡è®¾ç½®å¹³ç§»çŸ©é˜µ
+    void Matrix4::SetTranslation(const Vector3& pos) {
+        // ¸ù¾İ¸ø¶¨µÄÆ½ÒÆÏòÁ¿ÉèÖÃÆ½ÒÆ¾ØÕó
         m_data[3][0] = pos.GetX();
         m_data[3][1] = pos.GetY();
         m_data[3][2] = pos.GetZ();
     }
 
-    Vector3 Matrix4x4::GetScale() const {
-        // è·å–çŸ©é˜µçš„ç¼©æ”¾å‘é‡
+    Vector3 Matrix4::GetScale() const {
+        // »ñÈ¡¾ØÕóµÄËõ·ÅÏòÁ¿
         return Vector3(m_data[0][0], m_data[1][1], m_data[2][2]);
     }
 
-    Matrix4x4 Matrix4x4::GetInverse() const {
-        // è®¡ç®—çŸ©é˜µçš„é€†çŸ©é˜µ
+    Matrix4 Matrix4::GetInverse() const {
+        // ¼ÆËã¾ØÕóµÄÄæ¾ØÕó
         double det =
             m_data[0][0] * (m_data[1][1] * m_data[2][2] - m_data[2][1] * m_data[1][2])
             - m_data[1][0] * (m_data[0][1] * m_data[2][2] - m_data[2][1] * m_data[0][2])
             + m_data[2][0] * (m_data[0][1] * m_data[1][2] - m_data[1][1] * m_data[0][2]);
 
         if (det == 0.0) {
-            // å¦‚æœçŸ©é˜µä¸å¯é€†ï¼Œåˆ™è¿”å›å•ä½çŸ©é˜µ
-            return Matrix4x4();
+            // Èç¹û¾ØÕó²»¿ÉÄæ£¬Ôò·µ»Øµ¥Î»¾ØÕó
+            return Matrix4();
         }
 
-        Matrix4x4 inv;
+        Matrix4 inv;
         for (int i = 0; i < 4; ++i) {
             for (int j = 0; j < 4; ++j) {
                 double cofactor =
@@ -117,8 +120,8 @@ namespace vec {
         return inv;
     }
 
-    void Matrix4x4::SetPerspective(double fov, double aspect, double nearClip, double farClip) {
-        // æ ¹æ®ç»™å®šçš„è§†é‡ã€å®½é«˜æ¯”ã€è¿‘å‰ªè£é¢å’Œè¿œå‰ªè£é¢è®¾ç½®é€è§†æŠ•å½±çŸ©é˜µ
+    void Matrix4::SetPerspective(double fov, double aspect, double nearClip, double farClip) {
+        // ¸ù¾İ¸ø¶¨µÄÊÓÒ°¡¢¿í¸ß±È¡¢½ü¼ô²ÃÃæºÍÔ¶¼ô²ÃÃæÉèÖÃÍ¸ÊÓÍ¶Ó°¾ØÕó
         double f = 1.0 / tan(fov * PI / 360.0);
         double zDiff = nearClip - farClip;
 
@@ -129,13 +132,138 @@ namespace vec {
         m_data[2][3] = -1.0;
         m_data[3][3] = 0.0;
     }
-    double DegToRad(double Deg)
+    double DegToRad(double deg) 
     {
-        return Deg / 180 * PI;
+        return deg / 180.0 * PI;
     }
-    Vector3 Transform(const Vector3& v, const Matrix4x4& worldToCamera)
+
+    double RadToDeg(double rad) 
     {
-        // å°†å‘é‡ä»ä¸–ç•Œåæ ‡ç³»è½¬æ¢åˆ°ç›¸æœºåæ ‡ç³»
+        return rad / PI * 180.0;
+    }
+    Quaternion FromAxisAngle(const Vector3& axis, float angle)
+    {
+        Quaternion result;
+        float halfAngle = angle * 0.5f;
+        float sinAngle = sin(halfAngle);
+
+        result.i = axis.x * sinAngle;
+        result.j = axis.y * sinAngle;
+        result.k = axis.z * sinAngle;
+        result.r = cos(halfAngle);
+
+        return result;
+    }
+    Vector Quaternion::GetAxis()
+    {
+        if (fabs(r) > 0.9999) {
+            // If the scalar component is close to 1, the axis is undefined
+            return Vector(0, 0, 0);
+        }
+        else {
+            // Otherwise, compute the axis as usual
+            float tmp = sqrt(1.0f - r * r);
+            return Vector(i / tmp, j / tmp, k / tmp);
+        }
+    }
+    Vector3 PerpendicularVector(const Vector3& v)
+    {
+        if (v.x != 0 || v.y != 0) {
+            return Vector3(-v.y, v.x, 0);
+        }
+        else {
+            return Vector3(0, -v.z, v.y);
+        }
+    }
+    void Quaternion::RotateAxis(const Vector3& newAxis)
+    {
+        // Check if the new axis is zero
+        if (newAxis.Length() == 0) {
+            return;
+        }
+
+        // Normalize the quaternion
+        Normalize();
+
+        // Calculate the angle and old axis
+        Vector3 oldAxis(i, j, k);
+        if (oldAxis.Length() == 0) {
+            // If the old axis is zero, use a perpendicular axis instead
+            oldAxis = PerpendicularVector(newAxis);
+        }
+
+        float angle = 2.0f * acos(r);
+
+        // Calculate the new axis
+        Vector3 nAxis = newAxis;
+        nAxis.Normalize();
+
+        // Calculate the rotation angle between the old and new axes
+        float cosAngle = oldAxis.dot(nAxis);
+        float sinAngle = sqrt(1.0f - cosAngle * cosAngle);
+        float rotAngle = atan2(sinAngle, cosAngle);
+
+        // Calculate the quaternion for the new axis
+        Vector3 u = oldAxis.Cross(nAxis);
+        u.Normalize();
+        float s = sin(rotAngle / 2.0f);
+        float c = cos(rotAngle / 2.0f);
+        Quaternion q(c, s * u.x, s * u.y, s * u.z);
+
+        // Combine the old and new quaternions
+        Quaternion rijk_new = q * (*this);
+
+        // Check the sign of the new quaternion and correct if necessary
+        if (rijk_new.r < 0) {
+            rijk_new = -rijk_new;
+        }
+
+        // Update the quaternion
+        i = rijk_new.i;
+        j = rijk_new.j;
+        k = rijk_new.k;
+        r = rijk_new.r;
+    }
+
+
+
+
+
+    Matrix4 Quaternion::QuaternionToMatrix(const Quaternion& q) {
+        Matrix4 matrix;
+        double w = q.r, x = q.i, y = q.j, z = q.k;
+        matrix[0][0] = 1 - 2 * y * y - 2 * z * z;
+        matrix[0][1] = 2 * x * y + 2 * w * z;
+        matrix[0][2] = 2 * x * z - 2 * w * y;
+        matrix[0][3] = 0;
+
+        matrix[1][0] = 2 * x * y - 2 * w * z;
+        matrix[1][1] = 1 - 2 * x * x - 2 * z * z;
+        matrix[1][2] = 2 * y * z + 2 * w * x;
+        matrix[1][3] = 0;
+
+        matrix[2][0] = 2 * x * z + 2 * w * y;
+        matrix[2][1] = 2 * y * z - 2 * w * x;
+        matrix[2][2] = 1 - 2 * x * x - 2 * y * y;
+        matrix[2][3] = 0;
+
+        matrix[3][0] = 0;
+        matrix[3][1] = 0;
+        matrix[3][2] = 0;
+        matrix[3][3] = 1;
+
+        return matrix;
+    }
+    // ¸ù¾İËÄÔªÊı·ÖÀëĞı×ª»¡¶ÈºÍĞı×ªÖá
+    void QuaternionToAxisAngle(const Quaternion& q, Vector3& axis, float& angle) {
+        Quaternion unit_q = q / q.norm();  // ±ê×¼»¯ËÄÔªÊı
+        angle = 2.0f * acos(unit_q.r); // ¼ÆËãĞı×ª½Ç¶È
+        axis = Vector3(unit_q.i, unit_q.j, unit_q.k) / sqrt(1 - unit_q.r * unit_q.r);  // ¼ÆËãĞı×ªÖá×ø±ê
+    }
+
+    Vector3 Transform(const Vector3& v, const Matrix4& worldToCamera)
+    {
+        // ½«ÏòÁ¿´ÓÊÀ½ç×ø±êÏµ×ª»»µ½Ïà»ú×ø±êÏµ
         Vector4 v4(v.x, v.y, v.z, 1.0f);
         Vector4 vCamera = v4 * worldToCamera;
         return Vector3(vCamera.x, vCamera.y, vCamera.z);
@@ -225,16 +353,32 @@ namespace vec {
         return !(*this == other);
     }
 
-    void Quaternion::normalize() {
+    Quaternion Quaternion::Normalize() const{
         double n = norm();
+        Quaternion out = *this;
         if (n > 0.0) {
-            r /= n;
-            i /= n;
-            j /= n;
-            k /= n;
+            out.r /= n;
+            out.i /= n;
+            out.j /= n;
+            out.k /= n;
         }
+        return out;
     }
+    Vector Quaternion::operator*(const Vector& v) const {
+        // ½«ÏòÁ¿ÊÓÎªÒ»¸öËÄÔªÊı£¬ÆäÊµ²¿Îª 0£¬Ğé²¿ÎªÏòÁ¿±¾Éí
+        Quaternion q(0, v.x,v.y,v.z);
 
+        // ¼ÆËãËÄÔªÊıµÄ¹²éî
+        Quaternion q_conj = conjugated();
+
+        // ¶ÔÏòÁ¿½øĞĞĞı×ª±ä»»£¬²¢·µ»ØĞÂµÄÏòÁ¿
+        Quaternion r = (*this) * q * q_conj;
+        return r.imag();
+    }
+    Vector Quaternion::imag()const
+    {
+        return Vector(i, j, k);
+    }
     double Quaternion::norm() const {
         return std::sqrt(r * r + i * i + j * j + k * k);
     }
@@ -294,7 +438,7 @@ namespace vec {
             double theta_0 = std::acos(dotProd);
             double theta = theta_0 * t;
             Quaternion q3 = q2 - q1 * dotProd;
-            q3.normalize();
+            q3.Normalize();
             return q1 * std::cos(theta) + q3 * std::sin(theta);
         }
     }
@@ -314,8 +458,18 @@ namespace vec {
             sy * cr * cp - cy * sr * sp
         );
     }
-
     Quaternion Quaternion::fromAxisAngle(const Vector& axis, double angle) {
+        double halfAngle = angle * 0.5;
+        double sinHalfAngle = std::sin(halfAngle);
+        Vector normAxis = axis.Normalize();
+        return Quaternion(
+            std::cos(halfAngle),
+            normAxis.x * sinHalfAngle,
+            normAxis.y * sinHalfAngle,
+            normAxis.z * sinHalfAngle
+        );
+    }
+    Quaternion FromAxisAngle(const Vector& axis, double angle) {
         double halfAngle = angle * 0.5;
         double sinHalfAngle = std::sin(halfAngle);
         Vector normAxis = axis.Normalize();

@@ -1,23 +1,23 @@
-#include"æ¶ˆæ¯å¾ªç¯å£°æ˜.h"
-//æ­¤æ¶ˆæ¯å¾ªç¯ç”±æ‰€æœ‰ç”»é¢çª—å£å…±äº«
-void S_æ—‹è½¬å½“å‰æ‘„åƒæœº(project* CP_å½“å‰é¡¹ç›®, const float& x_å·¦å³æ—‹è½¬å¼§åº¦, const float& y_ä¸Šä¸‹æ—‹è½¬å¼§åº¦)
+#include"ÏûÏ¢Ñ­»·ÉùÃ÷.h"
+//´ËÏûÏ¢Ñ­»·ÓÉËùÓĞ»­Ãæ´°¿Ú¹²Ïí
+void S_Ğı×ªµ±Ç°ÉãÏñ»ú(project* CP_µ±Ç°ÏîÄ¿, const float& x_×óÓÒĞı×ª»¡¶È, const float& y_ÉÏÏÂĞı×ª»¡¶È)
 {
     vec::Vector front;
-    front.SetX(cos(x_å·¦å³æ—‹è½¬å¼§åº¦) * cos(y_ä¸Šä¸‹æ—‹è½¬å¼§åº¦));
-    front.SetY(sin(y_ä¸Šä¸‹æ—‹è½¬å¼§åº¦));
-    front.SetZ(sin(x_å·¦å³æ—‹è½¬å¼§åº¦) * cos(y_ä¸Šä¸‹æ—‹è½¬å¼§åº¦));
-    CP_å½“å‰é¡¹ç›®->view->SetDirection(front);
+    front.SetX(cos(x_×óÓÒĞı×ª»¡¶È) * cos(y_ÉÏÏÂĞı×ª»¡¶È));
+    front.SetY(sin(y_ÉÏÏÂĞı×ª»¡¶È));
+    front.SetZ(sin(x_×óÓÒĞı×ª»¡¶È) * cos(y_ÉÏÏÂĞı×ª»¡¶È));
+    CP_µ±Ç°ÏîÄ¿->view->SetDirection(front);
 }
 bool compare(ModelTriData a, ModelTriData b) {
     return a > b;
 }
-//ç”»é¢çª—å£æ¶ˆæ¯å¾ªç¯
+//»­Ãæ´°¿ÚÏûÏ¢Ñ­»·
 LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
 {
     const float V = 10;
-    static bool Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶ = false;
-    static float fx_æ–¹å‘è§’ = -90;
-    static float fy_æ–¹å‘è§’ = 0;
+    static bool Mouse_ÊÇ·ñÊó±ê¿ØÖÆ = false;
+    static float fx_·½Ïò½Ç = -90;
+    static float fy_·½Ïò½Ç = 0;
     static bool is_w_pressed = false;
     static bool is_a_pressed = false;
     static bool is_s_pressed = false;
@@ -68,16 +68,16 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
 
     case WM_MOUSEMOVE:
     {
-        if (Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶)
+        if (Mouse_ÊÇ·ñÊó±ê¿ØÖÆ)
         {
             POINT pt = { current_project->MAINWND->GetWidth() / 2, current_project->MAINWND->GetHeight() / 2 };
-            fx_æ–¹å‘è§’ -= (pt.x - LOWORD(lParam)) / 5.0f;
-            fy_æ–¹å‘è§’ += (pt.y - HIWORD(lParam)) / 5.0f;
-            if (fx_æ–¹å‘è§’ > 360)fx_æ–¹å‘è§’ -= 360;
-            if (fx_æ–¹å‘è§’ < -360)fx_æ–¹å‘è§’ += 360;
-            if (fy_æ–¹å‘è§’ > 89)fy_æ–¹å‘è§’ = 89;
-            if (fy_æ–¹å‘è§’ < -89)fy_æ–¹å‘è§’ = -89;
-            S_æ—‹è½¬å½“å‰æ‘„åƒæœº(current_project, (fx_æ–¹å‘è§’ * PI / 180), (fy_æ–¹å‘è§’ * PI / 180));
+            fx_·½Ïò½Ç -= (pt.x - LOWORD(lParam)) / 5.0f;
+            fy_·½Ïò½Ç += (pt.y - HIWORD(lParam)) / 5.0f;
+            if (fx_·½Ïò½Ç > 360)fx_·½Ïò½Ç -= 360;
+            if (fx_·½Ïò½Ç < -360)fx_·½Ïò½Ç += 360;
+            if (fy_·½Ïò½Ç > 89)fy_·½Ïò½Ç = 89;
+            if (fy_·½Ïò½Ç < -89)fy_·½Ïò½Ç = -89;
+            S_Ğı×ªµ±Ç°ÉãÏñ»ú(current_project, (fx_·½Ïò½Ç * PI / 180), (fy_·½Ïò½Ç * PI / 180));
             ClientToScreen(hWnd, &pt);
             SetCursorPos(pt.x, pt.y);
             RECT rc;
@@ -157,9 +157,9 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         break;
     case WM_RBUTTONDOWN:
     {
-        ShowCursor(Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶);
-        Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶ = !Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶;
-        if (Mouse_æ˜¯å¦é¼ æ ‡æ§åˆ¶)
+        ShowCursor(Mouse_ÊÇ·ñÊó±ê¿ØÖÆ);
+        Mouse_ÊÇ·ñÊó±ê¿ØÖÆ = !Mouse_ÊÇ·ñÊó±ê¿ØÖÆ;
+        if (Mouse_ÊÇ·ñÊó±ê¿ØÖÆ)
         {
             POINT pt = { current_project->MAINWND->GetRect().right / 2, current_project->MAINWND->GetRect().bottom / 2 };
             ClientToScreen(hWnd, &pt);

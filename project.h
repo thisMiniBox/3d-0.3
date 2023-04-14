@@ -1,6 +1,6 @@
 #pragma once
 
-#include"å­—ç¬¦è½¬æ¢.h"
+#include"×Ö·û×ª»».h"
 #include"LinkList.h"
 //#include"Camera.h"
 #include"WndData.h"
@@ -10,7 +10,7 @@
 #include<time.h>
 #include<math.h>
 #include<CommCtrl.h>
-#include"Tree_æ ‘æ§ä»¶.h"
+#include"Tree_Ê÷¿Ø¼ş.h"
 #include"FileWind.h"
 #define _Error 0x03
 #define _Warning 0x02
@@ -23,48 +23,54 @@ class project
 	std::vector<Model*>m_Models;
 	RECT m_rect;
 public:
-	//çª—å£ä¿¡æ¯
+	//´°¿ÚĞÅÏ¢
 	HWND hWnd;
 	MainWind* MAINWND;
 	WndMsg TEXTWND;
 	WndMsg SETWND;
 	FileWind* FILEWND;
 	DetaileWind* DETAWND;
-	
-	//æ¶ˆæ¯ä¿¡æ¯
-	int MSG_att;//æ¶ˆæ¯æ˜¾ç¤ºçŠ¶æ€
-	int MAX_runMSG;//æœ€å¤§æ¶ˆæ¯å‚¨å­˜é•¿åº¦
+	//ÎÄ¼ş¶ÁÈ¡×´Ì¬
+	bool m_FileLoad;
+	//ÏûÏ¢ĞÅÏ¢
+	int MSG_att;//ÏûÏ¢ÏÔÊ¾×´Ì¬
+	int MAX_runMSG;//×î´óÏûÏ¢´¢´æ³¤¶È
 	LinkList<runMsg>runMSG;
-	//æ¨¡å‹æ•°æ®
-	char Model_att;//æ˜¾ç¤ºæ¨¡å¼
-	//std::vector<POINT>PerPIT_ç‚¹ç¼©æ”¾åˆ°å±å¹•;
-	std::list<ModelTriData>ModelPoint3;//åˆ©ç”¨2dæ¸²æŸ“æ—¶ä¸‰è§’é¢æŠ•å½±ä¿¡æ¯
-	//æ‘„åƒæœºï¼ˆå½“å‰è§†è§’ï¼‰
+	//Ä£ĞÍÊı¾İ
+	char Model_att;//ÏÔÊ¾Ä£Ê½
+	//std::vector<POINT>PerPIT_µãËõ·Åµ½ÆÁÄ»;
+	std::list<ModelTriData>ModelPoint3;//ÀûÓÃ2däÖÈ¾Ê±Èı½ÇÃæÍ¶Ó°ĞÅÏ¢
+	//ÉãÏñ»ú£¨µ±Ç°ÊÓ½Ç£©
 	Camera* view;
 
 	project();
 	~project();
 	HWND CreateWind(HINSTANCE hInst);
-	//ä¸Šä¼ æ¶ˆæ¯
+	//ÉÏ´«ÏûÏ¢
 	void upMsg(const std::string&, const char& mode = _Message);
-	//ä¸Šä¼ æ¶ˆæ¯
+	//ÉÏ´«ÏûÏ¢
 	void upMsg(const std::wstring& str, const char& mode = _Message);
-	//æ›´æ–°æ¶ˆæ¯çª—å£
+	//¸üĞÂÏûÏ¢´°¿Ú
 	void updateMsg(const HDC&);
+	//¸üĞÂÄ£ĞÍÊı¾İ
 	std::vector<Model*>& UpdateModels();
 	void SetRect(RECT rect);
 	RECT GetRect()const;
-	//åŠ è½½æ¨¡å‹è¿”å›é”™è¯¯ç 
+	//ĞŞ¸ÄÎÄ¼şÃû³Æ
+	void SetFileName(Object*, const std::wstring& NewName);
+	//¼ÓÔØÄ£ĞÍ·µ»Ø´íÎóÂë
 	int loadModel(const std::wstring& path);
-	//è¿”å›æ‰€æœ‰å¯¹è±¡
+	//·µ»ØËùÓĞ¶ÔÏó
 	std::vector<Model*>& GetModels();
-	//æ·»åŠ å¯¹è±¡
+	//Ìí¼Ó¶ÔÏó
 	HTREEITEM AddObject(Object*, std::string address = "0");
-	//æ·»åŠ å¯¹è±¡åˆ°æ¬¡èŠ‚ç‚¹ä¸‹
+	//Ìí¼Ó¶ÔÏóµ½´Î½ÚµãÏÂ
 	HTREEITEM AddObject(Object* a, HTREEITEM parent);
-	//åˆ é™¤å¯¹è±¡
+	//´´½¨ÎïÆ·
+	Object* CreateObject(Folder* parent = nullptr, std::string Name = "", int type = OT_FOLDER);
+	//É¾³ı¶ÔÏó
 	void DeleteObject(Object* obj,HTREEITEM=nullptr);
-	//è·å–å½“å‰å®ä¾‹
+	//»ñÈ¡µ±Ç°ÊµÀı
 	HINSTANCE GethInstance()const;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

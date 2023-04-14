@@ -1,7 +1,7 @@
 #include "LargeNumber.h"
-//è¿”å›æ•°å­—ä½æ•°
+//·µ»ØÊı×ÖÎ»Êı
 int weishu(long long num) { return std::to_string(num).size(); }
-//å°æ•°å­—å¯¹å¤§æ•°å­—æ±‚å•†å’Œä½™æ•°
+//Ğ¡Êı×Ö¶Ô´óÊı×ÖÇóÉÌºÍÓàÊı
 std::string Div(std::string num, int a, int* mod)
 {
 	if (num.size() < weishu(a))
@@ -27,7 +27,7 @@ std::string Div(std::string num, int a, int* mod)
 		else return quotient;
 	}
 }
-//åˆå§‹åŒ–æ•°å­—
+//³õÊ¼»¯Êı×Ö
 BigInt::BigInt(std::string Number)
 {
 	if (Number[0] == '-') {
@@ -62,7 +62,7 @@ BigInt::~BigInt()
 {
 	num.~vector();
 }
-//æŸ¥çœ‹æ•°å­—ï¼ˆ16è¿›åˆ¶ï¼‰
+//²é¿´Êı×Ö£¨16½øÖÆ£©
 void BigInt::xprint()
 {
 	if (symbol == false)printf_s("-");
@@ -71,7 +71,7 @@ void BigInt::xprint()
 		printf_s("%0x ", num[i]);
 	printf_s("\n");
 }
-//æŸ¥çœ‹æ•°å­—ï¼ˆ10è¿›åˆ¶ï¼‰
+//²é¿´Êı×Ö£¨10½øÖÆ£©
 void BigInt::print()
 {
 	std::string out;
@@ -99,7 +99,7 @@ void BigInt::print()
 	//if (!symbol)out.insert(out.begin(), '-');
 	//printf_s("%s", out.c_str());
 }
-//è¿”å›æ•°æ®
+//·µ»ØÊı¾İ
 std::string BigInt::data()
 {
 	std::string out;
@@ -121,7 +121,7 @@ char BigInt::dataChar()
 {
 	if (num.size() > 1 || num[0] > 9)
 	{
-		printf_s("æ•°ç»„è¿‡é•¿æˆ–è¶…å‡ºèŒƒå›´\n");
+		printf_s("Êı×é¹ı³¤»ò³¬³ö·¶Î§\n");
 		return 0;
 	}
 	return (num[0] + '0');
@@ -132,12 +132,12 @@ int BigInt::dataInt()
 	{
 		if (num.size() > sizeof(int))
 		{
-			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 			return 0;
 		}
 		if (num[sizeof(int) - 1] > 128)
 		{
-			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 			return 0;
 		}
 	}
@@ -149,7 +149,7 @@ unsigned int BigInt::dataUInt()
 {
 	if (num.size() > sizeof(int))
 	{
-		printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+		printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 		return 0;
 	}
 	unsigned int out = 0;
@@ -162,12 +162,12 @@ long long BigInt::dataLL()
 	{
 		if (num.size() > sizeof(long long))
 		{
-			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 			return 0;
 		}
 		if (num[sizeof(long long) - 1] > 128)
 		{
-			printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+			printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 			return 0;
 		}
 	}
@@ -179,14 +179,14 @@ unsigned long long BigInt::dataULL()
 {
 	if (num.size() > sizeof(long long))
 	{
-		printf_s("LNumberçš„å¤§å°å·²ç»å¤§äºIntçš„å®¹é‡\n");
+		printf_s("LNumberµÄ´óĞ¡ÒÑ¾­´óÓÚIntµÄÈİÁ¿\n");
 		return 0;
 	}
 	unsigned long long out = 0;
 	memcpy(num.data(), &out, sizeof(long long));
 	return out;
 }
-//ä¿®æ”¹æ•°å­—
+//ĞŞ¸ÄÊı×Ö
 BigInt BigInt::FixNumber(BigInt Number) { return *this = Number; }
 BigInt BigInt::FixNumber(std::string Number)
 {
@@ -205,7 +205,7 @@ BigInt BigInt::FixNumber(std::string Number)
 	return *this;
 }
 BigInt BigInt::FixNumber(long long Number) { this->operator=(Number); return *this; }
-//å­—ç¬¦ä¸²è½¬256å¤§æ•°å­—
+//×Ö·û´®×ª256´óÊı×Ö
 BigInt BigInt::operator=(std::string Number) { return this->FixNumber(Number); }
 BigInt BigInt::operator=(BigInt Number) { num = Number.num; symbol = Number.symbol; return Number; }
 BigInt BigInt::operator=(long long Number) { return this->FixNumber(std::to_string(Number)); }
@@ -238,14 +238,14 @@ bool BigInt::operator!=(long long Number)
 {
 	return *this != BigInt(Number);
 }
-//æ¯”è¾ƒ
+//±È½Ï
 bool BigInt::compare(std::string Number1, std::string Number2)
 {
 	if (Number1.size() > Number2.size())
 		return 1;
 	else if (Number1.size() < Number2.size())
 		return -1;
-	else return Number1.compare(Number2);     //è‹¥é•¿åº¦ç›¸ç­‰ï¼Œåˆ™ä»å¤´åˆ°å°¾æŒ‰ä½æ¯”è¾ƒ
+	else return Number1.compare(Number2);     //Èô³¤¶ÈÏàµÈ£¬Ôò´ÓÍ·µ½Î²°´Î»±È½Ï
 }
 bool BigInt::operator==(BigInt Number)
 {
@@ -391,32 +391,32 @@ bool BigInt::operator>=(BigInt Number)
 		return a ? false : true;
 	}
 }
-//åŠ 
+//¼Ó
 std::string BigInt::AddNumber(std::string Number1, std::string Number2)
 {
-	int sign = 1;//signä¸ºç¬¦å·ä¸º
+	int sign = 1;//signÎª·ûºÅÎª
 	std::string str;
 	if (Number1[0] == '-')
 	{
-		if (Number2[0] == '-')       //è´Ÿè´Ÿ
+		if (Number2[0] == '-')       //¸º¸º
 		{
 			sign = -1;
-			str = AddNumber(Number1.erase(0, 1), Number2.erase(0, 1));//erase(first,last);åˆ é™¤ä»firståˆ°lastä¹‹é—´çš„å­—ç¬¦
+			str = AddNumber(Number1.erase(0, 1), Number2.erase(0, 1));//erase(first,last);É¾³ı´Ófirstµ½lastÖ®¼äµÄ×Ö·û
 		}
-		else             //è´Ÿæ­£
+		else             //¸ºÕı
 		{
 			str = SubNumber(Number2, Number1.erase(0, 1));
 		}
 	}
 	else
 	{
-		if (Number2[0] == '-')        //æ­£è´Ÿ
+		if (Number2[0] == '-')        //Õı¸º
 		{
 			str = SubNumber(Number1, Number2.erase(0, 1));
 		}
-		else                    //æ­£æ­£ï¼ŒæŠŠä¸¤ä¸ªæ•´æ•°å¯¹é½ï¼ŒçŸ­æ•´æ•°å‰é¢åŠ 0è¡¥é½
+		else                    //ÕıÕı£¬°ÑÁ½¸öÕûÊı¶ÔÆë£¬¶ÌÕûÊıÇ°Ãæ¼Ó0²¹Æë
 		{
-			std::string::size_type L1, L2;  //string::size_typeæŠ½è±¡æ„ä¹‰æ˜¯å°ºå¯¸å•ä½ç±»å‹
+			std::string::size_type L1, L2;  //string::size_type³éÏóÒâÒåÊÇ³ß´çµ¥Î»ÀàĞÍ
 			int i;
 			L1 = Number1.size();
 			L2 = Number2.size();
@@ -430,7 +430,7 @@ std::string BigInt::AddNumber(std::string Number1, std::string Number2)
 				for (i = 0; i < L1 - L2; i++)
 					Number2 = "0" + Number2;
 			}
-			int int1 = 0, int2 = 0; //int2è®°å½•è¿›ä½
+			int int1 = 0, int2 = 0; //int2¼ÇÂ¼½øÎ»
 			for (i = Number1.size() - 1; i >= 0; i--)
 			{
 				int1 = (int(Number1[i]) - '0' + int(Number2[i]) - '0' + int2) % 10;
@@ -441,7 +441,7 @@ std::string BigInt::AddNumber(std::string Number1, std::string Number2)
 		}
 
 	}
-	//è¿ç®—ç¬¦å¤„ç†ç¬¦å·
+	//ÔËËã·û´¦Àí·ûºÅ
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
 	return str;
 }
@@ -544,10 +544,10 @@ BigInt operator+(long long INT1, BigInt Num2)
 {
 	return Num2 + INT1;
 }
-//å‡
+//¼õ
 std::string BigInt::SubNumber(std::string Number1, std::string Number2)
 {
-	int sign = 1; //signä¸ºç¬¦å·ä½
+	int sign = 1; //signÎª·ûºÅÎ»
 	std::string str;
 	int i, j;
 	if (Number2[0] == '-')
@@ -569,7 +569,7 @@ std::string BigInt::SubNumber(std::string Number1, std::string Number2)
 		tempint = Number1.size() - Number2.size();
 		for (i = Number2.size() - 1; i >= 0; i--)
 		{
-			if (Number1[i + tempint] < Number2[i])          //å€Ÿä½
+			if (Number1[i + tempint] < Number2[i])          //½èÎ»
 			{
 				j = 1;
 				while (1)
@@ -595,7 +595,7 @@ std::string BigInt::SubNumber(std::string Number1, std::string Number2)
 		for (i = tempint - 1; i >= 0; i--)
 			str = Number1[i] + str;
 	}
-	//å»å‡ºç»“æœä¸­å¤šä½™çš„å‰å¯¼0
+	//È¥³ö½á¹ûÖĞ¶àÓàµÄÇ°µ¼0
 	str.erase(0, str.find_first_not_of('0'));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
@@ -671,11 +671,11 @@ BigInt operator-(long long INT1, BigInt Num2)
 {
 	return -Num2 + INT1;
 }
-//ä¹˜
+//³Ë
 std::string BigInt::MulNumber(std::string Number1, std::string Number2)
 {
 	int sign = 1;
-	std::string str = "0";        //è®°å½•å½“å‰å€¼
+	std::string str = "0";        //¼ÇÂ¼µ±Ç°Öµ
 	if (Number1[0] == '-')
 	{
 		sign *= -1;
@@ -690,7 +690,7 @@ std::string BigInt::MulNumber(std::string Number1, std::string Number2)
 	std::string::size_type L1, L2;
 	L1 = Number1.size();
 	L2 = Number2.size();
-	for (i = L2 - 1; i >= 0; i--)              //æ¨¡æ‹Ÿæ‰‹å·¥ä¹˜æ³•ç«–å¼
+	for (i = L2 - 1; i >= 0; i--)              //Ä£ÄâÊÖ¹¤³Ë·¨ÊúÊ½
 	{
 		std::string tempstr;
 		int int1 = 0, int2 = 0, int3 = int(Number2[i]) - '0';
@@ -708,7 +708,7 @@ std::string BigInt::MulNumber(std::string Number1, std::string Number2)
 		}
 		str = AddNumber(str, tempstr);
 	}
-	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
+	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
 	str.erase(0, str.find_first_not_of("0"));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
@@ -755,18 +755,18 @@ BigInt BigInt::operator*(int Num)
 BigInt BigInt::operator*(std::string str) { return *this * BigInt(str); }
 BigInt operator*(std::string str, BigInt num) { return num * BigInt(str); }
 BigInt operator*(long long num1, BigInt num2) { return num2 * BigInt(num1); }
-//é™¤
+//³ı
 std::string BigInt::DivNumber(std::string Number1, std::string Number2)
 {
-	std::string quotient, residue;  //å®šä¹‰å•†å’Œä½™æ•°
+	std::string quotient, residue;  //¶¨ÒåÉÌºÍÓàÊı
 	int sign1 = 1, sign2 = 1;
-	if (Number2 == "0")   //åˆ¤æ–­é™¤æ•°æ˜¯å¦ä¸º0
+	if (Number2 == "0")   //ÅĞ¶Ï³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "ERROR!";
 		residue = "ERROR!";
 		return quotient;
 	}
-	if (Number1 == "0")     //åˆ¤æ–­è¢«é™¤æ•°æ˜¯å¦ä¸º0
+	if (Number1 == "0")     //ÅĞ¶Ï±»³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "0";
 		residue = "0";
@@ -799,13 +799,13 @@ std::string BigInt::DivNumber(std::string Number1, std::string Number2)
 		L1 = Number1.size();
 		L2 = Number2.size();
 		std::string tempstr;
-		tempstr.append(Number1, 0, L2 - 1); //å°†str1ä¸­ä¸ºå€¼0åˆ°L2-1çš„å­—ç¬¦ä¸²è¿½åŠ åˆ°tempstr
-		for (int i = L2 - 1; i < L1; i++)  //æ¨¡æ‹Ÿæ‰‹å·¥é™¤æ³•ç«–å¼
+		tempstr.append(Number1, 0, L2 - 1); //½«str1ÖĞÎªÖµ0µ½L2-1µÄ×Ö·û´®×·¼Óµ½tempstr
+		for (int i = L2 - 1; i < L1; i++)  //Ä£ÄâÊÖ¹¤³ı·¨ÊúÊ½
 		{
 			tempstr = tempstr + Number1[i];
-			tempstr.erase(0, tempstr.find_first_not_of('0')); //åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾ç¬¬ä¸€ä¸ªä¸'0'ä¸åŒ¹é…çš„å­—ç¬¦ï¼Œè¿”å›å®ƒçš„ä½ç½®
-			if (tempstr.empty())tempstr = "0";  //q.empty()ï¼Œå½“é˜Ÿåˆ—ç©ºæ—¶ï¼Œè¿”å›true
-			for (char ch = '9'; ch >= '0'; ch--) //è¯•å•†
+			tempstr.erase(0, tempstr.find_first_not_of('0')); //ÔÚ×Ö·û´®ÖĞ²éÕÒµÚÒ»¸öÓë'0'²»Æ¥ÅäµÄ×Ö·û£¬·µ»ØËüµÄÎ»ÖÃ
+			if (tempstr.empty())tempstr = "0";  //q.empty()£¬µ±¶ÓÁĞ¿ÕÊ±£¬·µ»Øtrue
+			for (char ch = '9'; ch >= '0'; ch--) //ÊÔÉÌ
 			{
 				std::string str;
 				str = str + ch;
@@ -819,7 +819,7 @@ std::string BigInt::DivNumber(std::string Number1, std::string Number2)
 		}
 		residue = tempstr;
 	}
-	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
+	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
 	quotient.erase(0, quotient.find_first_not_of("0"));
 	if (quotient.empty())quotient = "0";
 	if ((sign1 == -1) && (quotient[0] != '0'))quotient = "-" + quotient;
@@ -865,18 +865,18 @@ BigInt BigInt::operator/(std::string str) { return *this / BigInt(str); }
 BigInt operator/(std::string str, BigInt num) { return num / BigInt(str); }
 BigInt operator/(long long num1, BigInt num2) { return num2 / BigInt(num1); }
 
-//ä½™
+//Óà
 std::string BigInt::ModNumber(std::string Number1, std::string Number2)
 {
-	std::string quotient, residue;  //å®šä¹‰å•†å’Œä½™æ•°
+	std::string quotient, residue;  //¶¨ÒåÉÌºÍÓàÊı
 	int sign1 = 1, sign2 = 1;
-	if (Number2 == "0")   //åˆ¤æ–­é™¤æ•°æ˜¯å¦ä¸º0
+	if (Number2 == "0")   //ÅĞ¶Ï³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "ERROR!";
 		residue = "ERROR!";
 		return residue;
 	}
-	if (Number1 == "0")     //åˆ¤æ–­è¢«é™¤æ•°æ˜¯å¦ä¸º0
+	if (Number1 == "0")     //ÅĞ¶Ï±»³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "0";
 		residue = "0";
@@ -909,13 +909,13 @@ std::string BigInt::ModNumber(std::string Number1, std::string Number2)
 		L1 = Number1.size();
 		L2 = Number2.size();
 		std::string tempstr;
-		tempstr.append(Number1, 0, L2 - 1); //å°†str1ä¸­ä¸ºå€¼0åˆ°L2-1çš„å­—ç¬¦ä¸²è¿½åŠ åˆ°tempstr
-		for (int i = L2 - 1; i < L1; i++)  //æ¨¡æ‹Ÿæ‰‹å·¥é™¤æ³•ç«–å¼
+		tempstr.append(Number1, 0, L2 - 1); //½«str1ÖĞÎªÖµ0µ½L2-1µÄ×Ö·û´®×·¼Óµ½tempstr
+		for (int i = L2 - 1; i < L1; i++)  //Ä£ÄâÊÖ¹¤³ı·¨ÊúÊ½
 		{
 			tempstr = tempstr + Number1[i];
-			tempstr.erase(0, tempstr.find_first_not_of('0')); //åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾ç¬¬ä¸€ä¸ªä¸'0'ä¸åŒ¹é…çš„å­—ç¬¦ï¼Œè¿”å›å®ƒçš„ä½ç½®
-			if (tempstr.empty())tempstr = "0";  //q.empty()ï¼Œå½“é˜Ÿåˆ—ç©ºæ—¶ï¼Œè¿”å›true
-			for (char ch = '9'; ch >= '0'; ch--) //è¯•å•†
+			tempstr.erase(0, tempstr.find_first_not_of('0')); //ÔÚ×Ö·û´®ÖĞ²éÕÒµÚÒ»¸öÓë'0'²»Æ¥ÅäµÄ×Ö·û£¬·µ»ØËüµÄÎ»ÖÃ
+			if (tempstr.empty())tempstr = "0";  //q.empty()£¬µ±¶ÓÁĞ¿ÕÊ±£¬·µ»Øtrue
+			for (char ch = '9'; ch >= '0'; ch--) //ÊÔÉÌ
 			{
 				std::string str;
 				str = str + ch;
@@ -929,7 +929,7 @@ std::string BigInt::ModNumber(std::string Number1, std::string Number2)
 		}
 		residue = tempstr;
 	}
-	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
+	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
 	quotient.erase(0, quotient.find_first_not_of("0"));
 	if (quotient.empty())quotient = "0";
 	if ((sign1 == -1) && (quotient[0] != '0'))quotient = "-" + quotient;
@@ -971,7 +971,7 @@ BigInt BigInt::operator%(long long Num) { return *this % (BigInt::BigInt(std::to
 BigInt BigInt::operator%(std::string str) { return *this % BigInt(str); }
 BigInt operator%(std::string str, BigInt num) { return num % BigInt(str); }
 BigInt operator%(long long num1, BigInt num2) { return num2 % BigInt(num1); }
-//æ¬¡æ–¹
+//´Î·½
 BigInt BigInt::operator^(BigInt Number)
 {
 	BigInt out(1);

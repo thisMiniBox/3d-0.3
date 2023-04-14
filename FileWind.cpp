@@ -10,12 +10,17 @@ FileWind::FileWind(HINSTANCE hInst)
     wcex.hInstance = hInst;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = m_ClassName.c_str();
-    // æ³¨å†Œçª—å£ç±»
+    // ×¢²á´°¿ÚÀà
     RegisterClassEx(&wcex);
+}
+void FileWind::ExploreFolder(HTREEITEM type)
+{
+    TreeView_Expand(m_hWnd, type, TVE_EXPAND);
+    InvalidateRect(m_hWnd, NULL, TRUE);
 }
 HWND FileWind::CreateWind(HWND parent)
 {
-    m_hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
+    m_hWnd = CreateWindowW( //´´½¨±à¼­¿ò
         m_ClassName.c_str(),
         0,
         WS_CHILD | WS_BORDER | WS_VISIBLE,
@@ -25,49 +30,49 @@ HWND FileWind::CreateWind(HWND parent)
         m_hInst,
         nullptr);
     if (m_hWnd)
-        m_Tree = m_FileTree_æ–‡ä»¶æ ‘.Creat_åˆ›å»ºæ ‘åˆ—è¡¨(m_hWnd);
+        m_Tree = m_FileTree_ÎÄ¼şÊ÷.Creat_´´½¨Ê÷ÁĞ±í(m_hWnd);
     else
     {
         m_Tree = nullptr;
-        std::cout << "æ–‡ä»¶çª—å£åˆ›å»ºå¤±è´¥" << std::endl;
+        std::cout << "ÎÄ¼ş´°¿Ú´´½¨Ê§°Ü" << std::endl;
         return nullptr;
     }
     return m_hWnd;
 }
 FileWind::~FileWind()
 {
-    // é”€æ¯çª—å£
+    // Ïú»Ù´°¿Ú
     DestroyWindow(m_hWnd);
-    // æ³¨é”€çª—å£ç±»
+    // ×¢Ïú´°¿ÚÀà
     UnregisterClass(m_ClassName.c_str(), m_hInst);
 }
 HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(obj, add);
+    return m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(obj, add);
 }
 HTREEITEM FileWind::AddItem(const Object& obj, HTREEITEM ptree)
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(obj, ptree);
+    return m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(obj, ptree);
 }
 void FileWind::DeleteItem(HTREEITEM a)
 {
-    m_FileTree_æ–‡ä»¶æ ‘.DeleteItem_åˆ é™¤èŠ‚ç‚¹(a);
+    m_FileTree_ÎÄ¼şÊ÷.DeleteItem_É¾³ı½Úµã(a);
 }
 HTREEITEM FileWind::GetSelectedItem()
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.GetItem_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹();
+    return m_FileTree_ÎÄ¼şÊ÷.GetItem_»ñÈ¡±»Ñ¡ÖĞ½Úµã();
 }
 Object* FileWind::GetSelectedItemData()
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.GetOption_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹å¯¹è±¡();
+    return m_FileTree_ÎÄ¼şÊ÷.GetOption_»ñÈ¡±»Ñ¡ÖĞ½Úµã¶ÔÏó();
 }
 HTREEITEM FileWind::GetMousePositionItem()
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.GetMouseItem_è·å–é¼ æ ‡ä½ç½®æ ‘èŠ‚ç‚¹();
+    return m_FileTree_ÎÄ¼şÊ÷.GetMouseItem_»ñÈ¡Êó±êÎ»ÖÃÊ÷½Úµã();
 }
 Object* FileWind::GetMousePositionItemData()
 {
-    return m_FileTree_æ–‡ä»¶æ ‘.GetMouseOption_è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹å¯¹è±¡();
+    return m_FileTree_ÎÄ¼şÊ÷.GetMouseOption_»ñÈ¡Êó±êÎ»ÖÃ½Úµã¶ÔÏó();
 }
 HWND FileWind::GethWnd()
 {
@@ -79,14 +84,12 @@ HWND FileWind::GetTree()
 }
 void FileWind::FixItemName(HTREEITEM ht, const std::wstring Name)
 {
-    m_FileTree_æ–‡ä»¶æ ‘.SetItemText_ä¿®æ”¹èŠ‚ç‚¹åç§°(ht, Name);
+    m_FileTree_ÎÄ¼şÊ÷.SetItemText_ĞŞ¸Ä½ÚµãÃû³Æ(ht, Name);
 }
-#include<queue>
-void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
+void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
 {
-    m_FileTree_æ–‡ä»¶æ ‘.ClearTree_æ¸…ç©ºæ ‘();
     std::string folderName = folder.GetName();
-    HTREEITEM hFolder = m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(folder, Parent);
+    HTREEITEM hFolder = m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(folder, Parent);
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
         switch (file->GetType())
@@ -96,15 +99,40 @@ void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
             Folder* subFolder = dynamic_cast<Folder*>(file);
             if (subFolder != nullptr)
             {
-                // Recursively show the subfolder
-                ShowFolder(*subFolder, Parent);
+                ShowFolderRecursion(*subFolder, hFolder);
             }
             break;
         }
         default:
-        { 
+        {
             std::string fileName = file->GetName();
-            m_FileTree_æ–‡ä»¶æ ‘.AddItem_æ·»åŠ èŠ‚ç‚¹(*file, Parent);
+            m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(*file, Parent);
+            break;
+        }
+        }
+    }
+}
+void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
+{
+    m_FileTree_ÎÄ¼şÊ÷.ClearTree_Çå¿ÕÊ÷();
+    std::string folderName = folder.GetName();
+    for (Object* file : folder.GetTheCurrentDirectoryFile())
+    {
+        switch (file->GetType())
+        {
+        case OT_FOLDER:
+        {
+            Folder* subFolder = dynamic_cast<Folder*>(file);
+            if (subFolder != nullptr)
+            {
+                ShowFolderRecursion(*subFolder, Parent);
+            }
+            break;
+        }
+        default:
+        {
+            std::string fileName = file->GetName();
+            m_FileTree_ÎÄ¼şÊ÷.AddItem_Ìí¼Ó½Úµã(*file, Parent);
             break;
         }
         }

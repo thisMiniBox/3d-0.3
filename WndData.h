@@ -3,12 +3,12 @@
 #include<CommCtrl.h>
 #include<vector>
 #include<string>
-typedef struct _Tæ ‘åˆ—è¡¨èŠ‚ç‚¹
+typedef struct _TÊ÷ÁÐ±í½Úµã
 {
 	HTREEITEM own;
-	std::vector<_Tæ ‘åˆ—è¡¨èŠ‚ç‚¹>child;
-	_Tæ ‘åˆ—è¡¨èŠ‚ç‚¹() :own(nullptr) {}
-}T_æ ‘èŠ‚ç‚¹;
+	std::vector<_TÊ÷ÁÐ±í½Úµã>child;
+	_TÊ÷ÁÐ±í½Úµã() :own(nullptr) {}
+}T_Ê÷½Úµã;
 typedef struct WndMsg
 {
 	HWND hWnd;

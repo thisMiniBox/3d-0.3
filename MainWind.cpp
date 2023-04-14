@@ -2,9 +2,9 @@
 using namespace DirectX;
 MainWind::~MainWind()
 {
-    // é”€æ¯çª—å£
+    // Ïú»Ù´°¿Ú
     DestroyWindow(m_hWnd);
-    // æ³¨é”€çª—å£ç±»
+    // ×¢Ïú´°¿ÚÀà
     UnregisterClass(WndClassName.c_str(), m_hInstance);
 }
 HWND MainWind::GethWnd()
@@ -33,7 +33,7 @@ GDIWND::GDIWND()
     m_hdc = nullptr;
     m_rect = {};
     WndClassName = L"GDIMainWnd";
-    // å®šä¹‰çª—å£ç±»æè¿°ç»“æ„
+    // ¶¨Òå´°¿ÚÀàÃèÊö½á¹¹
     WNDCLASSEX wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -41,7 +41,7 @@ GDIWND::GDIWND()
     wcex.hInstance = m_hInstance;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = WndClassName.c_str();
-    // æ³¨å†Œçª—å£ç±»
+    // ×¢²á´°¿ÚÀà
     RegisterClassEx(&wcex);
 }
 GDIWND::~GDIWND()
@@ -51,7 +51,7 @@ GDIWND::~GDIWND()
 HWND GDIWND::CreateWind(HWND Parent, int x, int y, int w, int h)
 {
     DestroyWindow(m_hWnd);
-    m_hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
+    m_hWnd = CreateWindowW( //´´½¨±à¼­¿ò
         WndClassName.c_str(),
         0,
         WS_CHILD | WS_BORDER | WS_VISIBLE,
@@ -81,60 +81,60 @@ bool compareFace(const Outface& p1, const Outface& p2) {
 }
 void GDIWND::Draw(const std::vector<Model*>& model, const Camera& camera)
 {
-    // è·å–è®¾å¤‡ä¸Šä¸‹æ–‡å¥æŸ„
+    // »ñÈ¡Éè±¸ÉÏÏÂÎÄ¾ä±ú
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(m_hWnd, &ps);
 
-    // åˆ›å»ºå…¼å®¹DCå’Œä½å›¾
+    // ´´½¨¼æÈİDCºÍÎ»Í¼
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP memBitmap = CreateCompatibleBitmap(hdc, m_width, m_height);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, memBitmap);
 
-    // å‡†å¤‡ç»˜åˆ¶ä¸‰è§’å½¢
+    // ×¼±¸»æÖÆÈı½ÇĞÎ
     std::vector<Outface> faces;
     for (const auto& m : model)
     {
-        // è®¡ç®—æ¨¡å‹æŠ•å½±åçš„æ‰€æœ‰ä¸‰è§’å½¢é¢
+        // ¼ÆËãÄ£ĞÍÍ¶Ó°ºóµÄËùÓĞÈı½ÇĞÎÃæ
         std::vector<FACE> triFaces = m->GetTriFace();
         std::vector<Outface> outfaces = ProjectTriangles(triFaces, camera);
 
-        // å°†ä¸‰è§’å½¢é¢æ·»åŠ åˆ°å¾…ç»˜åˆ¶åˆ—è¡¨ä¸­
+        // ½«Èı½ÇĞÎÃæÌí¼Óµ½´ı»æÖÆÁĞ±íÖĞ
         faces.insert(faces.end(), outfaces.begin(), outfaces.end());
     }
     std::sort(faces.begin(), faces.end(), compareFace);
-    // é€ä¸ªç»˜åˆ¶ä¸‰è§’å½¢é¢
+    // Öğ¸ö»æÖÆÈı½ÇĞÎÃæ
     for (const auto& face : faces)
     {
-        // åˆ›å»ºç”»åˆ·å¹¶è®¾ç½®é¢œè‰²
+        // ´´½¨»­Ë¢²¢ÉèÖÃÑÕÉ«
         HBRUSH brush = CreateSolidBrush(face.color);
         SelectObject(memDC, brush);
 
         Polygon(memDC, face.point, 3);
 
-        // é‡Šæ”¾ç”»åˆ·
+        // ÊÍ·Å»­Ë¢
         DeleteObject(brush);
     }
 
-    // å°†ç»˜åˆ¶çš„ä½å›¾æ‹·è´åˆ°è®¾å¤‡ä¸Šä¸‹æ–‡ä¸­
+    // ½«»æÖÆµÄÎ»Í¼¿½±´µ½Éè±¸ÉÏÏÂÎÄÖĞ
     BitBlt(hdc, 0, 0, m_width, m_height, memDC, 0, 0, SRCCOPY);
 
-    // é‡Šæ”¾ä½å›¾å’Œè®¾å¤‡ä¸Šä¸‹æ–‡èµ„æº
+    // ÊÍ·ÅÎ»Í¼ºÍÉè±¸ÉÏÏÂÎÄ×ÊÔ´
     SelectObject(memDC, oldBitmap);
     DeleteObject(memBitmap);
     DeleteDC(memDC);
 
-    // ç»“æŸç»˜åˆ¶
+    // ½áÊø»æÖÆ
     EndPaint(m_hWnd, &ps);
 }
 
 
 std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, const Camera& camera)
 {
-    // è®¡ç®—è§†å›¾çŸ©é˜µå’ŒæŠ•å½±çŸ©é˜µ
-    Matrix4x4 viewMat = camera.GetView();
-    Matrix4x4 projMat = camera.GetProjection();
+    // ¼ÆËãÊÓÍ¼¾ØÕóºÍÍ¶Ó°¾ØÕó
+    Matrix4 viewMat = camera.GetView();
+    Matrix4 projMat = camera.GetProjection();
 
-    // å¯¹äºæ¯ä¸ªé¢ï¼Œå°†å…¶ä¸‰ä¸ªé¡¶ç‚¹è¿›è¡ŒæŠ•å½±ï¼Œå¹¶å°†ç»“æœå­˜å‚¨åˆ°è¾“å‡ºåˆ—è¡¨ä¸­
+    // ¶ÔÓÚÃ¿¸öÃæ£¬½«ÆäÈı¸ö¶¥µã½øĞĞÍ¶Ó°£¬²¢½«½á¹û´æ´¢µ½Êä³öÁĞ±íÖĞ
     std::vector<Outface> outfaces;
     Vector dir;
     Outface outface;
@@ -164,7 +164,7 @@ std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, co
         outface.point[2].y = -(dir * CUp) / CUp.Length() * fov / di + (float)m_height / 2;
         outface.color = face.color;
 
-        // å°†æŠ•å½±åçš„é¢æ·»åŠ åˆ°è¾“å‡ºåˆ—è¡¨ä¸­
+        // ½«Í¶Ó°ºóµÄÃæÌí¼Óµ½Êä³öÁĞ±íÖĞ
         outfaces.push_back(outface);
     }
 
@@ -181,7 +181,7 @@ D3DWND11::D3DWND11()
 
 HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
 {
-    // åˆ›å»ºçª—å£
+    // ´´½¨´°¿Ú
 
     WndClassName = L"D3D11WindowClass";
 
@@ -213,7 +213,7 @@ HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
 
-    // åˆå§‹åŒ–Direct3D 11è®¾å¤‡å’Œäº¤æ¢é“¾
+    // ³õÊ¼»¯Direct3D 11Éè±¸ºÍ½»»»Á´
 
     InitDeviceAndSwapChain(m_hWnd);
 
@@ -222,17 +222,17 @@ HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
 
 void D3DWND11::Draw(const std::vector<Model*>& models, const Camera& camera)
 {
-    // æ¸…ç©ºèƒŒæ™¯
+    // Çå¿Õ±³¾°
     float clearColor[] = { 0.2f, 0.2f, 0.2f, 1.0f };
     m_immediateContext->ClearRenderTargetView(m_renderTargetView, clearColor);
 
-    // è®¾ç½®æ¸²æŸ“çŠ¶æ€
+    // ÉèÖÃäÖÈ¾×´Ì¬
 
-    // TODO: è®¾ç½®é¡¶ç‚¹å’Œåƒç´ ç€è‰²å™¨
+    // TODO: ÉèÖÃ¶¥µãºÍÏñËØ×ÅÉ«Æ÷
 
-    // TODO: è®¾ç½®ç¼“å†²åŒºã€çº¹ç†ç­‰
+    // TODO: ÉèÖÃ»º³åÇø¡¢ÎÆÀíµÈ
 
-    // è®¾ç½®è§†å£
+    // ÉèÖÃÊÓ¿Ú
     D3D11_VIEWPORT vp;
     vp.Width = (FLOAT)m_width;
     vp.Height = (FLOAT)m_height;
@@ -243,16 +243,16 @@ void D3DWND11::Draw(const std::vector<Model*>& models, const Camera& camera)
 
     m_immediateContext->RSSetViewports(1, &vp);
 
-    // æ‰§è¡Œç»˜åˆ¶è°ƒç”¨
+    // Ö´ĞĞ»æÖÆµ÷ÓÃ
 
-    // TODO: è°ƒç”¨ID3D11DeviceContext::DrawIndexed()æˆ–Draw()ç­‰å‡½æ•°æ¥æ‰§è¡Œç»˜åˆ¶è°ƒç”¨
+    // TODO: µ÷ÓÃID3D11DeviceContext::DrawIndexed()»òDraw()µÈº¯ÊıÀ´Ö´ĞĞ»æÖÆµ÷ÓÃ
 
-    // ç»“æŸæ¸²æŸ“
+    // ½áÊøäÖÈ¾
     m_swapChain->Present(0, 0);
 }
 void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
 {
-    // åˆ›å»ºè®¾å¤‡å’Œäº¤æ¢é“¾
+    // ´´½¨Éè±¸ºÍ½»»»Á´
 
     DXGI_SWAP_CHAIN_DESC scd;
     ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
@@ -281,7 +281,7 @@ void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
         return;
     }
 
-    // åˆ›å»ºæ¸²æŸ“ç›®æ ‡è§†å›¾
+    // ´´½¨äÖÈ¾Ä¿±êÊÓÍ¼
 
     ID3D11Texture2D* pBackBuffer = nullptr;
     hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
@@ -303,9 +303,9 @@ void D3DWND11::InitDeviceAndSwapChain(HWND hWnd)
 
     m_immediateContext->OMSetRenderTargets(1, &m_renderTargetView, nullptr);
 
-    // å…¶ä»–åˆå§‹åŒ–å·¥ä½œ
+    // ÆäËû³õÊ¼»¯¹¤×÷
 
-    // TODO: åˆå§‹åŒ–å…¶ä»–èµ„æºï¼Œä¾‹å¦‚å¸¸é‡ç¼“å†²åŒºã€çº¹ç†ç­‰
+    // TODO: ³õÊ¼»¯ÆäËû×ÊÔ´£¬ÀıÈç³£Á¿»º³åÇø¡¢ÎÆÀíµÈ
 }
 
 void D3DWND11::ReleaseResources()
@@ -376,7 +376,7 @@ OpenGLWnd::~OpenGLWnd()
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
 
-    // åˆ›å»ºçª—å£
+    // ´´½¨´°¿Ú
     m_hWnd = CreateWindowEx(0,
         WndClassName.c_str(), NULL,
         WS_CHILD | WS_VISIBLE,
@@ -391,10 +391,10 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     m_width = w;
     m_height = h;
 
-    // è·å–è®¾å¤‡ä¸Šä¸‹æ–‡å¥æŸ„
+    // »ñÈ¡Éè±¸ÉÏÏÂÎÄ¾ä±ú
     HDC hdc = GetDC(m_hWnd);
 
-    // è®¾ç½®åƒç´ æ ¼å¼
+    // ÉèÖÃÏñËØ¸ñÊ½
     PIXELFORMATDESCRIPTOR pfd;
     ZeroMemory(&pfd, sizeof(pfd));
     pfd.nSize = sizeof(pfd);
@@ -406,88 +406,88 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     int format = ChoosePixelFormat(hdc, &pfd);
     SetPixelFormat(hdc, format, &pfd);//
 
-    // åˆ›å»ºOpenGLä¸Šä¸‹æ–‡å¹¶ä½¿å…¶æˆä¸ºå½“å‰ä¸Šä¸‹æ–‡
+    // ´´½¨OpenGLÉÏÏÂÎÄ²¢Ê¹Æä³ÉÎªµ±Ç°ÉÏÏÂÎÄ
     m_hglrc = wglCreateContext(hdc);
     wglMakeCurrent(hdc, m_hglrc);//
 
-    // åŠ è½½æ‰€æœ‰çš„OpenGLå‡½æ•°æŒ‡é’ˆ
+    // ¼ÓÔØËùÓĞµÄOpenGLº¯ÊıÖ¸Õë
     if (!gladLoadGL()) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return NULL;
     }
 
-    // è®¾ç½®è§†å£å¤§å°
-    glViewport(0, 0, w, h); // wå’Œhåˆ†åˆ«æ˜¯çª—å£çš„å®½åº¦å’Œé«˜åº¦
+    // ÉèÖÃÊÓ¿Ú´óĞ¡
+    glViewport(0, 0, w, h); // wºÍh·Ö±ğÊÇ´°¿ÚµÄ¿í¶ÈºÍ¸ß¶È
     m_ModelShader = new OpenGLShader("Shader/ModelShader.vs", "Shader/ModelShader.fs");
     m_LightShader = new OpenGLShader("Shader/LightShader.vs", "Shader/LightShader.fs");
 
 
-    float vertices[] = {
-        // positions          // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+    //float vertices[] = {
+    //    // positions          // normals           // texture coords
+    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+    //     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+    //    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+    //     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+    //    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    //    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    //    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+    //     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+    //     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+    //     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+    //    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-    };
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+    //     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+    //    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
+    //};
+    //glGenVertexArrays(1, &VAO);
+    //glGenBuffers(1, &VBO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glBindVertexArray(VAO);
+    //glBindVertexArray(VAO);
 
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    //// position attribute
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0);
+    //// normal attribute
+    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    //glEnableVertexAttribArray(1);
+    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    //glEnableVertexAttribArray(2);
 
-    texture1 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2.png");
-    texture2 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2_specular.png");
-    m_ModelShader->use();
-    m_ModelShader->setInt("material.diffuse", 0);
-    m_ModelShader->setInt("material.specular", 1);
+    //texture1 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2.png");
+    //texture2 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2_specular.png");
+    //m_ModelShader->use();
+    //m_ModelShader->setInt("material.diffuse", 0);
+    //m_ModelShader->setInt("material.specular", 1);
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
     return m_hWnd;
@@ -571,8 +571,10 @@ void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
         if (model->GetVertices().empty())continue;
         if (m_models[model] == nullptr)m_models[model] = new ModelManager(model, m_ModelShader);
         modelP = glm::mat4(1.0f);
+        
         modelP = glm::translate(modelP, (glm::vec3)model->GetWorldPosition());
         modelP = glm::scale(modelP, (glm::vec3)model->GetScale());
+        modelP = glm::rotate(modelP, (float)(model->GetRotate().angle), (glm::vec3)(model->GetRotate().axis.Normalize()));
         m_models[model]->SetModelMatrix(modelP);
         m_models[model]->Draw();
     }

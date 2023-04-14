@@ -151,9 +151,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DetaileControl_细节菜单控件组合.h" />
+    <ClInclude Include="DetaileControl.h" />
     <ClInclude Include="DetaileWind.h" />
-    <ClInclude Include="EditControl_编辑框控件.h" />
+    <ClInclude Include="EditControl.h" />
     <ClInclude Include="FileWind.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LargeNumber.h" />
@@ -177,9 +177,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="D3D11消息循环.cpp" />
-    <ClCompile Include="DetaileControl_细节菜单控件组合.cpp" />
+    <ClCompile Include="DetaileControl.cpp" />
     <ClCompile Include="DetaileWind.cpp" />
-    <ClCompile Include="EditControl_编辑框控件.cpp" />
+    <ClCompile Include="EditControl.cpp" />
     <ClCompile Include="FileWind.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="LargeNumber.cpp" />
@@ -193,7 +193,6 @@
     <ClCompile Include="Tree_树控件.cpp" />
     <ClCompile Include="vector_向量.cpp" />
     <ClCompile Include="WndData.cpp" />
-    <ClCompile Include="各种对话框的消息循环.cpp" />
     <ClCompile Include="字符转换.cpp" />
     <ClCompile Include="属性页窗口循环.cpp" />
     <ClCompile Include="文件窗口消息循环.cpp" />

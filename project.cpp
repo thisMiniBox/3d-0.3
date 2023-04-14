@@ -1,6 +1,8 @@
 #include "project.h"
 project::project()
 {
+	m_FileLoad = false;
+	FILEWND = nullptr;
 	MAINWND = new GDIWND;
 	DETAWND = new DetaileWind;
 	hWnd = nullptr;
@@ -27,15 +29,15 @@ HWND project::CreateWind(HINSTANCE hInst)
 	if (!RegisterClassEx(&wcex))
 	{
 		MessageBox(nullptr,
-			L"çª—å£ç±»æ³¨å†Œå¤±è´¥ï¼",
-			L"é”™è¯¯",
+			L"´°¿ÚÀà×¢²áÊ§°Ü£¡",
+			L"´íÎó",
 			MB_ICONERROR);
 	}
 
-	// æ‰§è¡Œåº”ç”¨ç¨‹åºåˆå§‹åŒ–:
+	// Ö´ÐÐÓ¦ÓÃ³ÌÐò³õÊ¼»¯:
 	hWnd = CreateWindowW(
 		L"szWindowClass",
-		L"win32æ¨¡åž‹æ¡†æž¶",
+		L"win32Ä£ÐÍ¿ò¼Ü",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		0,
@@ -47,29 +49,29 @@ HWND project::CreateWind(HINSTANCE hInst)
 		nullptr);
 	m_hInst = hInst;
 	FILEWND->CreateWind(hWnd);
-	Folder* a = new Folder("æ–°å»ºé¡¹ç›®");
+	Folder* a = new Folder("ÐÂ½¨ÏîÄ¿");
 	view = new Camera(
-		"æ–°å»ºæ‘„åƒæœº", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
-	AddObject(a, "0");
+		"ÐÂ½¨ÉãÏñ»ú", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
+	AddObject(a);
 	AddObject(view);
 	MAINWND->CreateWind(hWnd);
 	DETAWND->CreateWind(hWnd);
-	upMsg("ä½¿ç”¨GDIç»˜å›¾æ—¶ï¼Œå…ˆç‚¹å‡»ä¸€ä¸‹æ‘„åƒæœºåŠ è½½ä¾§è¾¹æ¡†æŽ§ä»¶ï¼Œå¦åˆ™æ— æ³•æ­£å¸¸æ¸²æŸ“çª—å£ï¼Œ");
-	upMsg("æˆ‘ä¹Ÿä¸çŸ¥é“ä¸ºä»€ä¹ˆï¼Œæ¶ˆæ¯å¾ªçŽ¯æ˜¯åŒä¸€ä¸ªï¼Œopenglå°±æ²¡é—®é¢˜");
+	upMsg("Ê¹ÓÃGDI»æÍ¼Ê±£¬ÏÈµã»÷Ò»ÏÂÉãÏñ»ú¼ÓÔØ²à±ß¿ò¿Ø¼þ£¬·ñÔòÎÞ·¨Õý³£äÖÈ¾´°¿Ú£¬");
+	upMsg("ÎÒÒ²²»ÖªµÀÎªÊ²Ã´£¬ÏûÏ¢Ñ­»·ÊÇÍ¬Ò»¸ö£¬opengl¾ÍÃ»ÎÊÌâ");
 	RECT m_rect;
 	GetClientRect(hWnd, &m_rect);
-	int cxClient = m_rect.right - m_rect.left;  // èŽ·å¾—å®¢æˆ·åŒºå®½åº¦
+	int cxClient = m_rect.right - m_rect.left;  // »ñµÃ¿Í»§Çø¿í¶È
 	int cyClient = m_rect.bottom - m_rect.top;
-	TEXTWND.hWnd = CreateWindow( //åˆ›å»ºç¼–è¾‘æ¡†
+	TEXTWND.hWnd = CreateWindow( //´´½¨±à¼­¿ò
 		TEXTWND.className.c_str(),
-		TEXT("æ¶ˆæ¯"),
+		TEXT("ÏûÏ¢"),
 		WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE,
 		0, cyClient - 150, cxClient / 5 * 4, 150,
 		hWnd,
 		(HMENU)1,
 		hInst,
 		nullptr);
-	SETWND.hWnd = CreateWindowW( //åˆ›å»ºç¼–è¾‘æ¡†
+	SETWND.hWnd = CreateWindowW( //´´½¨±à¼­¿ò
 		SETWND.className.c_str(),
 		0,
 		WS_CHILD | WS_BORDER | WS_VISIBLE | ES_MULTILINE,
@@ -84,11 +86,18 @@ HWND project::CreateWind(HINSTANCE hInst)
 }
 project::~project()
 {
+	m_RootFolder.ClearFolder_Çå¿ÕÎÄ¼þ¼Ð();
 	if (MAINWND)delete MAINWND;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
-	m_RootFolder.ClearFolder_æ¸…ç©ºæ–‡ä»¶å¤¹();
-
+}
+void project::SetFileName(Object* obj, const std::wstring& NewName)
+{
+	char szBuf[128];
+	WideCharToMultiByte(CP_ACP, 0, NewName.c_str(), -1, szBuf, 128, NULL, NULL);
+	m_RootFolder.SetFileName(obj, szBuf);
+	//DETAWND->GetTarget()->SetName(szBuf);
+	FILEWND->FixItemName(DETAWND->GetTree(), NewName.c_str());
 }
 HINSTANCE project::GethInstance()const
 {
@@ -123,9 +132,9 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"è­¦å‘Š ";
-			else if (p->data.Type == 1)out += L"æ¶ˆæ¯ ";
-			else out += L"é”™è¯¯ ";
+			if (p->data.Type == 2)out += L"¾¯¸æ ";
+			else if (p->data.Type == 1)out += L"ÏûÏ¢ ";
+			else out += L"´íÎó ";
 			out += (p->data.Time);
 			out += (p->data.Str);
 			p = p->above;
@@ -140,7 +149,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 3)out += L"é”™è¯¯ ";
+			if (p->data.Type == 3)out += L"´íÎó ";
 			else
 			{
 				p = p->above;
@@ -160,7 +169,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"è­¦å‘Š ";
+			if (p->data.Type == 2)out += L"¾¯¸æ ";
 			else
 			{
 				p = p->above;
@@ -180,7 +189,7 @@ void project::updateMsg(const HDC& hdc)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 1)out += L"æ¶ˆæ¯ ";
+			if (p->data.Type == 1)out += L"ÏûÏ¢ ";
 			else
 			{
 				p = p->above;
@@ -198,14 +207,28 @@ void project::updateMsg(const HDC& hdc)
 HTREEITEM project::AddObject(Object* a, std::string address)
 {
 	m_Models.clear();
-	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(a);
+	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(a);
 	return FILEWND->AddItem(*a, address);
 }
 HTREEITEM project::AddObject(Object* a, HTREEITEM parent)
 {
 	m_Models.clear();
-	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(a);
+	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(a);
 	return FILEWND->AddItem(*a, parent);
+}
+Object* project::CreateObject(Folder* parent, std::string name, int type)
+{
+	Object* out = nullptr;
+	if (!parent)
+		out = m_RootFolder.CreateFile_´´½¨ÎÄ¼þ(name, type);
+	else
+		out = parent->CreateFile_´´½¨ÎÄ¼þ(name, type);
+	HTREEITEM New = FILEWND->AddItem(*out, DETAWND->GetTree());
+	DETAWND->SetView(out);
+	DETAWND->SetTree(New);
+	FILEWND->ExploreFolder(New);
+	//FILEWND->ShowFolder(m_RootFolder);
+	return out;
 }
 void project::SetRect(RECT rect)
 {
@@ -218,7 +241,7 @@ RECT project::GetRect()const
 std::vector<Model*>& project::GetModels()
 {
 	if (!m_Models.empty())return m_Models;
-	m_Models = m_RootFolder.GetAllModleFile_æ‰¾åˆ°æ‰€æœ‰æ¨¡åž‹();
+	m_Models = m_RootFolder.GetAllModleFile_ÕÒµ½ËùÓÐÄ£ÐÍ();
 	return m_Models;
 }
 std::vector<Model*>& project::UpdateModels()
@@ -229,17 +252,20 @@ std::vector<Model*>& project::UpdateModels()
 
 void project::DeleteObject(Object* obj,HTREEITEM hTree)
 {
-	m_RootFolder.DeleteFile_åˆ é™¤æ–‡ä»¶(obj);
+	if (DETAWND->GetTarget() == obj)
+		DETAWND->SetView(nullptr);
+	m_RootFolder.DeleteFile_É¾³ýÎÄ¼þ(obj);
 	UpdateModels();
 	if (hTree)
 		FILEWND->DeleteItem(hTree);
+	InvalidateRect(MAINWND->GethWnd(), NULL, true);
 }
 
 int project::loadModel(const std::wstring& path)
 {
 	Model* model = new Model;
-	int error = model->loadModelFile_åŠ è½½æ¨¡åž‹æ–‡ä»¶(path);
-	m_RootFolder.AddFile_æ·»åŠ æ–‡ä»¶(model);
+	int error = model->loadModelFile_¼ÓÔØÄ£ÐÍÎÄ¼þ(path);
+	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(model);
 	FILEWND->AddItem(*model);
 	return error;
 }

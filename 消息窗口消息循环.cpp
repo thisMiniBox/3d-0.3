@@ -1,5 +1,5 @@
-#include"æ¶ˆæ¯å¾ªçŽ¯å£°æ˜Ž.h"
-//æ–‡æœ¬çª—å£æ¶ˆæ¯å¾ªçŽ¯
+#include"ÏûÏ¢Ñ­»·ÉùÃ÷.h"
+//ÎÄ±¾´°¿ÚÏûÏ¢Ñ­»·
 LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
 {
     switch (message)
@@ -38,34 +38,34 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         PAINTSTRUCT ps;
 
         HDC hdc = BeginPaint(hWnd, &ps);
-        HPEN hpen = CreatePen(PS_SOLID, 0, RGB(255, 255, 255)); //åˆ›å»º ä¸€æ¡çº¢è‰²å®žçº¿
-        HGDIOBJ oldhpen = SelectObject(hdc, hpen); // ç”»ç¬”é€‰å…¥è®¾å¤‡çŽ¯å¢ƒï¼Œå¹¶ä¿ç•™å…ˆå‰ç”»ç¬”
+        HPEN hpen = CreatePen(PS_SOLID, 0, RGB(255, 255, 255)); //´´½¨ Ò»ÌõºìÉ«ÊµÏß
+        HGDIOBJ oldhpen = SelectObject(hdc, hpen); // »­±ÊÑ¡ÈëÉè±¸»·¾³£¬²¢±£ÁôÏÈÇ°»­±Ê
         current_project->updateMsg(hdc);
         switch (current_project->MSG_att)
         {
         case 0:
         {
-            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("æ˜¾ç¤ºæ‰€æœ‰æ¶ˆæ¯"), 6);
+            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("ÏÔÊ¾ËùÓÐÏûÏ¢"), 6);
             break;
         }
         case 1:
         {
-            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("æ˜¾ç¤ºé”™è¯¯æ¶ˆæ¯"), 6);
+            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("ÏÔÊ¾´íÎóÏûÏ¢"), 6);
             break;
         }
         case 2:
         {
-            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("æ˜¾ç¤ºè­¦å‘Šæ¶ˆæ¯"), 6);
+            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("ÏÔÊ¾¾¯¸æÏûÏ¢"), 6);
             break;
         }
         case 3:
         {
-            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("æ˜¾ç¤ºæ™®é€šæ¶ˆæ¯"), 6);
+            TextOut(hdc, current_project->TEXTWND.m_rect.right - 200 - 100, 3, TEXT("ÏÔÊ¾ÆÕÍ¨ÏûÏ¢"), 6);
             break;
         }
         }
-        SelectObject(hdc, oldhpen); // æ¢å¤å…ˆå‰ç”»ç¬”
-        DeleteObject(hpen); // åˆ é™¤åˆ›å»ºç”»ç¬”hpen
+        SelectObject(hdc, oldhpen); // »Ö¸´ÏÈÇ°»­±Ê
+        DeleteObject(hpen); // É¾³ý´´½¨»­±Êhpen
         EndPaint(hWnd, &ps);
         break;
     }
@@ -110,7 +110,7 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     }
     case WM_SIZE:
     {
-        current_project->TEXTWND.m_rect.right = LOWORD(lParam);  // èŽ·å¾—å®¢æˆ·åŒºå®½åº¦
+        current_project->TEXTWND.m_rect.right = LOWORD(lParam);  // »ñµÃ¿Í»§Çø¿í¶È
         current_project->TEXTWND.m_rect.bottom = HIWORD(lParam);
         for (int i = 0; i < current_project->TEXTWND.ChildWnd.size(); i++)
             MoveWindow(current_project->TEXTWND.ChildWnd[i].hWnd, LOWORD(lParam) - 50 * (i + 1), 1, 50, 30, true);
@@ -121,14 +121,14 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         WndMsg wndm;
         RECT m_rect;
         GetClientRect(hWnd, &m_rect);
-        int cxClient = m_rect.right - m_rect.left;  // èŽ·å¾—å®¢æˆ·åŒºå®½åº¦
+        int cxClient = m_rect.right - m_rect.left;  // »ñµÃ¿Í»§Çø¿í¶È
         SetScrollRange(hWnd, SB_VERT, 0, 1, false);
         SetScrollRange(hWnd, SB_HORZ, 0, 100, false);
         SetScrollPos(hWnd, SB_HORZ, 0, true);
         SetScrollPos(hWnd, SB_VERT, 0, true);
         wndm.hWnd = CreateWindow(
             TEXT("button"),
-            TEXT("æ¶ˆæ¯"),
+            TEXT("ÏûÏ¢"),
             WS_CHILD | WS_VISIBLE,
             cxClient - 50, 0, 50, 20,
             hWnd,
@@ -138,7 +138,7 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         current_project->TEXTWND.ChildWnd.push_back(wndm);
         wndm.hWnd = CreateWindow(
             TEXT("button"),
-            TEXT("è­¦å‘Š"),
+            TEXT("¾¯¸æ"),
             WS_CHILD | WS_VISIBLE,
             cxClient - 100, 0, 50, 20,
             hWnd,
@@ -148,7 +148,7 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         current_project->TEXTWND.ChildWnd.push_back(wndm);
         wndm.hWnd = CreateWindow(
             TEXT("button"),
-            TEXT("é”™è¯¯"),
+            TEXT("´íÎó"),
             WS_CHILD | WS_VISIBLE,
             cxClient - 150, 0, 50, 20,
             hWnd,
@@ -158,7 +158,7 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         current_project->TEXTWND.ChildWnd.push_back(wndm);
         wndm.hWnd = CreateWindow(
             TEXT("button"),
-            TEXT("æ‰€æœ‰"),
+            TEXT("ËùÓÐ"),
             WS_CHILD | WS_VISIBLE,
             cxClient - 150, 0, 50, 20,
             hWnd,

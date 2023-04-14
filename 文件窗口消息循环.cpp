@@ -1,4 +1,4 @@
- #include"æ¶ˆæ¯å¾ªçŽ¯å£°æ˜Ž.h"
+ #include"ÏûÏ¢Ñ­»·ÉùÃ÷.h"
 LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
 {
     switch (message)
@@ -6,11 +6,11 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     case WM_NOTIFY:
     {
         LPNMHDR lphr = (LPNMHDR)lParam;
-        if (lphr->hwndFrom == current_project->FILEWND->GetTree())//åˆ¤æ–­æ˜¯å¦æ˜¯æ ‘å½¢æŽ§ä»¶å‘æ¥çš„æ¶ˆæ¯
+        if (lphr->hwndFrom == current_project->FILEWND->GetTree())//ÅÐ¶ÏÊÇ·ñÊÇÊ÷ÐÎ¿Ø¼þ·¢À´µÄÏûÏ¢
         {
             switch (lphr->code)
             {
-            case NM_CLICK://é¼ æ ‡å•å‡»
+            case NM_CLICK://Êó±êµ¥»÷
             {
                 Object* o = current_project->FILEWND->GetMousePositionItemData();
                 if (!o)break;
@@ -18,33 +18,31 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 current_project->DETAWND->SetTree(current_project->FILEWND->GetMousePositionItem());
             }
             break;
-            //case NM_DBLCLK:
-            //{
-            //    Object* o = current_project->FileTree_æ–‡ä»¶æ ‘.GetOption_èŽ·å–è¢«é€‰ä¸­èŠ‚ç‚¹();
-            //    if (!o)break;
-            //    
-            //    break;
-            //}
             }
+            break;
         }
-        break;
     }
-    case WM_CONTEXTMENU: 
+    case WM_CONTEXTMENU:
     {
-        // èŽ·å–é¼ æ ‡å½“å‰ä½ç½®
+        // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
         POINT pt;
         GetCursorPos(&pt);
 
-        // åŠ è½½èœå•èµ„æº
+        // ¼ÓÔØ²Ëµ¥×ÊÔ´
         HMENU hMenu = LoadMenu(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_FILERIGHT));
         HMENU hPopup = GetSubMenu(hMenu, 0);
 
-        // æ˜¾ç¤ºèœå•å¹¶ç­‰å¾…ç”¨æˆ·é€‰æ‹©
+        // ÏÔÊ¾²Ëµ¥²¢µÈ´ýÓÃ»§Ñ¡Ôñ
         int r = TrackPopupMenuEx(hPopup, TPM_LEFTALIGN | TPM_TOPALIGN | TPM_RETURNCMD, pt.x, pt.y, hWnd, NULL);
         switch (r)
         {
         case ID_FM_DELETE:
         {
+            if (current_project->m_FileLoad)
+            {
+                current_project->upMsg("ÕýÔÚ¼ÓÔØÎÄ¼þ£¬ÎÞ·¨½øÐÐÉ¾³ý²Ù×÷", _Warning);
+                break;
+            }
             Object* ta = current_project->FILEWND->GetSelectedItemData();
             switch (ta->GetType())
             {
@@ -53,28 +51,37 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 Camera* v = dynamic_cast<Camera*>(ta);
                 if (v == current_project->view)
                 {
-                    current_project->upMsg("ä¸èƒ½åˆ é™¤å½“å‰è§†è§’æ‘„åƒæœº",_Error);
+                    current_project->upMsg("²»ÄÜÉ¾³ýµ±Ç°ÊÓ½ÇÉãÏñ»ú", _Error);
                     break;
-                }    
+                }
             }
             default:
             {
                 current_project->DeleteObject(ta, current_project->FILEWND->GetSelectedItem());
             }
-                break;
+            break;
             }
+            break;
+        }
+        case ID_FM_CREATEFOLDER:
+        {
+            Object* par = current_project->DETAWND->GetTarget();
+            if (par && par->GetType() == OT_FOLDER)
+                current_project->CreateObject(dynamic_cast<Folder*>(par));
+            else
+                current_project->CreateObject();
             break;
         }
         default:
             break;
         }
-        // é”€æ¯èœå•
+        // Ïú»Ù²Ëµ¥
         DestroyMenu(hMenu);
         break;
     }
     case WM_SIZE:
     {
-        int cxClient = LOWORD(lParam);  // èŽ·å¾—å®¢æˆ·åŒºå®½åº¦
+        int cxClient = LOWORD(lParam);  // »ñµÃ¿Í»§Çø¿í¶È
         int cyClient = HIWORD(lParam);
         current_project->FILEWND->MoveTree(0, 0, cxClient, cyClient);
         break;

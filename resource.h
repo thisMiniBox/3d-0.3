@@ -1,4 +1,4 @@
-//{{NO_DEPENDENCIES}}
+﻿//{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ 生成的包含文件。
 // 供 机器学习win.rc 使用
 //
@@ -21,6 +21,7 @@
 #define IDR_FILERIGHT                   134
 #define IDD_SETSIZE                     135
 #define IDD_ROTATE                      138
+#define IDD_CONTENT                     139
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -44,8 +45,23 @@
 #define IDC_N_TITLE                     1084
 #define IDC_N_TYPE                      1085
 #define IDC_R_FOV                       1086
+#define IDC_RO_FOV                      1086
 #define IDC_R_TITLR                     1090
+#define IDC_R_TITLE                     1090
+#define IDC_RO_TITLE                    1090
 #define IDC_COMBO1                      1097
+#define IDC_RO_QUATERNION               1098
+#define IDC_RO_EULERANGLE               1099
+#define IDC_RO_X                        1100
+#define IDC_RO_XEDIT                    1101
+#define IDC_RO_Y                        1102
+#define IDC_RO_W                        1103
+#define IDC_RO_ZEDIT                    1104
+#define IDC_RO_YEDIT                    1105
+#define IDC_RO_TIP                      1106
+#define IDC_RO_Z                        1107
+#define IDC_RO_ERROR                    1108
+#define IDC_RO_WEDIT                    1109
 #define ID_32771                        32771
 #define ID_inChar                       32772
 #define IDM_inChar                      32773
@@ -70,6 +86,15 @@
 #define ID_32794                        32794
 #define ID_32795                        32795
 #define ID_FM_DELETE                    32796
+#define ID_32797                        32797
+#define ID_32798                        32798
+#define ID_32799                        32799
+#define ID_CreateFolder                 32800
+#define ID_CreateModel                  32801
+#define ID_CreateCamera                 32802
+#define ID_FM_CREATEFOLDER              32803
+#define ID_FM_CREATEMODEL               32804
+#define ID_FM_CREATECAMERA              32805
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -77,9 +102,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        139
-#define _APS_NEXT_COMMAND_VALUE         32797
-#define _APS_NEXT_CONTROL_VALUE         1098
+#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_COMMAND_VALUE         32806
+#define _APS_NEXT_CONTROL_VALUE         1110
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

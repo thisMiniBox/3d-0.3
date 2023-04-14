@@ -7,8 +7,8 @@
 #include<d3d11.h>
 #include<sstream>
 #include <unordered_map>
-#include"vector_å‘é‡.h"
-#include"å­—ç¬¦è½¬æ¢.h"
+#include"vector_ÏòÁ¿.h"
+#include"×Ö·û×ª»».h"
 
 enum ObjectType
 {
@@ -18,39 +18,43 @@ enum ObjectType
 };
 using namespace vec;
 
-// Object ç±»ï¼Œè¡¨ç¤ºåœºæ™¯ä¸­çš„ç‰©ä½“åŸºç±»
+// Object Àà£¬±íÊ¾³¡¾°ÖĞµÄÎïÌå»ùÀà
 class Object
 {
 protected:
-	std::string m_Name;  // ç‰©ä½“åç§°
+	std::string m_Name;  // ÎïÌåÃû³Æ
 public:
-	// é»˜è®¤æ„é€ å‡½æ•°
+	// Ä¬ÈÏ¹¹Ôìº¯Êı
 	Object();
-	// æ„é€ å‡½æ•°ï¼Œå¯æŒ‡å®šç‰©ä½“åç§°
+	// ¹¹Ôìº¯Êı£¬¿ÉÖ¸¶¨ÎïÌåÃû³Æ
 	Object(std::string nam);
-	// ææ„å‡½æ•°
+	// Îö¹¹º¯Êı
 	virtual ~Object();
-	// è·å–ç‰©ä½“åç§°
+	// »ñÈ¡ÎïÌåÃû³Æ
 	const std::string GetName() const;
-	// è®¾ç½®ç‰©ä½“åç§°
+	// ÉèÖÃÎïÌåÃû³Æ
 	void SetName(std::string NewName);
-	// è·å–ç‰©ä½“ç±»å‹ï¼Œçº¯è™šå‡½æ•°
+	// »ñÈ¡ÎïÌåÀàĞÍ£¬´¿Ğéº¯Êı
 	virtual int GetType() = 0;
-	// è·å–ç‰©ä½“ä½ç½®ï¼Œè¿”å›é»˜è®¤å€¼
+	// »ñÈ¡ÎïÌåÎ»ÖÃ£¬·µ»ØÄ¬ÈÏÖµ
 	virtual Vector GetPosition() const;
-	// è·å–ç‰©ä½“ä¸–ç•Œåæ ‡ï¼Œè¿”å›é»˜è®¤å€¼
+	// »ñÈ¡ÎïÌåÊÀ½ç×ø±ê£¬·µ»ØÄ¬ÈÏÖµ
 	virtual Vector GetWorldPosition() const;
-	// è®¾ç½®ç‰©ä½“ä½ç½®ï¼Œç©ºå®ç°
+	// »ñÈ¡Ğı×ª
+	virtual Rotation GetRotate()const;
+	// Éè¶¨Ğı×ª
+	virtual void SetRotate(const Rotation&);
+	// ÉèÖÃÎïÌåÎ»ÖÃ£¬¿ÕÊµÏÖ
 	virtual void SetPosition(vec::Vector);
-	// ç§»åŠ¨ç‰©ä½“ï¼Œç©ºå®ç°
+	// ÒÆ¶¯ÎïÌå£¬¿ÕÊµÏÖ
 	virtual void Move(const Vector3&);
-	//åˆ é™¤å…³è”ç‰©ä½“
+	//É¾³ı¹ØÁªÎïÌå
 	virtual void DeleteChildObject();
 };
 
 
 
-//æè´¨ä¿¡æ¯ç»“æ„ä½“
+//²ÄÖÊĞÅÏ¢½á¹¹Ìå
 typedef struct _Material {
 	std::string name;
 	float Ns;
@@ -64,12 +68,12 @@ typedef struct _Material {
 	std::string map_Ks;
 	_Material() :Ns(0.0), Ni(0.0), Tr(0.0), Ka(), Kd(), Ks() {}
 }Material;
-//ç”¨äºObjæ¨¡å‹åŠ è½½æè´¨
-class ModelShader_æ¨¡å‹ç€è‰²å™¨ {
+//ÓÃÓÚObjÄ£ĞÍ¼ÓÔØ²ÄÖÊ
+class ModelShader_Ä£ĞÍ×ÅÉ«Æ÷ {
 public:
 	std::string file;
-	ModelShader_æ¨¡å‹ç€è‰²å™¨() {}
-	~ModelShader_æ¨¡å‹ç€è‰²å™¨() {}
+	ModelShader_Ä£ĞÍ×ÅÉ«Æ÷() {}
+	~ModelShader_Ä£ĞÍ×ÅÉ«Æ÷() {}
 	bool read(const std::string& filename);
 
 	Material get_materials(std::string name) const {
@@ -79,7 +83,7 @@ public:
 private:
 	std::unordered_map<std::string, Material> materials;
 };
-//GDIè¾“å‡ºé¢æ•°æ®
+//GDIÊä³öÃæÊı¾İ
 typedef struct _OutPoint3
 {
 	POINT point[3];
@@ -87,14 +91,14 @@ typedef struct _OutPoint3
 	float distance;
 	_OutPoint3():point(),distance(0),color(RGB(0,0,0)){}
 }Outface;
-//é¢è¯»å–ä¿¡æ¯
-typedef struct _fm_é¢ä¿¡æ¯
+//Ãæ¶ÁÈ¡ĞÅÏ¢
+typedef struct _fm_ÃæĞÅÏ¢
 {
 	size_t a[9];
-	_fm_é¢ä¿¡æ¯() :a() {}
-}FaceData_é¢ä¿¡æ¯;
-//ä¸‰è§’é¢æ•°æ®
-typedef struct _face_å®Œæ•´çš„ä¸‰è§’é¢æ•°æ®
+	_fm_ÃæĞÅÏ¢() :a() {}
+}FaceData_ÃæĞÅÏ¢;
+//Èı½ÇÃæÊı¾İ
+typedef struct _face_ÍêÕûµÄÈı½ÇÃæÊı¾İ
 {
 	Vector3 vertexA;
 	Vector3 vertexB;
@@ -106,8 +110,8 @@ typedef struct _face_å®Œæ•´çš„ä¸‰è§’é¢æ•°æ®
 	Vector2 texCoordB;
 	Vector2 texCoordC;
 	COLORREF color;
-	_face_å®Œæ•´çš„ä¸‰è§’é¢æ•°æ®() :color(RGB(155, 155, 155)) {}
-	_face_å®Œæ•´çš„ä¸‰è§’é¢æ•°æ®(Vector3 A, Vector3 B, Vector3 C,
+	_face_ÍêÕûµÄÈı½ÇÃæÊı¾İ() :color(RGB(155, 155, 155)) {}
+	_face_ÍêÕûµÄÈı½ÇÃæÊı¾İ(Vector3 A, Vector3 B, Vector3 C,
 		Vector3 NA, Vector3 NB, Vector3 NC,
 		Vector2 TA, Vector2 TB, Vector2 TC) :
 		vertexA(A), vertexB(B), vertexC(C),
@@ -122,114 +126,121 @@ typedef struct _face_å®Œæ•´çš„ä¸‰è§’é¢æ•°æ®
 		case 2:
 			return vertexC;
 		default:
-			// å¦‚æœè¾“å…¥çš„ç´¢å¼•æ— æ•ˆï¼Œåˆ™è¿”å›é›¶å‘é‡
+			// Èç¹ûÊäÈëµÄË÷ÒıÎŞĞ§£¬Ôò·µ»ØÁãÏòÁ¿
 			return Vector3(0, 0, 0);
 		}
 	}
 }FACE;
 using namespace DirectX;
 struct Vertex {
-	vec::Vector position;    // é¡¶ç‚¹åæ ‡
-	vec::Vector normal;      // é¡¶ç‚¹æ³•çº¿
-	vec::Vector2 texCoord;   // çº¹ç†åæ ‡
+	vec::Vector position;    // ¶¥µã×ø±ê
+	vec::Vector normal;      // ¶¥µã·¨Ïß
+	vec::Vector2 texCoord;   // ÎÆÀí×ø±ê
 };
-// æ¨¡å‹ç±»ï¼Œç»§æ‰¿è‡ª Object
+// Ä£ĞÍÀà£¬¼Ì³Ğ×Ô Object
 class Model : public Object
 {
 public:
-	// é»˜è®¤æ„é€ å‡½æ•°
+	// Ä¬ÈÏ¹¹Ôìº¯Êı
 	Model();
-	// æ„é€ å‡½æ•°ï¼Œå¯æŒ‡å®šç‰©ä½“åç§°
+	// ¹¹Ôìº¯Êı£¬¿ÉÖ¸¶¨ÎïÌåÃû³Æ
 	Model(std::string NAME);
-	// ææ„å‡½æ•°
+	// Îö¹¹º¯Êı
 	~Model();
 
-	// åˆ›å»ºå­æ¨¡å‹ï¼Œè¿”å›å­æ¨¡å‹æŒ‡é’ˆ
+	// ´´½¨×ÓÄ£ĞÍ£¬·µ»Ø×ÓÄ£ĞÍÖ¸Õë
 	Model* CreateChildModel(std::string Name);
 
-	// è·å–é¡¶ç‚¹åæ ‡æ•°æ®
-	const std::vector<vec::Vector>& GetVertexData() const { return vertex_é¡¶ç‚¹åæ ‡æ•°æ®; }
-	// è·å–æ³•å‘é‡æ•°æ®
-	const std::vector<vec::Vector>& GetNormalData() const { return normal_æ³•å‘é‡æ•°æ®; }
-	// è·å–è´´å›¾åæ ‡æ•°æ®
-	const std::vector<vec::Vector2>& GetTexCoordData() const { return texCoords_è´´å›¾åæ ‡æ•°æ®; }
-	// è·å–æè´¨ä¿¡æ¯
+	// »ñÈ¡¶¥µã×ø±êÊı¾İ
+	const std::vector<vec::Vector>& GetVertexData() const { return vertex_¶¥µã×ø±êÊı¾İ; }
+	// »ñÈ¡·¨ÏòÁ¿Êı¾İ
+	const std::vector<vec::Vector>& GetNormalData() const { return normal_·¨ÏòÁ¿Êı¾İ; }
+	// »ñÈ¡ÌùÍ¼×ø±êÊı¾İ
+	const std::vector<vec::Vector2>& GetTexCoordData() const { return texCoords_ÌùÍ¼×ø±êÊı¾İ; }
+	// »ñÈ¡²ÄÖÊĞÅÏ¢
 	const Material& GetMaterial() const { return mtl; }
-	// è·å–æ¨¡å‹æ–‡ä»¶è·¯å¾„
+	// »ñÈ¡Ä£ĞÍÎÄ¼şÂ·¾¶
 	std::string GetFileAddress()const { return fileAddress; }
-	// è·å–é¢ä¿¡æ¯
-	const std::vector<FaceData_é¢ä¿¡æ¯>& GetFaceData() const { return face_é¢çš„è¯»å–ä½ç½®; }
-	// è·å–å­æ¨¡å‹æŒ‡é’ˆåˆ—è¡¨
-	const std::vector<Model*>& GetChildModel()const { return child_å­æ¨¡å‹æŒ‡é’ˆ; }
-	// è·å–çˆ¶æ¨¡å‹æŒ‡é’ˆ
-	const Model* GetParentModel()const { return parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ; }
+	// »ñÈ¡ÃæĞÅÏ¢
+	const std::vector<FaceData_ÃæĞÅÏ¢>& GetFaceData() const { return face_ÃæµÄ¶ÁÈ¡Î»ÖÃ; }
+	// »ñÈ¡×ÓÄ£ĞÍÖ¸ÕëÁĞ±í
+	const std::vector<Model*>& GetChildModel()const { return child_×ÓÄ£ĞÍÖ¸Õë; }
+	// »ñÈ¡¸¸Ä£ĞÍÖ¸Õë
+	const Model* GetParentModel()const { return parent_¸¸Ä£ĞÍÖ¸Õë; }
 
-	// åŠ è½½æ¨¡å‹æ–‡ä»¶
-	int loadModelFile_åŠ è½½æ¨¡å‹æ–‡ä»¶(const std::wstring& filename);
-	// è·å–ä¸‰è§’å½¢é¢ç‰‡æ•°æ®
+	// ¼ÓÔØÄ£ĞÍÎÄ¼ş
+	int loadModelFile_¼ÓÔØÄ£ĞÍÎÄ¼ş(const std::wstring& filename);
+	// »ñÈ¡Èı½ÇĞÎÃæÆ¬Êı¾İ
 	const std::vector<FACE>& GetTriFace();
-	// è·å–é¡¶ç‚¹æ•°æ®
+	// »ñÈ¡¶¥µãÊı¾İ
 	const std::vector<Vertex>& GetVertices();
 
-	// è®¾ç½®ç¼©æ”¾æ¯”ä¾‹
+	// ÉèÖÃËõ·Å±ÈÀı
 	void SetScale(Vector s) { m_Scale = s; }
-	// æ›´æ–°ä¸‰è§’å½¢é¢ç‰‡æ•°æ®
+	// ¸üĞÂÈı½ÇĞÎÃæÆ¬Êı¾İ
 	void UpdateFACEdata() { TriFace.clear(); }
 
-	// è·å–ç¼©æ”¾æ¯”ä¾‹
+	// »ñÈ¡Ëõ·Å±ÈÀı
 	Vector GetScale()const { return m_Scale; }
 
-	// è·å–ç‰©ä½“ä½ç½®
+	// »ñÈ¡ÎïÌåÎ»ÖÃ
 	virtual Vector GetPosition()const override { return m_Position; }
-	// è·å–ç‰©ä½“ä¸–ç•Œåæ ‡
+	// »ñÈ¡ÎïÌåÊÀ½ç×ø±ê
 	virtual Vector GetWorldPosition() const override;
-	// è®¾ç½®ç‰©ä½“ä½ç½®
+	// »ñÈ¡Ğı×ª
+	virtual Rotation GetRotate()const override;
+	//Éè¶¨Ğı×ªËÄÔªÊı
+	virtual void SetRotate(const Rotation&) override;
+	// ÉèÖÃÎïÌåÎ»ÖÃ
 	virtual void SetPosition(vec::Vector p)override;
-	// ç§»åŠ¨ç‰©ä½“
+	// ÒÆ¶¯ÎïÌå
 	virtual void Move(const Vector3& v) override { m_Position += v; if (!TriFace.empty())TriFace.clear(); }
-	// è·å–ç‰©ä½“ç±»å‹
+	// »ñÈ¡ÎïÌåÀàĞÍ
 	virtual int GetType()override;
 
 private:
-	void DistributeDataToChildModels();  // å°†æ¨¡å‹æ•°æ®åˆ†é…ç»™å­æ¨¡å‹
-	int loadobj(const std::wstring& path, FILE* file);  // åŠ è½½ obj æ–‡ä»¶
-	std::vector<vec::Vector> vertex_é¡¶ç‚¹åæ ‡æ•°æ®;  // é¡¶ç‚¹åæ ‡æ•°æ®
-	std::vector<vec::Vector> normal_æ³•å‘é‡æ•°æ®;  // æ³•å‘é‡æ•°æ®
-	std::vector<vec::Vector2> texCoords_è´´å›¾åæ ‡æ•°æ®;  // è´´å›¾åæ ‡æ•°æ®
-	std::vector<FACE> TriFace;  // ä¸‰è§’å½¢é¢ç‰‡æ•°æ®
-	std::vector<Vertex> ModelVertex;  // é¡¶ç‚¹æ•°æ®
-	Material mtl;  // æè´¨ä¿¡æ¯
-	std::vector<FaceData_é¢ä¿¡æ¯> face_é¢çš„è¯»å–ä½ç½®;  // é¢ä¿¡æ¯
-	Model* parent_çˆ¶æ¨¡å‹æŒ‡é’ˆ;  // çˆ¶æ¨¡å‹æŒ‡é’ˆ
-	ModelShader_æ¨¡å‹ç€è‰²å™¨* mtl_æè´¨;  // æ¨¡å‹ç€è‰²å™¨
-	std::vector<Model*>child_å­æ¨¡å‹æŒ‡é’ˆ;  // å­æ¨¡å‹æŒ‡é’ˆåˆ—è¡¨
-	std::string fileAddress;  // æ¨¡å‹æ–‡ä»¶è·¯å¾„
+	void DistributeDataToChildModels();  // ½«Ä£ĞÍÊı¾İ·ÖÅä¸ø×ÓÄ£ĞÍ
+	int loadobj(const std::wstring& path, FILE* file);  // ¼ÓÔØ obj ÎÄ¼ş
+	std::vector<vec::Vector> vertex_¶¥µã×ø±êÊı¾İ;  // ¶¥µã×ø±êÊı¾İ
+	std::vector<vec::Vector> normal_·¨ÏòÁ¿Êı¾İ;  // ·¨ÏòÁ¿Êı¾İ
+	std::vector<vec::Vector2> texCoords_ÌùÍ¼×ø±êÊı¾İ;  // ÌùÍ¼×ø±êÊı¾İ
+	std::vector<FACE> TriFace;  // Èı½ÇĞÎÃæÆ¬Êı¾İ
+	std::vector<Vertex> ModelVertex;  // ¶¥µãÊı¾İ
+	Material mtl;  // ²ÄÖÊĞÅÏ¢
+	std::vector<FaceData_ÃæĞÅÏ¢> face_ÃæµÄ¶ÁÈ¡Î»ÖÃ;  // ÃæĞÅÏ¢
+	Model* parent_¸¸Ä£ĞÍÖ¸Õë;  // ¸¸Ä£ĞÍÖ¸Õë
+	ModelShader_Ä£ĞÍ×ÅÉ«Æ÷* mtl_²ÄÖÊ;  // Ä£ĞÍ×ÅÉ«Æ÷
+	std::vector<Model*>child_×ÓÄ£ĞÍÖ¸Õë;  // ×ÓÄ£ĞÍÖ¸ÕëÁĞ±í
+	std::string fileAddress;  // Ä£ĞÍÎÄ¼şÂ·¾¶
 
-	Vector m_Position;  // ç‰©ä½“ä½ç½®
-	Vector m_Scale;  // ç¼©æ”¾æ¯”ä¾‹
-	Quaternion m_Rotate;//æ—‹è½¬
+	Vector m_Position;  // ÎïÌåÎ»ÖÃ
+	Vector m_Scale;  // Ëõ·Å±ÈÀı
+	Rotation m_Rotate;//Ğı×ª
 };
 #include<map>
-//å¯¹è±¡æ–‡ä»¶/å ä½å­ç±»
+//¶ÔÏóÎÄ¼ş/Õ¼Î»×ÓÀà
 class Folder :public Object
 {
 	std::multimap<std::string,Object*> m_Child;
 	Folder* m_Parent;
 public:
-	Folder() { m_Name = "æ–‡ä»¶å¤¹"; }
+	Folder() { m_Name = "ĞÂ½¨ÎÄ¼ş¼Ğ"; }
 	Folder(std::string NAME);
-	void CreateFile_åˆ›å»ºæ–‡ä»¶(std::string Name, int type = OT_FOLDER);
-	void AddFile_æ·»åŠ æ–‡ä»¶(Object*);
-	auto FindFile_å¯»æ‰¾æ–‡ä»¶(const std::string& Name)const;
+	Object* CreateFile_´´½¨ÎÄ¼ş(std::string Name, int type = OT_FOLDER);
+	void AddFile_Ìí¼ÓÎÄ¼ş(Object*);
+	void AddFile_Ìí¼ÓÎÄ¼ş(Object* a, Object* Parent);
+	//½öÑ°ÕÒµ±Ç°Ä¿Â¼
+	auto FindFile_Ñ°ÕÒÎÄ¼ş(const std::string& Name)const;
+	void SetFileName(Object*, const std::string& NewName);
 	std::vector<Object*> GetTheCurrentDirectoryFile()const;
-	void ClearFolder_æ¸…ç©ºæ–‡ä»¶å¤¹();
-	void DeleteFile_åˆ é™¤æ–‡ä»¶(Object*);
-	std::vector<Model*> GetAllModleFile_æ‰¾åˆ°æ‰€æœ‰æ¨¡å‹()const;
+	void ClearFolder_Çå¿ÕÎÄ¼ş¼Ğ();
+	void DeleteFile_É¾³ıÎÄ¼ş(Object*);
+	std::vector<Model*> GetAllModleFile_ÕÒµ½ËùÓĞÄ£ĞÍ()const;
 	int GetType();
 	virtual Vector GetPosition()const override { return Vector(0, 0, 0); }
 	virtual void DeleteChildObject()override;
 };
-//å¯¹è±¡æ‘„åƒæœºå­ç±»
+//¶ÔÏóÉãÏñ»ú×ÓÀà
 class Camera : public Object {
 private:
 	vec::Vector3 m_Position;
@@ -269,9 +280,9 @@ public:
 	float GetFar() const { return m_Far; }
 	virtual int GetType()override { return OT_CAMERA; }
 
-	Matrix4x4 GetView()const;
-	Matrix4x4 GetGLMView()const;
-	Matrix4x4 GetProjection()const;
+	Matrix4 GetView()const;
+	Matrix4 GetGLMView()const;
+	Matrix4 GetProjection()const;
 
 };
 

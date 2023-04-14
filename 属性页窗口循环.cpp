@@ -1,12 +1,12 @@
-#include"æ¶ˆæ¯å¾ªçŽ¯å£°æ˜Ž.h"
-// å¯¹è¯æ¡†è¿‡ç¨‹å‡½æ•°
+#include"ÏûÏ¢Ñ­»·ÉùÃ÷.h"
+// ¶Ô»°¿ò¹ý³Ìº¯Êý
 //LRESULT CALLBACK DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 //{
 //	switch (uMsg)
 //	{
 //	case WM_COMMAND:
 //	{
-//		// å¤„ç†æŽ§ä»¶æ¶ˆæ¯
+//		// ´¦Àí¿Ø¼þÏûÏ¢
 //		switch (LOWORD(wParam))
 //		{
 //		case IDCANCEL:
@@ -18,7 +18,7 @@
 //
 //	case WM_DESTROY:
 //	{
-//		// é‡Šæ”¾èµ„æº
+//		// ÊÍ·Å×ÊÔ´
 //		PostQuitMessage(0);
 //		return TRUE;
 //	}
@@ -37,6 +37,16 @@ LRESULT CALLBACK  cDetaileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 		RECT m_rect;
 		GetClientRect(hWnd, &m_rect);
 		current_project->DETAWND->SetRect(m_rect);
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+		if (zDelta != 0)
+		{
+			if (current_project->DETAWND->GetControlPos() < 0 || zDelta < 0)
+			current_project->DETAWND->ControlPosMove(zDelta/10);
+		}
 		break;
 	}
 	default:

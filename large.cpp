@@ -3,7 +3,7 @@
 #include<cmath>
 #include "large.h"
 using namespace std;
-large::large(string m_str1, char m_ch, string m_str2)//ä¸¤æ•°çš„è¿ç®—
+large::large(string m_str1, char m_ch, string m_str2)//Á½ÊıµÄÔËËã
 {
 
 	int m_ilocation1;
@@ -115,39 +115,39 @@ large::large(string m_str1, char m_ch, string m_str2)//ä¸¤æ•°çš„è¿ç®—
 	cout << endl;
 	cout << m_res << endl;
 }
-inline int large::compare(string str1, string str2) //ç›¸ç­‰è¿”å›0ï¼Œå¤§äºè¿”å›1ï¼Œå°äºè¿”å›-1
+inline int large::compare(string str1, string str2) //ÏàµÈ·µ»Ø0£¬´óÓÚ·µ»Ø1£¬Ğ¡ÓÚ·µ»Ø-1
 {
 	if (str1.size() > str2.size())
 		return 1;
 	else if (str1.size() < str2.size())
 		return -1;
-	else return str1.compare(str2);     //è‹¥é•¿åº¦ç›¸ç­‰ï¼Œåˆ™ä»å¤´åˆ°å°¾æŒ‰ä½æ¯”è¾ƒ
+	else return str1.compare(str2);     //Èô³¤¶ÈÏàµÈ£¬Ôò´ÓÍ·µ½Î²°´Î»±È½Ï
 }
-string large::ADD_INT(string str1, string str2)         //é«˜ç²¾åº¦åŠ æ³•
+string large::ADD_INT(string str1, string str2)         //¸ß¾«¶È¼Ó·¨
 {
-	int sign = 1;//signä¸ºç¬¦å·ä¸º
+	int sign = 1;//signÎª·ûºÅÎª
 	string str;
 	if (str1[0] == '-')
 	{
-		if (str2[0] == '-')       //è´Ÿè´Ÿ
+		if (str2[0] == '-')       //¸º¸º
 		{
 			sign = -1;
-			str = ADD_INT(str1.erase(0, 1), str2.erase(0, 1));//erase(first,last);åˆ é™¤ä»firståˆ°lastä¹‹é—´çš„å­—ç¬¦
+			str = ADD_INT(str1.erase(0, 1), str2.erase(0, 1));//erase(first,last);É¾³ı´Ófirstµ½lastÖ®¼äµÄ×Ö·û
 		}
-		else             //è´Ÿæ­£
+		else             //¸ºÕı
 		{
 			str = SUB_INT(str2, str1.erase(0, 1));
 		}
 	}
 	else
 	{
-		if (str2[0] == '-')        //æ­£è´Ÿ
+		if (str2[0] == '-')        //Õı¸º
 		{
 			str = SUB_INT(str1, str2.erase(0, 1));
 		}
-		else                    //æ­£æ­£ï¼ŒæŠŠä¸¤ä¸ªæ•´æ•°å¯¹é½ï¼ŒçŸ­æ•´æ•°å‰é¢åŠ 0è¡¥é½
+		else                    //ÕıÕı£¬°ÑÁ½¸öÕûÊı¶ÔÆë£¬¶ÌÕûÊıÇ°Ãæ¼Ó0²¹Æë
 		{
-			string::size_type L1, L2;  //string::size_typeæŠ½è±¡æ„ä¹‰æ˜¯å°ºå¯¸å•ä½ç±»å‹
+			string::size_type L1, L2;  //string::size_type³éÏóÒâÒåÊÇ³ß´çµ¥Î»ÀàĞÍ
 			int i;
 			L1 = str1.size();
 			L2 = str2.size();
@@ -161,7 +161,7 @@ string large::ADD_INT(string str1, string str2)         //é«˜ç²¾åº¦åŠ æ³•
 				for (i = 0; i < L1 - L2; i++)
 					str2 = "0" + str2;
 			}
-			int int1 = 0, int2 = 0; //int2è®°å½•è¿›ä½
+			int int1 = 0, int2 = 0; //int2¼ÇÂ¼½øÎ»
 			for (i = str1.size() - 1; i >= 0; i--)
 			{
 				int1 = (int(str1[i]) - '0' + int(str2[i]) - '0' + int2) % 10;
@@ -172,14 +172,14 @@ string large::ADD_INT(string str1, string str2)         //é«˜ç²¾åº¦åŠ æ³•
 		}
 
 	}
-	//è¿ç®—ç¬¦å¤„ç†ç¬¦å·
+	//ÔËËã·û´¦Àí·ûºÅ
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
 	return str;
 }
 
-string large::SUB_INT(string str1, string str2)  //é«˜ç²¾åº¦å‡æ³•
+string large::SUB_INT(string str1, string str2)  //¸ß¾«¶È¼õ·¨
 {
-	int sign = 1; //signä¸ºç¬¦å·ä½
+	int sign = 1; //signÎª·ûºÅÎ»
 	string str;
 	int i, j;
 	if (str2[0] == '-')
@@ -201,7 +201,7 @@ string large::SUB_INT(string str1, string str2)  //é«˜ç²¾åº¦å‡æ³•
 		tempint = str1.size() - str2.size();
 		for (i = str2.size() - 1; i >= 0; i--)
 		{
-			if (str1[i + tempint] < str2[i])          //å€Ÿä½
+			if (str1[i + tempint] < str2[i])          //½èÎ»
 			{
 				j = 1;
 				while (1)
@@ -227,17 +227,17 @@ string large::SUB_INT(string str1, string str2)  //é«˜ç²¾åº¦å‡æ³•
 		for (i = tempint - 1; i >= 0; i--)
 			str = str1[i] + str;
 	}
-	//å»å‡ºç»“æœä¸­å¤šä½™çš„å‰å¯¼0
+	//È¥³ö½á¹ûÖĞ¶àÓàµÄÇ°µ¼0
 	str.erase(0, str.find_first_not_of('0'));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
 	return str;
 }
 
-string large::MUL_INT(string str1, string str2)     //é«˜ç²¾åº¦ä¹˜æ³• 
+string large::MUL_INT(string str1, string str2)     //¸ß¾«¶È³Ë·¨ 
 {
 	int sign = 1;
-	string str = "0";        //è®°å½•å½“å‰å€¼
+	string str = "0";        //¼ÇÂ¼µ±Ç°Öµ
 	if (str1[0] == '-')
 	{
 		sign *= -1;
@@ -252,7 +252,7 @@ string large::MUL_INT(string str1, string str2)     //é«˜ç²¾åº¦ä¹˜æ³•
 	string::size_type L1, L2;
 	L1 = str1.size();
 	L2 = str2.size();
-	for (i = L2 - 1; i >= 0; i--)              //æ¨¡æ‹Ÿæ‰‹å·¥ä¹˜æ³•ç«–å¼
+	for (i = L2 - 1; i >= 0; i--)              //Ä£ÄâÊÖ¹¤³Ë·¨ÊúÊ½
 	{
 		string tempstr;
 		int int1 = 0, int2 = 0, int3 = int(str2[i]) - '0';
@@ -270,25 +270,25 @@ string large::MUL_INT(string str1, string str2)     //é«˜ç²¾åº¦ä¹˜æ³•
 		}
 		str = ADD_INT(str, tempstr);
 	}
-	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
+	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
 	str.erase(0, str.find_first_not_of("0"));
 	if (str.empty())str = "0";
 	if ((sign == -1) && (str[0] != '0'))str = "-" + str;
 	return str;
 }
 
-string large::DIVIDE_INT(string str1, string str2, int flag) //é«˜ç²¾åº¦é™¤æ³•ï¼Œflag==1,è¿”å›å•†;flag==0æ—¶ï¼Œè¿”å›ä½™æ•°
+string large::DIVIDE_INT(string str1, string str2, int flag) //¸ß¾«¶È³ı·¨£¬flag==1,·µ»ØÉÌ;flag==0Ê±£¬·µ»ØÓàÊı
 {
-	string quotient, residue;  //å®šä¹‰å•†å’Œä½™æ•°
+	string quotient, residue;  //¶¨ÒåÉÌºÍÓàÊı
 	int sign1 = 1, sign2 = 1;
-	if (str2 == "0")   //åˆ¤æ–­é™¤æ•°æ˜¯å¦ä¸º0
+	if (str2 == "0")   //ÅĞ¶Ï³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "ERROR!";
 		residue = "ERROR!";
 		if (flag == 1)return quotient;
 		else return residue;
 	}
-	if (str1 == "0")     //åˆ¤æ–­è¢«é™¤æ•°æ˜¯å¦ä¸º0
+	if (str1 == "0")     //ÅĞ¶Ï±»³ıÊıÊÇ·ñÎª0
 	{
 		quotient = "0";
 		residue = "0";
@@ -321,13 +321,13 @@ string large::DIVIDE_INT(string str1, string str2, int flag) //é«˜ç²¾åº¦é™¤æ³•ï¼
 		L1 = str1.size();
 		L2 = str2.size();
 		string tempstr;
-		tempstr.append(str1, 0, L2 - 1); //å°†str1ä¸­ä¸ºå€¼0åˆ°L2-1çš„å­—ç¬¦ä¸²è¿½åŠ åˆ°tempstr
-		for (int i = L2 - 1; i < L1; i++)  //æ¨¡æ‹Ÿæ‰‹å·¥é™¤æ³•ç«–å¼
+		tempstr.append(str1, 0, L2 - 1); //½«str1ÖĞÎªÖµ0µ½L2-1µÄ×Ö·û´®×·¼Óµ½tempstr
+		for (int i = L2 - 1; i < L1; i++)  //Ä£ÄâÊÖ¹¤³ı·¨ÊúÊ½
 		{
 			tempstr = tempstr + str1[i];
-			tempstr.erase(0, tempstr.find_first_not_of('0')); //åœ¨å­—ç¬¦ä¸²ä¸­æŸ¥æ‰¾ç¬¬ä¸€ä¸ªä¸'0'ä¸åŒ¹é…çš„å­—ç¬¦ï¼Œè¿”å›å®ƒçš„ä½ç½®
-			if (tempstr.empty())tempstr = "0";  //q.empty()ï¼Œå½“é˜Ÿåˆ—ç©ºæ—¶ï¼Œè¿”å›true
-			for (char ch = '9'; ch >= '0'; ch--) //è¯•å•†
+			tempstr.erase(0, tempstr.find_first_not_of('0')); //ÔÚ×Ö·û´®ÖĞ²éÕÒµÚÒ»¸öÓë'0'²»Æ¥ÅäµÄ×Ö·û£¬·µ»ØËüµÄÎ»ÖÃ
+			if (tempstr.empty())tempstr = "0";  //q.empty()£¬µ±¶ÓÁĞ¿ÕÊ±£¬·µ»Øtrue
+			for (char ch = '9'; ch >= '0'; ch--) //ÊÔÉÌ
 			{
 				string str;
 				str = str + ch;
@@ -341,7 +341,7 @@ string large::DIVIDE_INT(string str1, string str2, int flag) //é«˜ç²¾åº¦é™¤æ³•ï¼
 		}
 		residue = tempstr;
 	}
-	//å»é™¤ç»“æœä¸­çš„å‰å¯¼0
+	//È¥³ı½á¹ûÖĞµÄÇ°µ¼0
 	quotient.erase(0, quotient.find_first_not_of("0"));
 	if (quotient.empty())quotient = "0";
 	if ((sign1 == -1) && (quotient[0] != '0'))quotient = "-" + quotient;
@@ -350,11 +350,11 @@ string large::DIVIDE_INT(string str1, string str2, int flag) //é«˜ç²¾åº¦é™¤æ³•ï¼
 	else
 		return residue;
 }
-string large::DIV_INT(string str1, string str2) //é«˜ç²¾åº¦é™¤æ³•ï¼Œè¿”å›å•†
+string large::DIV_INT(string str1, string str2) //¸ß¾«¶È³ı·¨£¬·µ»ØÉÌ
 {
 	return DIVIDE_INT(str1, str2, 1);
 }
-string large::MOD_INT(string str1, string str2)  //é«˜ç²¾åº¦é™¤æ³•ï¼Œè¿”å›ä½™æ•°
+string large::MOD_INT(string str1, string str2)  //¸ß¾«¶È³ı·¨£¬·µ»ØÓàÊı
 {
 	return DIVIDE_INT(str1, str2, 0);
 }

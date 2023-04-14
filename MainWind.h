@@ -82,17 +82,17 @@ public:
 	ModelManager(Model* model, OpenGLShader* shader = nullptr)
 		: m_Model(model), m_Shader(shader),m_ModelMatrix(glm::mat4(1.0))
 	{
-		// åˆ›å»ºVAO
+		// ´´½¨VAO
 		glGenVertexArrays(1, &m_VAO);
 		glBindVertexArray(m_VAO);
 
-		// åˆ›å»ºVBOå¹¶å­˜å‚¨é¡¶ç‚¹æ•°æ®
+		// ´´½¨VBO²¢´æ´¢¶¥µãÊı¾İ
 		glGenBuffers(1, &m_VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetVertices().size(),
 			m_Model->GetVertices().data(), GL_STATIC_DRAW);
 
-		// æŒ‡å®šé¡¶ç‚¹å±æ€§æŒ‡é’ˆ
+		// Ö¸¶¨¶¥µãÊôĞÔÖ¸Õë
 		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
@@ -100,7 +100,7 @@ public:
 		glVertexAttribPointer(2, 2, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
 		glEnableVertexAttribArray(2);
 
-		// è§£ç»‘VAOå’ŒVBO
+		// ½â°óVAOºÍVBO
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		m_DiffuseMap = loadTexture((m_Model->GetFileAddress().c_str() + m_Model->GetMaterial().map_Kd).c_str());

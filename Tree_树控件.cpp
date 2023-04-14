@@ -1,112 +1,112 @@
-#include "Tree_æ ‘æ§ä»¶.h"
-Tree_æ ‘æ§ä»¶::Tree_æ ‘æ§ä»¶()
+#include "Tree_Ê÷¿Ø¼ş.h"
+Tree_Ê÷¿Ø¼ş::Tree_Ê÷¿Ø¼ş()
 {
-	hWnd_æ ‘æ§ä»¶å¥æŸ„ = nullptr;
+	hWnd_Ê÷¿Ø¼ş¾ä±ú = nullptr;
 }
-HWND Tree_æ ‘æ§ä»¶::Creat_åˆ›å»ºæ ‘åˆ—è¡¨(HWND parent_çˆ¶çª—å£)
+HWND Tree_Ê÷¿Ø¼ş::Creat_´´½¨Ê÷ÁĞ±í(HWND parent_¸¸´°¿Ú)
 {
     RECT m_rect;
-    GetWindowRect(parent_çˆ¶çª—å£, &m_rect);
-    return hWnd_æ ‘æ§ä»¶å¥æŸ„ = CreateWindow((LPCWSTR)L"SysTreeView32", NULL,
+    GetWindowRect(parent_¸¸´°¿Ú, &m_rect);
+    return hWnd_Ê÷¿Ø¼ş¾ä±ú = CreateWindow((LPCWSTR)L"SysTreeView32", NULL,
         WS_CHILD | WS_BORDER | WS_VISIBLE | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT,
         0, 0, m_rect.right - m_rect.left, m_rect.bottom - m_rect.top,
-        parent_çˆ¶çª—å£, NULL, NULL, NULL);
+        parent_¸¸´°¿Ú, NULL, NULL, NULL);
 }
-HWND Tree_æ ‘æ§ä»¶::GethWnd_è·å¾—å¥æŸ„()
+HWND Tree_Ê÷¿Ø¼ş::GethWnd_»ñµÃ¾ä±ú()
 {
-    return hWnd_æ ‘æ§ä»¶å¥æŸ„;
+    return hWnd_Ê÷¿Ø¼ş¾ä±ú;
 }
-HTREEITEM Tree_æ ‘æ§ä»¶::AddItem_æ·»åŠ èŠ‚ç‚¹(const Object& aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, std::string adders_èŠ‚ç‚¹çš„ä½ç½®)
+HTREEITEM Tree_Ê÷¿Ø¼ş::AddItem_Ìí¼Ó½Úµã(const Object& aim_½ÚµãÖ¸¶¨Ä¿±ê, std::string adders_½ÚµãµÄÎ»ÖÃ)
 {
-    if (adders_èŠ‚ç‚¹çš„ä½ç½®.size() == 0)return AddItem_æ·»åŠ èŠ‚ç‚¹(aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡);
-    HTREEITEM hti = TreeView_GetRoot(hWnd_æ ‘æ§ä»¶å¥æŸ„);
+    if (adders_½ÚµãµÄÎ»ÖÃ.size() == 0)return AddItem_Ìí¼Ó½Úµã(aim_½ÚµãÖ¸¶¨Ä¿±ê);
+    HTREEITEM hti = TreeView_GetRoot(hWnd_Ê÷¿Ø¼ş¾ä±ú);
     TVINSERTSTRUCT Phti;
     Phti.hParent = nullptr;
-    if (!hti)return AddItem_æ·»åŠ èŠ‚ç‚¹(aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡);
+    if (!hti)return AddItem_Ìí¼Ó½Úµã(aim_½ÚµãÖ¸¶¨Ä¿±ê);
     std::wstring wstr;
-    int d_é€—å·ä½ç½® = 0;
+    int d_¶ººÅÎ»ÖÃ = 0;
     int number = 0;
     while (1)
     {
-        d_é€—å·ä½ç½® = adders_èŠ‚ç‚¹çš„ä½ç½®.find_first_of(",");
-        if (d_é€—å·ä½ç½® == -1)
+        d_¶ººÅÎ»ÖÃ = adders_½ÚµãµÄÎ»ÖÃ.find_first_of(",");
+        if (d_¶ººÅÎ»ÖÃ == -1)
         {
-            number = std::stol(adders_èŠ‚ç‚¹çš„ä½ç½®.c_str());
-            adders_èŠ‚ç‚¹çš„ä½ç½®.clear();
+            number = std::stol(adders_½ÚµãµÄÎ»ÖÃ.c_str());
+            adders_½ÚµãµÄÎ»ÖÃ.clear();
         }
         else
         {
-            number = std::stol(adders_èŠ‚ç‚¹çš„ä½ç½®.substr(0, d_é€—å·ä½ç½®));
-            adders_èŠ‚ç‚¹çš„ä½ç½® = adders_èŠ‚ç‚¹çš„ä½ç½®.substr(d_é€—å·ä½ç½® + 1);
+            number = std::stol(adders_½ÚµãµÄÎ»ÖÃ.substr(0, d_¶ººÅÎ»ÖÃ));
+            adders_½ÚµãµÄÎ»ÖÃ = adders_½ÚµãµÄÎ»ÖÃ.substr(d_¶ººÅÎ»ÖÃ + 1);
         }
-        if (number == 0)return AddItem_æ·»åŠ èŠ‚ç‚¹(aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, Phti.hParent);
+        if (number == 0)return AddItem_Ìí¼Ó½Úµã(aim_½ÚµãÖ¸¶¨Ä¿±ê, Phti.hParent);
         for (int i = 1; i < number; i++)
-            hti = TreeView_GetNextSibling(hWnd_æ ‘æ§ä»¶å¥æŸ„, hti);
-        if (!hti)return AddItem_æ·»åŠ èŠ‚ç‚¹(aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, TreeView_GetParent(hWnd_æ ‘æ§ä»¶å¥æŸ„, hti));
+            hti = TreeView_GetNextSibling(hWnd_Ê÷¿Ø¼ş¾ä±ú, hti);
+        if (!hti)return AddItem_Ìí¼Ó½Úµã(aim_½ÚµãÖ¸¶¨Ä¿±ê, TreeView_GetParent(hWnd_Ê÷¿Ø¼ş¾ä±ú, hti));
         Phti.hParent = hti;
-        hti = TreeView_GetChild(hWnd_æ ‘æ§ä»¶å¥æŸ„, hti);
-        if (!hti || adders_èŠ‚ç‚¹çš„ä½ç½®.size() == 0)return AddItem_æ·»åŠ èŠ‚ç‚¹(aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, Phti.hParent);
+        hti = TreeView_GetChild(hWnd_Ê÷¿Ø¼ş¾ä±ú, hti);
+        if (!hti || adders_½ÚµãµÄÎ»ÖÃ.size() == 0)return AddItem_Ìí¼Ó½Úµã(aim_½ÚµãÖ¸¶¨Ä¿±ê, Phti.hParent);
     }
 }
-HTREEITEM Tree_æ ‘æ§ä»¶::AddItem_æ·»åŠ èŠ‚ç‚¹(const Object& aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, HTREEITEM parent_çˆ¶èŠ‚ç‚¹)
+HTREEITEM Tree_Ê÷¿Ø¼ş::AddItem_Ìí¼Ó½Úµã(const Object& aim_½ÚµãÖ¸¶¨Ä¿±ê, HTREEITEM parent_¸¸½Úµã)
 {
-    std::wstring wstr = str_wstr((aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡.GetName()).c_str());
+    std::wstring wstr = str_wstr((aim_½ÚµãÖ¸¶¨Ä¿±ê.GetName()).c_str());
     TVINSERTSTRUCT tvInsert;
-    tvInsert.hParent = parent_çˆ¶èŠ‚ç‚¹;
+    tvInsert.hParent = parent_¸¸½Úµã;
     tvInsert.hInsertAfter = TVI_LAST;
     tvInsert.itemex.mask = TVIF_TEXT | TVIF_PARAM;
     tvInsert.itemex.pszText = (wchar_t*)wstr.c_str();
-    tvInsert.itemex.lParam = (LPARAM)&aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡;
-    return TreeView_InsertItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &tvInsert);
+    tvInsert.itemex.lParam = (LPARAM)&aim_½ÚµãÖ¸¶¨Ä¿±ê;
+    return TreeView_InsertItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &tvInsert);
 }
-void Tree_æ ‘æ§ä»¶::DeleteItem_åˆ é™¤èŠ‚ç‚¹(HTREEITEM Item)
+void Tree_Ê÷¿Ø¼ş::DeleteItem_É¾³ı½Úµã(HTREEITEM Item)
 {
-    TreeView_DeleteItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, Item);
+    TreeView_DeleteItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, Item);
 }
-HTREEITEM Tree_æ ‘æ§ä»¶::GetItem_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹()
+HTREEITEM Tree_Ê÷¿Ø¼ş::GetItem_»ñÈ¡±»Ñ¡ÖĞ½Úµã()
 {
-    return TreeView_GetSelection(hWnd_æ ‘æ§ä»¶å¥æŸ„);
+    return TreeView_GetSelection(hWnd_Ê÷¿Ø¼ş¾ä±ú);
 }
-Object* Tree_æ ‘æ§ä»¶::GetOption_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹å¯¹è±¡()
+Object* Tree_Ê÷¿Ø¼ş::GetOption_»ñÈ¡±»Ñ¡ÖĞ½Úµã¶ÔÏó()
 {
-    // è·å–é€‰ä¸­èŠ‚ç‚¹çš„å‚æ•°
-    HTREEITEM hSelectedItem = TreeView_GetSelection(hWnd_æ ‘æ§ä»¶å¥æŸ„);
+    // »ñÈ¡Ñ¡ÖĞ½ÚµãµÄ²ÎÊı
+    HTREEITEM hSelectedItem = TreeView_GetSelection(hWnd_Ê÷¿Ø¼ş¾ä±ú);
     if (hSelectedItem != NULL)
     {
         TVITEMEX tvItem;
         tvItem.hItem = hSelectedItem;
         tvItem.mask = TVIF_PARAM;
-        TreeView_GetItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &tvItem);
+        TreeView_GetItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &tvItem);
         return (Object*)tvItem.lParam;
     }
     return nullptr;
 }
-HTREEITEM Tree_æ ‘æ§ä»¶::GetMouseItem_è·å–é¼ æ ‡ä½ç½®æ ‘èŠ‚ç‚¹()
+HTREEITEM Tree_Ê÷¿Ø¼ş::GetMouseItem_»ñÈ¡Êó±êÎ»ÖÃÊ÷½Úµã()
 {
     POINT pt;
     GetCursorPos(&pt);
-    ScreenToClient(hWnd_æ ‘æ§ä»¶å¥æŸ„, &pt);
+    ScreenToClient(hWnd_Ê÷¿Ø¼ş¾ä±ú, &pt);
 
-    // æ£€æµ‹æŒ‡å®šç‚¹æ˜¯å¦ä½äºæ ‘æ§ä»¶ä¸Š
+    // ¼ì²âÖ¸¶¨µãÊÇ·ñÎ»ÓÚÊ÷¿Ø¼şÉÏ
     TVHITTESTINFO htInfo;
     ZeroMemory(&htInfo, sizeof(htInfo));
     htInfo.pt = pt;
-    return TreeView_HitTest(hWnd_æ ‘æ§ä»¶å¥æŸ„, &htInfo);
+    return TreeView_HitTest(hWnd_Ê÷¿Ø¼ş¾ä±ú, &htInfo);
 }
-Object* Tree_æ ‘æ§ä»¶::GetMouseOption_è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹å¯¹è±¡()
+Object* Tree_Ê÷¿Ø¼ş::GetMouseOption_»ñÈ¡Êó±êÎ»ÖÃ½Úµã¶ÔÏó()
 {
-    // è·å–é¼ æ ‡å½“å‰ä½ç½®
+    // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
     POINT pt;
     GetCursorPos(&pt);
-    ScreenToClient(hWnd_æ ‘æ§ä»¶å¥æŸ„, &pt);
+    ScreenToClient(hWnd_Ê÷¿Ø¼ş¾ä±ú, &pt);
 
-    // æ£€æµ‹æŒ‡å®šç‚¹æ˜¯å¦ä½äºæ ‘æ§ä»¶ä¸Š
+    // ¼ì²âÖ¸¶¨µãÊÇ·ñÎ»ÓÚÊ÷¿Ø¼şÉÏ
     TVHITTESTINFO htInfo;
     ZeroMemory(&htInfo, sizeof(htInfo));
     htInfo.pt = pt;
-    HTREEITEM hHitItem = TreeView_HitTest(hWnd_æ ‘æ§ä»¶å¥æŸ„, &htInfo);
+    HTREEITEM hHitItem = TreeView_HitTest(hWnd_Ê÷¿Ø¼ş¾ä±ú, &htInfo);
     
-    // å¦‚æœå‘½ä¸­äº†ä¸€ä¸ªèŠ‚ç‚¹ï¼Œåˆ™è·å–é€‰ä¸­èŠ‚ç‚¹
+    // Èç¹ûÃüÖĞÁËÒ»¸ö½Úµã£¬Ôò»ñÈ¡Ñ¡ÖĞ½Úµã
     if (hHitItem != NULL)
     {
         TVITEM tvItem;
@@ -114,27 +114,27 @@ Object* Tree_æ ‘æ§ä»¶::GetMouseOption_è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹å¯¹è±¡()
         tvItem.mask = TVIF_PARAM;
         tvItem.hItem = hHitItem;
 
-        TreeView_GetItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &tvItem);
+        TreeView_GetItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &tvItem);
         return(Object*)tvItem.lParam;
     }
     return nullptr;
 }
-void Tree_æ ‘æ§ä»¶::SetItemImage_è®¾ç½®èŠ‚ç‚¹å›¾æ ‡(HTREEITEM hItem, int imageIndex_å›¾ç‰‡ç´¢å¼•)
+void Tree_Ê÷¿Ø¼ş::SetItemImage_ÉèÖÃ½ÚµãÍ¼±ê(HTREEITEM hItem, int imageIndex_Í¼Æ¬Ë÷Òı)
 {
     TVITEM item;
     item.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
     item.hItem = hItem;
-    item.iImage = imageIndex_å›¾ç‰‡ç´¢å¼•;
-    item.iSelectedImage = imageIndex_å›¾ç‰‡ç´¢å¼•;
-    TreeView_SetItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &item);
+    item.iImage = imageIndex_Í¼Æ¬Ë÷Òı;
+    item.iSelectedImage = imageIndex_Í¼Æ¬Ë÷Òı;
+    TreeView_SetItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &item);
 }
-bool Tree_æ ‘æ§ä»¶::DragDrop_æ‹–æ”¾èŠ‚ç‚¹(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags)
+bool Tree_Ê÷¿Ø¼ş::DragDrop_ÍÏ·Å½Úµã(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags)
 {
     TVINSERTSTRUCT tvins;
 
     tvins.itemex.mask = TVIF_HANDLE | TVIF_STATE | TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 
-    tvins.hParent = TreeView_GetParent(hWnd_æ ‘æ§ä»¶å¥æŸ„, hDropItem);
+    tvins.hParent = TreeView_GetParent(hWnd_Ê÷¿Ø¼ş¾ä±ú, hDropItem);
     tvins.hInsertAfter = hDropItem;
     tvins.itemex.hItem = hDragItem;
     tvins.itemex.state = 0;
@@ -144,49 +144,49 @@ bool Tree_æ ‘æ§ä»¶::DragDrop_æ‹–æ”¾èŠ‚ç‚¹(HTREEITEM hDragItem, HTREEITEM hDropI
     tvins.itemex.iImage = I_IMAGECALLBACK;
     tvins.itemex.iSelectedImage = I_IMAGECALLBACK;
 
-    return TreeView_InsertItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &tvins) != NULL;
+    return TreeView_InsertItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &tvins) != NULL;
 }
-void Tree_æ ‘æ§ä»¶::StartEdit_ç¼–è¾‘èŠ‚ç‚¹(HTREEITEM hItem)
+void Tree_Ê÷¿Ø¼ş::StartEdit_±à¼­½Úµã(HTREEITEM hItem)
 {
-    TreeView_EditLabel(hWnd_æ ‘æ§ä»¶å¥æŸ„, hItem);
+    TreeView_EditLabel(hWnd_Ê÷¿Ø¼ş¾ä±ú, hItem);
 }
-void Tree_æ ‘æ§ä»¶::EndEdit_ç»“æŸç¼–è¾‘(bool saveChanges_æ˜¯å¦ä¿å­˜)
+void Tree_Ê÷¿Ø¼ş::EndEdit_½áÊø±à¼­(bool saveChanges_ÊÇ·ñ±£´æ)
 {
-    if (saveChanges_æ˜¯å¦ä¿å­˜)
-        TreeView_EndEditLabelNow(hWnd_æ ‘æ§ä»¶å¥æŸ„, TRUE);
+    if (saveChanges_ÊÇ·ñ±£´æ)
+        TreeView_EndEditLabelNow(hWnd_Ê÷¿Ø¼ş¾ä±ú, TRUE);
     else
-        TreeView_EndEditLabelNow(hWnd_æ ‘æ§ä»¶å¥æŸ„, FALSE);
+        TreeView_EndEditLabelNow(hWnd_Ê÷¿Ø¼ş¾ä±ú, FALSE);
 }
-void Tree_æ ‘æ§ä»¶::ClearTree_æ¸…ç©ºæ ‘()
+void Tree_Ê÷¿Ø¼ş::ClearTree_Çå¿ÕÊ÷()
 {
-    TreeView_DeleteAllItems(hWnd_æ ‘æ§ä»¶å¥æŸ„);
+    TreeView_DeleteAllItems(hWnd_Ê÷¿Ø¼ş¾ä±ú);
 }
 
-std::vector<Object*> Tree_æ ‘æ§ä»¶::GetSelectedItems_è·å–é€‰ä¸­çš„èŠ‚ç‚¹()
+std::vector<Object*> Tree_Ê÷¿Ø¼ş::GetSelectedItems_»ñÈ¡Ñ¡ÖĞµÄ½Úµã()
 {
     std::vector<Object*> selectedItems;
 
-    HTREEITEM hItem = TreeView_GetSelection(hWnd_æ ‘æ§ä»¶å¥æŸ„);
+    HTREEITEM hItem = TreeView_GetSelection(hWnd_Ê÷¿Ø¼ş¾ä±ú);
 
     while (hItem != NULL)
     {
         TVITEM item;
         item.mask = TVIF_HANDLE | TVIF_PARAM;
         item.hItem = hItem;
-        TreeView_GetItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &item);
+        TreeView_GetItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &item);
 
         selectedItems.push_back((Object*)item.lParam);
 
-        hItem = TreeView_GetNextSibling(hWnd_æ ‘æ§ä»¶å¥æŸ„, hItem);
+        hItem = TreeView_GetNextSibling(hWnd_Ê÷¿Ø¼ş¾ä±ú, hItem);
     }
 
     return selectedItems;
 }
-void Tree_æ ‘æ§ä»¶::SetItemText_ä¿®æ”¹èŠ‚ç‚¹åç§°(HTREEITEM hItem, std::wstring wstr)
+void Tree_Ê÷¿Ø¼ş::SetItemText_ĞŞ¸Ä½ÚµãÃû³Æ(HTREEITEM hItem, std::wstring wstr)
 {
     TVITEM tvi;
     tvi.mask = TVIF_TEXT;
     tvi.hItem = hItem; 
     tvi.pszText = (wchar_t*)wstr.c_str(); 
-    TreeView_SetItem(hWnd_æ ‘æ§ä»¶å¥æŸ„, &tvi);
+    TreeView_SetItem(hWnd_Ê÷¿Ø¼ş¾ä±ú, &tvi);
 }

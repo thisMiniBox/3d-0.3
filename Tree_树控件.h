@@ -1,37 +1,37 @@
 #pragma once
 #include<windows.h>
 #include<commctrl.h>
-#include"å­—ç¬¦è½¬æ¢.h"
+#include"×Ö·û×ª»».h"
 #include"Object.h"
-class Tree_æ ‘æ§ä»¶
+class Tree_Ê÷¿Ø¼ş
 {
-	HWND hWnd_æ ‘æ§ä»¶å¥æŸ„;
+	HWND hWnd_Ê÷¿Ø¼ş¾ä±ú;
 public:
-	Tree_æ ‘æ§ä»¶();
-	//è¿”å›æ ‘æ§ä»¶å¥æŸ„
-	HWND Creat_åˆ›å»ºæ ‘åˆ—è¡¨(HWND parent_çˆ¶çª—å£);
-	HWND GethWnd_è·å¾—å¥æŸ„();
-	//èŠ‚ç‚¹çš„ä½ç½®ç”¨ã€1ï¼Œ2ã€‘æ ¼å¼è¡¨ç¤ºï¼Œæ­¤æ ¼å¼è¡¨ç¤ºæ·»åŠ åˆ°ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ä¸‹çš„ç¬¬äºŒä¸ªèŠ‚ç‚¹ä¸­ï¼Œ
-	//ã€1.0ã€‘åˆ™è¡¨ç¤ºæ·»åŠ åˆ°ç¬¬ä¸€ä¸ªèŠ‚ç‚¹ä¸‹ï¼Œè‹¥0å†™åœ¨å‰é¢åé¢çš„ä¿¡æ¯å°†è¢«å¿½ç•¥,
-	//éæ­£æ•°éƒ½ä¼šè¢«å½“ä½œ0å¤„ç†
-	HTREEITEM AddItem_æ·»åŠ èŠ‚ç‚¹(const Object& aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, std::string adders_èŠ‚ç‚¹çš„ä½ç½®);
-	HTREEITEM AddItem_æ·»åŠ èŠ‚ç‚¹(const Object& aim_èŠ‚ç‚¹æŒ‡å®šç›®æ ‡, HTREEITEM parent_çˆ¶èŠ‚ç‚¹ = TVI_ROOT);
-	//åˆ é™¤æŒ‡å®šèŠ‚ç‚¹
-	void DeleteItem_åˆ é™¤èŠ‚ç‚¹(HTREEITEM Item);
-	//è·å–å½“å‰é€‰ä¸­çš„èŠ‚ç‚¹
-	Object* GetOption_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹å¯¹è±¡();
-	HTREEITEM GetItem_è·å–è¢«é€‰ä¸­èŠ‚ç‚¹();
-	//è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹
-	Object* GetMouseOption_è·å–é¼ æ ‡ä½ç½®èŠ‚ç‚¹å¯¹è±¡();
-	HTREEITEM GetMouseItem_è·å–é¼ æ ‡ä½ç½®æ ‘èŠ‚ç‚¹();
+	Tree_Ê÷¿Ø¼ş();
+	//·µ»ØÊ÷¿Ø¼ş¾ä±ú
+	HWND Creat_´´½¨Ê÷ÁĞ±í(HWND parent_¸¸´°¿Ú);
+	HWND GethWnd_»ñµÃ¾ä±ú();
+	//½ÚµãµÄÎ»ÖÃÓÃ¡¾1£¬2¡¿¸ñÊ½±íÊ¾£¬´Ë¸ñÊ½±íÊ¾Ìí¼Óµ½µÚÒ»¸ö½ÚµãÏÂµÄµÚ¶ş¸ö½ÚµãÖĞ£¬
+	//¡¾1.0¡¿Ôò±íÊ¾Ìí¼Óµ½µÚÒ»¸ö½ÚµãÏÂ£¬Èô0Ğ´ÔÚÇ°ÃæºóÃæµÄĞÅÏ¢½«±»ºöÂÔ,
+	//·ÇÕıÊı¶¼»á±»µ±×÷0´¦Àí
+	HTREEITEM AddItem_Ìí¼Ó½Úµã(const Object& aim_½ÚµãÖ¸¶¨Ä¿±ê, std::string adders_½ÚµãµÄÎ»ÖÃ);
+	HTREEITEM AddItem_Ìí¼Ó½Úµã(const Object& aim_½ÚµãÖ¸¶¨Ä¿±ê, HTREEITEM parent_¸¸½Úµã = TVI_ROOT);
+	//É¾³ıÖ¸¶¨½Úµã
+	void DeleteItem_É¾³ı½Úµã(HTREEITEM Item);
+	//»ñÈ¡µ±Ç°Ñ¡ÖĞµÄ½Úµã
+	Object* GetOption_»ñÈ¡±»Ñ¡ÖĞ½Úµã¶ÔÏó();
+	HTREEITEM GetItem_»ñÈ¡±»Ñ¡ÖĞ½Úµã();
+	//»ñÈ¡Êó±êÎ»ÖÃ½Úµã
+	Object* GetMouseOption_»ñÈ¡Êó±êÎ»ÖÃ½Úµã¶ÔÏó();
+	HTREEITEM GetMouseItem_»ñÈ¡Êó±êÎ»ÖÃÊ÷½Úµã();
 
-	void ClearTree_æ¸…ç©ºæ ‘();
-	void SetItemImage_è®¾ç½®èŠ‚ç‚¹å›¾æ ‡(HTREEITEM hItem, int imageIndex_å›¾ç‰‡ç´¢å¼•);
-	void SetItemText_ä¿®æ”¹èŠ‚ç‚¹åç§°(HTREEITEM hItem, std::wstring);
-	bool DragDrop_æ‹–æ”¾èŠ‚ç‚¹(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags);
-	void StartEdit_ç¼–è¾‘èŠ‚ç‚¹(HTREEITEM hItem);
-	void EndEdit_ç»“æŸç¼–è¾‘(bool saveChanges_æ˜¯å¦ä¿å­˜);
+	void ClearTree_Çå¿ÕÊ÷();
+	void SetItemImage_ÉèÖÃ½ÚµãÍ¼±ê(HTREEITEM hItem, int imageIndex_Í¼Æ¬Ë÷Òı);
+	void SetItemText_ĞŞ¸Ä½ÚµãÃû³Æ(HTREEITEM hItem, std::wstring);
+	bool DragDrop_ÍÏ·Å½Úµã(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags);
+	void StartEdit_±à¼­½Úµã(HTREEITEM hItem);
+	void EndEdit_½áÊø±à¼­(bool saveChanges_ÊÇ·ñ±£´æ);
 
-	std::vector<Object*> GetSelectedItems_è·å–é€‰ä¸­çš„èŠ‚ç‚¹();
+	std::vector<Object*> GetSelectedItems_»ñÈ¡Ñ¡ÖĞµÄ½Úµã();
 };
 

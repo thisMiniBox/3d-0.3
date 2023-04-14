@@ -93,10 +93,10 @@
     <ClInclude Include="Tree_树控件.h">
       <Filter>控件类</Filter>
     </ClInclude>
-    <ClInclude Include="EditControl_编辑框控件.h">
+    <ClInclude Include="EditControl.h">
       <Filter>控件类</Filter>
     </ClInclude>
-    <ClInclude Include="DetaileControl_细节菜单控件组合.h">
+    <ClInclude Include="DetaileControl.h">
       <Filter>控件类</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
@@ -158,16 +158,13 @@
     <ClCompile Include="属性页窗口循环.cpp">
       <Filter>窗口类\消息循环</Filter>
     </ClCompile>
-    <ClCompile Include="各种对话框的消息循环.cpp">
-      <Filter>窗口类\消息循环</Filter>
-    </ClCompile>
     <ClCompile Include="Tree_树控件.cpp">
       <Filter>控件类</Filter>
     </ClCompile>
-    <ClCompile Include="EditControl_编辑框控件.cpp">
+    <ClCompile Include="EditControl.cpp">
       <Filter>控件类</Filter>
     </ClCompile>
-    <ClCompile Include="DetaileControl_细节菜单控件组合.cpp">
+    <ClCompile Include="DetaileControl.cpp">
       <Filter>控件类</Filter>
     </ClCompile>
     <ClCompile Include="D3D11消息循环.cpp">
