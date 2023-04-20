@@ -15,7 +15,13 @@
 #define _Error 0x03
 #define _Warning 0x02
 #define _Message 0x01
-
+enum MSGMode
+{
+	_ALL,
+	_ERROR,
+	_WANING,
+	_REMIND
+};
 class project
 {
 	HINSTANCE m_hInst;
@@ -33,6 +39,7 @@ public:
 	//文件读取状态
 	bool m_FileLoad;
 	//消息信息
+
 	int MSG_att;//消息显示状态
 	int MAX_runMSG;//最大消息储存长度
 	LinkList<runMsg>runMSG;

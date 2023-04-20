@@ -14,7 +14,7 @@ Model::~Model()
 	texCoords_贴图坐标数据.~vector();
 	for (const auto& i : child_子模型指针)
 	{
-		i->parent_父模型指针 = parent_父模型指针;
+		delete i;
 	}
 	if (mtl_材质)delete mtl_材质;
 	child_子模型指针.~vector();
@@ -138,6 +138,11 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 		FileData.push_back(c);
 	}
 	if (child_子模型指针.size() == 0)return -3;
+	if (!mtl_材质)
+	{
+		delete mtl_材质;
+		mtl_材质 = nullptr;
+	}
 	return 1;
 }
 int Model::loadModelFile_加载模型文件(const std::wstring& filename)
@@ -222,29 +227,38 @@ Folder::Folder(std::string NAME)
 {
 	m_Name = NAME;
 }
-auto Folder::FindFile_寻找文件(const std::string& Name)const
-{
-	return m_Child.equal_range(Name);
+Object* Folder::FindFile_寻找文件(const std::string& Name) const {
+	auto it = m_Child.find(Name);
+	if (it != m_Child.end()) 
+	{
+		return it->second;
+	}
+	return nullptr;
 }
+
 void Folder::SetFileName(Object* obj, const std::string& NewName)
 {
-	auto range = m_Child.equal_range(obj->GetName());
-	for (auto it = range.first; it != range.second; ++it) {
-		if (it->second == obj) {
-			m_Child.erase(it);
-			m_Child.insert(std::make_pair(NewName, obj));
-			break;
-		}
+	if (!obj)
+	{ 
+		// 检查 obj 是否为空指针
+		return;
+	}
+	auto it = m_Child.find(obj->GetName());
+	if (it != m_Child.end() && it->second == obj)
+	{
+		// 如果找到了名称为 obj->GetName() 的元素且值为 obj，则更新名称
+		m_Child.erase(it);
+		m_Child.insert(std::make_pair(NewName, obj));
 	}
 }
+
 
 std::vector<Object*> Folder::GetTheCurrentDirectoryFile()const
 {
 	std::vector<Object*> out;
 	for (const auto& kv : m_Child)
-	{
-		out.push_back(kv.second);
-	}
+		if (kv.second)
+			out.push_back(kv.second);
 	return out;
 }
 void Folder::DeleteChildObject()
@@ -294,10 +308,6 @@ std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
 void Folder::AddFile_添加文件(Object* obj)
 {
 	m_Child.insert(std::make_pair(obj->GetName(), obj));
-}
-void Folder::AddFile_添加文件(Object* a, Object* Parent)
-{
-	
 }
 Object* Folder::CreateFile_创建文件(std::string Name, int type)
 {
@@ -365,17 +375,15 @@ int Folder::GetType()
 }
 void Folder::DeleteFile_删除文件(Object* obj)
 {
-	auto range = FindFile_寻找文件(obj->GetName());
-	for (auto it = range.first; it != range.second; ++it) {
-		if ((*it).second == obj)
-		{
-			obj->DeleteChildObject();
-			delete obj;
-			m_Child.erase(it);
-			return;
-		}
+	if (!obj) { // 检查 obj 是否为空指针
+		return;
 	}
-
+	auto it = m_Child.find(obj->GetName());
+	if (it != m_Child.end() && it->second == obj) {
+		// 如果找到了名称为 obj->GetName() 的元素且值为 obj，则删除元素
+		m_Child.erase(it);
+		delete obj; // 释放内存
+	}
 }
 Model::Model(std::string NAME)
 {

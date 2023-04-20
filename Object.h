@@ -217,20 +217,19 @@ private:
 	Vector m_Scale;  // 缩放比例
 	Rotation m_Rotate;//旋转
 };
-#include<map>
+#include<unordered_map>
 //对象文件/占位子类
-class Folder :public Object
+class Folder : public Object
 {
-	std::multimap<std::string,Object*> m_Child;
+	std::unordered_map<std::string,Object*> m_Child;
 	Folder* m_Parent;
 public:
 	Folder() { m_Name = "新建文件夹"; }
 	Folder(std::string NAME);
 	Object* CreateFile_创建文件(std::string Name, int type = OT_FOLDER);
 	void AddFile_添加文件(Object*);
-	void AddFile_添加文件(Object* a, Object* Parent);
 	//仅寻找当前目录
-	auto FindFile_寻找文件(const std::string& Name)const;
+	Object* FindFile_寻找文件(const std::string& Name)const;
 	void SetFileName(Object*, const std::string& NewName);
 	std::vector<Object*> GetTheCurrentDirectoryFile()const;
 	void ClearFolder_清空文件夹();

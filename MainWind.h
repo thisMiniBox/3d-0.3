@@ -77,9 +77,9 @@ public:
 #include"Shader.h"
 #pragma comment (lib,"opengl32.lib")
 unsigned int loadTexture(char const* path);
-class ModelManager {
+class ModelBuffer {
 public:
-	ModelManager(Model* model, OpenGLShader* shader = nullptr)
+	ModelBuffer(Model* model, OpenGLShader* shader = nullptr)
 		: m_Model(model), m_Shader(shader),m_ModelMatrix(glm::mat4(1.0))
 	{
 		// ´´½¨VAO
@@ -110,7 +110,7 @@ public:
 		m_Shader->setInt("material.specular", 1);
 	}
 
-	~ModelManager()
+	~ModelBuffer()
 	{
 		glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);
@@ -163,13 +163,15 @@ public:
 	virtual int GetType() override {
 		return MOPENGL;
 	}
+	bool AddModelToBuffer(Model*);
+	void DeleteModelBuffer(Model*);
 	void SetModelShader(const char* vertexPath, const char* fragmentPath);
 	void SetLightShader(const char* vertexPath, const char* fragmentPath);
 	static LRESULT CALLBACK WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void ResetOpenGLViewport();
 private:
 	HGLRC m_hglrc;
-	std::unordered_map<Model*, ModelManager*>m_models;
+	std::unordered_map<Model*, ModelBuffer*>m_models;
 	OpenGLShader* m_ModelShader;
 	OpenGLShader* m_LightShader;
 

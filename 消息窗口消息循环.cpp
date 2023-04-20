@@ -10,22 +10,22 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         {
         case 10:
         {
-            current_project->MSG_att = 0;
+            current_project->MSG_att = _ALL;
             break;
         }
         case 11:
         {
-            current_project->MSG_att = 1;
+            current_project->MSG_att = _ERROR;
             break;
         }
         case 12:
         {
-            current_project->MSG_att = 2;
+            current_project->MSG_att = _WANING;
             break;
         }
         case 13:
         {
-            current_project->MSG_att = 3;
+            current_project->MSG_att = _REMIND;
             break;
         }
         }

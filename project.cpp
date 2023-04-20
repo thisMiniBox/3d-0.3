@@ -10,7 +10,7 @@ project::project()
 	m_rect = { 0, 0, 800, 500 };
 	view = nullptr;
 	Model_att = 0;
-	MSG_att = 0;
+	MSG_att = _ALL;
 	MAX_runMSG = 100;
 }
 HWND project::CreateWind(HINSTANCE hInst)
@@ -121,20 +121,34 @@ void project::upMsg(const std::wstring& str, const char& type)
 }
 void project::updateMsg(const HDC& hdc)
 {
-
+	COLORREF ErrorOutColor = RGB(255, 0, 0);
+	COLORREF WarningOutColor = RGB(150, 150, 0);
+	COLORREF RemindOutColor = RGB(0, 0, 255);
 	int msgLong = -TEXTWND.m_rect.top;
 	std::wstring out;
 	LinkList<runMsg>* p = runMSG.above;
 	Rectangle(hdc, 0, 0, 1000, 1000);
-	if(MSG_att==0)
+	if(MSG_att==_ALL)
 	{
 		for (int i = 0; i < MAX_runMSG; i++)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"警告 ";
-			else if (p->data.Type == 1)out += L"消息 ";
-			else out += L"错误 ";
+			if (p->data.Type == _Warning)
+			{
+				out += L"警告 ";
+				SetTextColor(hdc, WarningOutColor);
+			}
+			else if (p->data.Type == _Message)
+			{
+				out += L"消息 ";
+				SetTextColor(hdc, RemindOutColor);
+			}
+			else
+			{
+				out += L"错误 ";
+				SetTextColor(hdc, ErrorOutColor);
+			}
 			out += (p->data.Time);
 			out += (p->data.Str);
 			p = p->above;
@@ -143,13 +157,14 @@ void project::updateMsg(const HDC& hdc)
 		}
 		if (p != &runMSG)runMSG.DeleteNode(1);
 	}
-	else if (MSG_att == 1)
+	else if (MSG_att == _ERROR)
 	{
+		SetTextColor(hdc, ErrorOutColor);
 		for (int i = 0; i < MAX_runMSG; i++)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 3)out += L"错误 ";
+			if (p->data.Type == _Error)out += L"错误 ";
 			else
 			{
 				p = p->above;
@@ -163,13 +178,14 @@ void project::updateMsg(const HDC& hdc)
 		}
 		if (p != &runMSG)runMSG.DeleteNode(1);
 	}
-	else if (MSG_att == 2)
+	else if (MSG_att == _WANING)
 	{
+		SetTextColor(hdc, WarningOutColor);
 		for (int i = 0; i < MAX_runMSG; i++)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 2)out += L"警告 ";
+			if (p->data.Type == _Warning)out += L"警告 ";
 			else
 			{
 				p = p->above;
@@ -179,17 +195,19 @@ void project::updateMsg(const HDC& hdc)
 			out += (p->data.Str);
 			p = p->above;
 			msgLong++;
+			
 			TextOut(hdc, 0, msgLong * 20, out.c_str(), out.size());
 		}
 		if (p != &runMSG)runMSG.DeleteNode(1);
 	}
-	else if (MSG_att == 3)
+	else if (MSG_att == _REMIND)
 	{
+		SetTextColor(hdc, RemindOutColor);
 		for (int i = 0; i < MAX_runMSG; i++)
 		{
 			out = L"";
 			if (p == &runMSG)break;
-			if (p->data.Type == 1)out += L"消息 ";
+			if (p->data.Type == _Message)out += L"消息 ";
 			else
 			{
 				p = p->above;
@@ -254,6 +272,12 @@ void project::DeleteObject(Object* obj,HTREEITEM hTree)
 {
 	if (DETAWND->GetTarget() == obj)
 		DETAWND->SetView(nullptr);
+	if (MAINWND->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
+	{
+		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(MAINWND);
+		Model* mod = dynamic_cast<Model*>(obj);
+		glwind->DeleteModelBuffer(mod);
+	}
 	m_RootFolder.DeleteFile_删除文件(obj);
 	UpdateModels();
 	if (hTree)

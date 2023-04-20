@@ -372,6 +372,10 @@ OpenGLWnd::~OpenGLWnd()
     glDeleteTextures(1, &texture2);
     if (m_ModelShader)delete m_ModelShader;
     if (m_LightShader)delete m_LightShader;
+    for (const auto p : m_models)
+        if (p.second)
+            delete p.second;
+    m_models.clear();
 }
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
@@ -420,100 +424,33 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     glViewport(0, 0, w, h); // w和h分别是窗口的宽度和高度
     m_ModelShader = new OpenGLShader("Shader/ModelShader.vs", "Shader/ModelShader.fs");
     m_LightShader = new OpenGLShader("Shader/LightShader.vs", "Shader/LightShader.fs");
-
-
-    //float vertices[] = {
-    //    // positions          // normals           // texture coords
-    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-    //     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-    //    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-    //    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-    //     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    //     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-    //    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-    //    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
-    //};
-    //glGenVertexArrays(1, &VAO);
-    //glGenBuffers(1, &VBO);
-
-    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    //glBindVertexArray(VAO);
-
-    //// position attribute
-    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    //glEnableVertexAttribArray(0);
-    //// normal attribute
-    //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    //glEnableVertexAttribArray(1);
-    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    //glEnableVertexAttribArray(2);
-
-    //texture1 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2.png");
-    //texture2 = loadTexture("C:\\Users\\xujiacheng\\Downloads\\container2_specular.png");
-    //m_ModelShader->use();
-    //m_ModelShader->setInt("material.diffuse", 0);
-    //m_ModelShader->setInt("material.specular", 1);
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
     return m_hWnd;
 
 }
-
-
-glm::vec3 cubePositions[] = {
-glm::vec3(0.0f,  0.0f,  0.0f),
-glm::vec3(2.0f,  5.0f, -15.0f),
-glm::vec3(-1.5f, -2.2f, -2.5f),
-glm::vec3(-3.8f, -2.0f, -12.3f),
-glm::vec3(2.4f, -0.4f, -3.5f),
-glm::vec3(-1.7f,  3.0f, -7.5f),
-glm::vec3(1.3f, -2.0f, -2.5f),
-glm::vec3(1.5f,  2.0f, -2.5f),
-glm::vec3(1.5f,  0.2f, -1.5f),
-glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-// positions of the point lights
-glm::vec3 pointLightPositions[] = {
-    glm::vec3(0.7f,  0.2f,  2.0f),
-    glm::vec3(2.3f, -3.3f, -4.0f),
-    glm::vec3(-4.0f,  2.0f, -12.0f),
-    glm::vec3(0.0f,  0.0f, -3.0f)
-};
+bool OpenGLWnd::AddModelToBuffer(Model* model)
+{
+    m_models[model] = new ModelBuffer(model, m_ModelShader);
+    if (m_models[model])
+        return true;
+    return false;
+}
+void OpenGLWnd::DeleteModelBuffer(Model* model)
+{
+    if(!model->GetVertices().empty())
+    {
+        auto it = m_models.find(model);
+        if (it != m_models.end())
+        {
+            delete it->second;
+            m_models.erase(it);
+        }
+    }
+    if (!model->GetChildModel().empty())
+        for (auto& cMod : model->GetChildModel())
+            DeleteModelBuffer(cMod);
+}
 void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
 {
 
@@ -569,7 +506,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
     for (const auto& model : models)
     {
         if (model->GetVertices().empty())continue;
-        if (m_models[model] == nullptr)m_models[model] = new ModelManager(model, m_ModelShader);
+        if (m_models[model] == nullptr)m_models[model] = new ModelBuffer(model, m_ModelShader);
         modelP = glm::mat4(1.0f);
         
         modelP = glm::translate(modelP, (glm::vec3)model->GetWorldPosition());

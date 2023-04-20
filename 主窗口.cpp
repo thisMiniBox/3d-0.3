@@ -33,6 +33,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HMENU hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDC_WIN));
     SetMenu(current_project->hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
+
+    SendMessage(current_project->hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
