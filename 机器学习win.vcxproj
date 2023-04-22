@@ -158,7 +158,6 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="LargeNumber.h" />
     <ClInclude Include="LgFloat.h" />
-    <ClInclude Include="LinkList.h" />
     <ClInclude Include="MainWind.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="network.h" />
@@ -167,6 +166,7 @@
     <ClInclude Include="project.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextOutWind.h" />
     <ClInclude Include="Tree_树控件.h" />
     <ClInclude Include="vector_向量.h" />
     <ClInclude Include="WndData.h" />
@@ -190,6 +190,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="project.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="TextOutWind.cpp" />
     <ClCompile Include="Tree_树控件.cpp" />
     <ClCompile Include="vector_向量.cpp" />
     <ClCompile Include="WndData.cpp" />

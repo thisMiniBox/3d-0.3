@@ -17,14 +17,7 @@ typedef struct WndMsg
 	RECT m_rect;
 	WndMsg() :hWnd(nullptr) { m_rect = { 0 }; }
 }WndMsg;
-typedef struct runMsg
-{
-	std::wstring Time;
-	std::wstring Str;
-	char Type;
-	runMsg() :Type(0) {}
-	runMsg(const std::wstring& time, const std::wstring& str, const char& type) :Time(time), Str(str), Type(type) {}
-}runMsg;
+
 class ModelTriData
 {
 public:

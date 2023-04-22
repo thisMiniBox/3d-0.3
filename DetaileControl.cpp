@@ -66,3 +66,8 @@ Rotation_旋转控件::Rotation_旋转控件(HINSTANCE hIns, HWND parent, int x, int y, 
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_ROTATE), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
+ScaleControl_缩放控件::ScaleControl_缩放控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
+{
+	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_POSITION), parent, Dlgproc);
+	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
+}

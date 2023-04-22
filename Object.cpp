@@ -39,6 +39,7 @@ inline FaceData_面信息 faceData(std::string cin) {
 }
 int Model::loadobj(const std::wstring& path, FILE* file)
 {
+	int Error = 0;
 	char c = 0;
 	size_t n = 0;
 	size_t m = 0;
@@ -97,7 +98,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 				}
 				else if (w == "f")
 				{
-					if (!NewModel)return -1;
+					if (!NewModel)return ReturnedOfLoadFile::_DataError;
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
 					n = (FileData = FileData.substr(n)).find_first_of(' ');
 					NewModel->face_面的读取位置.push_back(faceData(FileData));
@@ -116,7 +117,7 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 						FileData.clear();
 						continue;
 					}
-					if (!NewModel)return -1;
+					if (!NewModel)return ReturnedOfLoadFile::_FailedToCreateFile;
 					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
 					FileData = FileData.substr(n);
 					NewModel->mtl = mtl_材质->get_materials(FileData);
@@ -137,21 +138,49 @@ int Model::loadobj(const std::wstring& path, FILE* file)
 		}
 		FileData.push_back(c);
 	}
-	if (child_子模型指针.size() == 0)return -3;
+	if (child_子模型指针.size() != 0)
+		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedVertex;
+	int width, height, channels;
+	int result = 0;
+	bool map = false;
+	for(const auto&i:child_子模型指针)
+	{
+		if (!i->mtl.map_Ka.empty())
+		{
+			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
+			map = true;
+		}
+		if (!i->mtl.map_Ka.empty())
+		{
+			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
+			map = true;
+		}
+		if (!i->mtl.map_Ka.empty())
+		{
+			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
+			map = true;
+		}
+	}
+	if (!map || result)
+	{
+		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps;
+	}
 	if (!mtl_材质)
 	{
+		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile;
 		delete mtl_材质;
 		mtl_材质 = nullptr;
 	}
-	return 1;
+
+	return Error;
 }
 int Model::loadModelFile_加载模型文件(const std::wstring& filename)
 {
 	FILE* file = nullptr;
-	int error = -2;
+	int error = 0xfffff800;
 	mtl_材质 = new ModelShader_模型着色器;
 	_wfopen_s(&file, filename.c_str(), L"r");
-	if (!file)return 0;
+	if (!file)return ReturnedOfLoadFile::_FailToOpenFile;
 	std::wstring suffix;
 	int meshNum = filename.find_last_of(L"/");
 	if (meshNum == -1)meshNum = filename.find_last_of(L"\\");
@@ -160,9 +189,11 @@ int Model::loadModelFile_加载模型文件(const std::wstring& filename)
 	fileAddress = mtl_材质->file;
 	meshNum = filename.find_last_of(L'.');
 	if (meshNum >= 0)suffix = filename.substr(meshNum);
-	if (suffix == L".obj")error = loadobj(filename, file);
+	if (suffix == L".obj")error = error | loadobj(filename, file);
+	else
+		return ReturnedOfLoadFile::_UnknownFormat;
 	fclose(file);
-	if (error)DistributeDataToChildModels();
+	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)DistributeDataToChildModels();
 	return error;
 }
 bool ModelShader_模型着色器::read(const std::string& filename) {

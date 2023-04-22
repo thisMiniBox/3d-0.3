@@ -5,43 +5,54 @@ project* cp = nullptr;
 void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
 {
     current_project->m_FileLoad = true;
-    switch (current_project->loadModel(path))
+    unsigned int Error = current_project->loadModel(path);
+    if (Error == ReturnedOfLoadFile::_Succese)
     {
-    case 1:
-    {
-        current_project->upMsg(L"模型加载完毕" + path, _Message);
+        current_project->OutMessage(L"模型加载完毕：" + path, _Message);
         current_project->Model_att = 0x01;
         InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
-        break;
     }
-    case 0:
+    else if ((Error & 0xff) != 0)
     {
-        current_project->upMsg(L"文件打开失败" + path, _Warning);
-        break;
+        switch (Error & 0xff)
+        {
+        case ReturnedOfLoadFile::_UnknownFormat:
+            current_project->OutMessage(L"未知文件格式：" + path, _Error);
+            break;
+
+        case ReturnedOfLoadFile::_DataError:
+            current_project->OutMessage(L"数据错误：" + path, _Error);
+            break;
+
+        case ReturnedOfLoadFile::_FailToOpenFile:
+            current_project->OutMessage(L"无法打开文件：" + path, _Error);
+            break;
+
+        case ReturnedOfLoadFile::_FailedToCreateFile:
+            current_project->OutMessage(L"文件创建失败：" + path, _Error);
+            break;
+        default:
+            current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
+            break;
+        }
     }
-    case -1:
+    else
     {
-        current_project->upMsg(L"文件数据错误" + path, _Error);
-        break;
-    }
-    case -2:
-    {
-        current_project->upMsg(L"不支持此格式" + path, _Warning);
-        break;
-    }
-    case -3:
-    {
-        current_project->upMsg(L"文件中未含有模型数据" + path, _Warning);
-        break;
-    }
-    default:
-    {
-        current_project->upMsg(L"未知原因载入失败" + path, _Warning);
-        break;
-    }
+        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
+        {
+            current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
+        }
+        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
+        {
+            current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
+        }
+        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
+        {
+            current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
+        }
     }
     current_project->m_FileLoad = false;
-    InvalidateRect(current_project->TEXTWND.hWnd, nullptr, false);
+    InvalidateRect(current_project->TEXTWND->GethWnd(), nullptr, false);
 }
 LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, project* current_project)
 {
@@ -68,7 +79,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     case IDM_OPEN:
     {
         std::wstring path = MenuGetPath();
-        if (path == L"")current_project->upMsg(L"地址获取失败", _Error);
+        if (path == L"")current_project->OutMessage(L"地址获取失败", _Error);
         else
         {
             std::thread loadthread(loadModelThread,hWnd,current_project,path);
@@ -78,7 +89,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     }
     case ID_GDI:
     {
-        current_project->upMsg("使用GDI绘图");
+        current_project->OutMessage("使用GDI绘图");
         delete current_project->MAINWND;
         current_project->MAINWND = new GDIWND;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
@@ -96,9 +107,9 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     }
     case ID_OPENGL:
     {
-        current_project->upMsg("使用OpenGL绘图");
-        current_project->upMsg("由于一直渲染会阻塞消息，所以仅当右键窗口进入控制状态才会持续渲染");
-        current_project->upMsg("拖拽调整窗口大小已被禁用调整窗口大小请前往设置");
+        current_project->OutMessage("使用OpenGL绘图");
+        current_project->OutMessage("由于一直渲染会阻塞消息，所以仅当右键窗口进入控制状态才会持续渲染");
+        current_project->OutMessage("拖拽调整窗口大小已被禁用调整窗口大小请前往设置");
         delete current_project->MAINWND;
         current_project->MAINWND = new OpenGLWnd;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
@@ -220,7 +231,7 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             delete[] buffer;
             if (width < 640 || height < 480)
             {
-                cp->upMsg(" 宽度不能小于640，高度不能小于480");
+                cp->OutMessage(" 宽度不能小于640，高度不能小于480");
                 EndDialog(hDlg, LOWORD(wParam));
                 return (INT_PTR)TRUE;
             }

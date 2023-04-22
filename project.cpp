@@ -3,6 +3,7 @@ project::project()
 {
 	m_FileLoad = false;
 	FILEWND = nullptr;
+	TEXTWND = nullptr;
 	MAINWND = new GDIWND;
 	DETAWND = new DetaileWind;
 	hWnd = nullptr;
@@ -10,13 +11,11 @@ project::project()
 	m_rect = { 0, 0, 800, 500 };
 	view = nullptr;
 	Model_att = 0;
-	MSG_att = _ALL;
-	MAX_runMSG = 100;
 }
 HWND project::CreateWind(HINSTANCE hInst)
 {
+	TEXTWND = new TextOutWind(hInst);
 	FILEWND = new FileWind(hInst);
-	
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -41,13 +40,14 @@ HWND project::CreateWind(HINSTANCE hInst)
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		0,
-		800,
-		500,
+		1200,
+		720,
 		nullptr,
 		nullptr,
 		hInst,
 		nullptr);
 	m_hInst = hInst;
+	TEXTWND->CreateWind(hWnd);
 	FILEWND->CreateWind(hWnd);
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
@@ -56,21 +56,12 @@ HWND project::CreateWind(HINSTANCE hInst)
 	AddObject(view);
 	MAINWND->CreateWind(hWnd);
 	DETAWND->CreateWind(hWnd);
-	upMsg("使用GDI绘图时，先点击一下摄像机加载侧边框控件，否则无法正常渲染窗口，");
-	upMsg("我也不知道为什么，消息循环是同一个，opengl就没问题");
+	OutMessage("使用GDI绘图时，先点击一下摄像机加载侧边框控件，否则无法正常渲染窗口，");
+	OutMessage("我也不知道为什么，消息循环是同一个，opengl就没问题");
 	RECT m_rect;
 	GetClientRect(hWnd, &m_rect);
 	int cxClient = m_rect.right - m_rect.left;  // 获得客户区宽度
 	int cyClient = m_rect.bottom - m_rect.top;
-	TEXTWND.hWnd = CreateWindow( //创建编辑框
-		TEXTWND.className.c_str(),
-		TEXT("消息"),
-		WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE,
-		0, cyClient - 150, cxClient / 5 * 4, 150,
-		hWnd,
-		(HMENU)1,
-		hInst,
-		nullptr);
 	SETWND.hWnd = CreateWindowW( //创建编辑框
 		SETWND.className.c_str(),
 		0,
@@ -86,10 +77,12 @@ HWND project::CreateWind(HINSTANCE hInst)
 }
 project::~project()
 {
+	
 	m_RootFolder.ClearFolder_清空文件夹();
 	if (MAINWND)delete MAINWND;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
+	if (TEXTWND)delete TEXTWND;
 }
 void project::SetFileName(Object* obj, const std::wstring& NewName)
 {
@@ -103,124 +96,17 @@ HINSTANCE project::GethInstance()const
 {
 	return m_hInst;
 }
-void project::upMsg(const std::string&str, const char& type)
+void project::OutMessage(const std::string&str, const char& type)
 {
-	SYSTEMTIME sys;
-	GetLocalTime(&sys);
-	runMsg msg = {std::to_wstring(sys.wHour)+L':'+ std::to_wstring(sys.wMinute)+L':'+ std::to_wstring(sys.wSecond),str_wstr(str),type};
-	runMSG.AddNode(msg);
-	InvalidateRect(TEXTWND.hWnd, NULL, false);
+	TEXTWND->OutMessage(str, type);
 }
-void project::upMsg(const std::wstring& str, const char& type)
+void project::OutMessage(const std::wstring& str, const char& type)
 {
-	SYSTEMTIME sys;
-	GetLocalTime(&sys);
-	runMsg msg = { std::to_wstring(sys.wHour) + L':' + std::to_wstring(sys.wMinute) + L':' + std::to_wstring(sys.wSecond),str,type };
-	runMSG.AddNode(msg);
-	InvalidateRect(TEXTWND.hWnd, NULL, false);
+	TEXTWND->OutMessage(str, type);
 }
 void project::updateMsg(const HDC& hdc)
 {
-	COLORREF ErrorOutColor = RGB(255, 0, 0);
-	COLORREF WarningOutColor = RGB(150, 150, 0);
-	COLORREF RemindOutColor = RGB(0, 0, 255);
-	int msgLong = -TEXTWND.m_rect.top;
-	std::wstring out;
-	LinkList<runMsg>* p = runMSG.above;
-	Rectangle(hdc, 0, 0, 1000, 1000);
-	if(MSG_att==_ALL)
-	{
-		for (int i = 0; i < MAX_runMSG; i++)
-		{
-			out = L"";
-			if (p == &runMSG)break;
-			if (p->data.Type == _Warning)
-			{
-				out += L"警告 ";
-				SetTextColor(hdc, WarningOutColor);
-			}
-			else if (p->data.Type == _Message)
-			{
-				out += L"消息 ";
-				SetTextColor(hdc, RemindOutColor);
-			}
-			else
-			{
-				out += L"错误 ";
-				SetTextColor(hdc, ErrorOutColor);
-			}
-			out += (p->data.Time);
-			out += (p->data.Str);
-			p = p->above;
-			msgLong++;
-			TextOut(hdc, 0, msgLong * 20, out.c_str(), out.size());
-		}
-		if (p != &runMSG)runMSG.DeleteNode(1);
-	}
-	else if (MSG_att == _ERROR)
-	{
-		SetTextColor(hdc, ErrorOutColor);
-		for (int i = 0; i < MAX_runMSG; i++)
-		{
-			out = L"";
-			if (p == &runMSG)break;
-			if (p->data.Type == _Error)out += L"错误 ";
-			else
-			{
-				p = p->above;
-				continue;
-			}
-			out += (p->data.Time);
-			out += (p->data.Str);
-			p = p->above;
-			msgLong++;
-			TextOut(hdc, 0, msgLong * 20, out.c_str(), out.size());
-		}
-		if (p != &runMSG)runMSG.DeleteNode(1);
-	}
-	else if (MSG_att == _WANING)
-	{
-		SetTextColor(hdc, WarningOutColor);
-		for (int i = 0; i < MAX_runMSG; i++)
-		{
-			out = L"";
-			if (p == &runMSG)break;
-			if (p->data.Type == _Warning)out += L"警告 ";
-			else
-			{
-				p = p->above;
-				continue;
-			}
-			out += (p->data.Time);
-			out += (p->data.Str);
-			p = p->above;
-			msgLong++;
-			
-			TextOut(hdc, 0, msgLong * 20, out.c_str(), out.size());
-		}
-		if (p != &runMSG)runMSG.DeleteNode(1);
-	}
-	else if (MSG_att == _REMIND)
-	{
-		SetTextColor(hdc, RemindOutColor);
-		for (int i = 0; i < MAX_runMSG; i++)
-		{
-			out = L"";
-			if (p == &runMSG)break;
-			if (p->data.Type == _Message)out += L"消息 ";
-			else
-			{
-				p = p->above;
-				continue;
-			}
-			out += (p->data.Time);
-			out += (p->data.Str);
-			p = p->above;
-			msgLong++;
-			TextOut(hdc, 0, msgLong * 20, out.c_str(), out.size());
-		}
-		if (p != &runMSG)runMSG.DeleteNode(1);
-	}
+	TEXTWND->DrawWind(hdc);
 }
 HTREEITEM project::AddObject(Object* a, std::string address)
 {
@@ -287,9 +173,17 @@ void project::DeleteObject(Object* obj,HTREEITEM hTree)
 
 int project::loadModel(const std::wstring& path)
 {
+	OutMessage("开始加载模型");
 	Model* model = new Model;
 	int error = model->loadModelFile_加载模型文件(path);
-	m_RootFolder.AddFile_添加文件(model);
-	FILEWND->AddItem(*model);
+	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)
+	{
+		m_RootFolder.AddFile_添加文件(model);
+		FILEWND->AddItem(*model);
+	}
+	else
+	{
+		delete model;
+	}
 	return error;
 }

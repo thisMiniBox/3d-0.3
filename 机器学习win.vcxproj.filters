@@ -60,9 +60,6 @@
     <ClInclude Include="LargeNumber.h">
       <Filter>头文件\数据组件</Filter>
     </ClInclude>
-    <ClInclude Include="LinkList.h">
-      <Filter>头文件\数据组件</Filter>
-    </ClInclude>
     <ClInclude Include="字符转换.h">
       <Filter>头文件\数据组件</Filter>
     </ClInclude>
@@ -103,6 +100,9 @@
       <Filter>窗口类</Filter>
     </ClInclude>
     <ClInclude Include="FileWind.h">
+      <Filter>窗口类</Filter>
+    </ClInclude>
+    <ClInclude Include="TextOutWind.h">
       <Filter>窗口类</Filter>
     </ClInclude>
   </ItemGroup>
@@ -177,6 +177,9 @@
       <Filter>源文件\数据组件</Filter>
     </ClCompile>
     <ClCompile Include="FileWind.cpp">
+      <Filter>窗口类</Filter>
+    </ClCompile>
+    <ClCompile Include="TextOutWind.cpp">
       <Filter>窗口类</Filter>
     </ClCompile>
   </ItemGroup>

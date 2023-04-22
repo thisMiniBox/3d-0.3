@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include"vector_向量.h"
 #include"字符转换.h"
-
 enum ObjectType
 {
 	OT_FOLDER,
@@ -50,10 +49,17 @@ public:
 	virtual void Move(const Vector3&);
 	//删除关联物体
 	virtual void DeleteChildObject();
+
+	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
+	//virtual ClassInfo* GainClassInfo() = 0;
 };
-
-
-
+//class ClassInfo
+//{
+//public:
+//	std::string m_Name;
+//	ClassInfo(Object*);
+//
+//};
 //材质信息结构体
 typedef struct _Material {
 	std::string name;
@@ -137,7 +143,22 @@ struct Vertex {
 	vec::Vector normal;      // 顶点法线
 	vec::Vector2 texCoord;   // 纹理坐标
 };
-// 模型类，继承自 Object
+enum ReturnedOfLoadFile :unsigned int
+{
+	//默认成功消息
+	_Succese = 0xffffff00,
+	//错误
+	_UnknownFormat = 0b0001,
+	_DataError = 0b0010,
+	_FailToOpenFile = 0b0100,
+	_FailedToCreateFile = 0b1000,
+	//模型加载细节
+	_SuccessfullyLoadedVertex = 0x0100,
+	_SuccessfullyLoadedMaterialFile = 0x0200,
+	_SuccessfullyLoadedMaterialMaps = 0x0400,
+
+};
+#include"stb_image.h"
 class Model : public Object
 {
 public:
@@ -285,4 +306,11 @@ public:
 
 };
 
-
+class PointLight :public Object
+{
+	Vector m_Positon;
+	Vector m_LightColor;
+	float m_Intensity;
+	float m_Range;
+	float m_SoftShadow;
+};

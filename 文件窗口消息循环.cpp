@@ -40,7 +40,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         {
             if (current_project->m_FileLoad)
             {
-                current_project->upMsg("正在加载文件，无法进行删除操作", _Warning);
+                current_project->OutMessage("正在加载文件，无法进行删除操作", _Warning);
                 break;
             }
             Object* ta = current_project->FILEWND->GetSelectedItemData();
@@ -51,7 +51,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 Camera* v = dynamic_cast<Camera*>(ta);
                 if (v == current_project->view)
                 {
-                    current_project->upMsg("不能删除当前视角摄像机", _Error);
+                    current_project->OutMessage("不能删除当前视角摄像机", _Error);
                     break;
                 }
             }

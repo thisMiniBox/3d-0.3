@@ -44,3 +44,9 @@ public:
 	Rotation_旋转控件(HINSTANCE, HWND parent, int x, int y, int w);
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
+class ScaleControl_缩放控件 :public DetaileControl_细节菜单控件组合
+{
+public:
+	ScaleControl_缩放控件(HINSTANCE, HWND parent, int x, int y, int w);
+	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+};

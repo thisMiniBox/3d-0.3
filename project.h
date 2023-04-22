@@ -1,7 +1,6 @@
 #pragma once
 
 #include"字符转换.h"
-#include"LinkList.h"
 //#include"Camera.h"
 #include"WndData.h"
 #include"MainWind.h"
@@ -12,16 +11,8 @@
 #include<CommCtrl.h>
 #include"Tree_树控件.h"
 #include"FileWind.h"
-#define _Error 0x03
-#define _Warning 0x02
-#define _Message 0x01
-enum MSGMode
-{
-	_ALL,
-	_ERROR,
-	_WANING,
-	_REMIND
-};
+#include"TextOutWind.h"
+
 class project
 {
 	HINSTANCE m_hInst;
@@ -32,17 +23,12 @@ public:
 	//窗口信息
 	HWND hWnd;
 	MainWind* MAINWND;
-	WndMsg TEXTWND;
+	TextOutWind* TEXTWND;
 	WndMsg SETWND;
 	FileWind* FILEWND;
 	DetaileWind* DETAWND;
 	//文件读取状态
 	bool m_FileLoad;
-	//消息信息
-
-	int MSG_att;//消息显示状态
-	int MAX_runMSG;//最大消息储存长度
-	LinkList<runMsg>runMSG;
 	//模型数据
 	char Model_att;//显示模式
 	//std::vector<POINT>PerPIT_点缩放到屏幕;
@@ -54,9 +40,9 @@ public:
 	~project();
 	HWND CreateWind(HINSTANCE hInst);
 	//上传消息
-	void upMsg(const std::string&, const char& mode = _Message);
+	void OutMessage(const std::string&, const char& mode = _Message);
 	//上传消息
-	void upMsg(const std::wstring& str, const char& mode = _Message);
+	void OutMessage(const std::wstring& str, const char& mode = _Message);
 	//更新消息窗口
 	void updateMsg(const HDC&);
 	//更新模型数据

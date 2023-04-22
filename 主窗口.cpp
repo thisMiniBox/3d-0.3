@@ -7,7 +7,6 @@
 HINSTANCE hIns;
 project* current_project = new project;
 HBRUSH g_hBrush = NULL; // 全局变量，用于存储画刷
-// 此代码模块中包含的函数的前向声明:
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -16,9 +15,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
     hIns = hInstance;
-    current_project->TEXTWND.className = L"TextWnd";
     current_project->SETWND.className = L"EDIT";
-    MyRegisterClass(hInstance, current_project->TEXTWND.className.c_str(), TextWndProc);
     InitCommonControls();
     MSG msg;
     current_project->CreateWind(hInstance);
@@ -83,7 +80,7 @@ LRESULT CALLBACK project::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
         RECT rect;
         GetClientRect(hWnd, &rect);
         current_project->SetRect(rect);
-        MoveWindow(current_project->TEXTWND.hWnd, 0, cyClient - 150, cxClient / 5 * 4, 150, true);
+        MoveWindow(current_project->TEXTWND->GethWnd(), 0, cyClient - 150, cxClient / 5 * 4, 150, true);
         MoveWindow(current_project->FILEWND->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
         MoveWindow(current_project->DETAWND->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
         MoveWindow(current_project->MAINWND->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
@@ -131,7 +128,7 @@ LRESULT CALLBACK DetaileWind::DetaileWndProc(HWND hWnd, UINT message, WPARAM wPa
     return cDetaileWndProc(hWnd, message, wParam, lParam, current_project);
 }
 //文本循环
-LRESULT CALLBACK TextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK TextOutWind::TextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     return cTextWndProc(hWnd, message, wParam, lParam, current_project);
 }
@@ -571,6 +568,156 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         int ctrlID = GetDlgCtrlID((HWND)lParam);
 
         if (ctrlID == IDC_RO_ERROR) // 第一个静态文本框
+        {
+            if (g_hBrush == NULL) // 如果画刷对象不存在，则创建一个画刷
+            {
+                g_hBrush = CreateSolidBrush(RGB(255, 255, 0)); // 黄色画刷
+            }
+
+            SetTextColor(hdcStatic, RGB(255, 0, 0)); // 红色前景色
+            SetBkMode(hdcStatic, TRANSPARENT); // 透明背景色
+            SetBkColor(hdcStatic, RGB(255, 255, 0)); // 背景色也设置为黄色
+            return (LRESULT)g_hBrush; // 返回画刷句柄
+        }
+    }
+    break;
+    case WM_DESTROY:
+    {
+        // 销毁画刷对象
+        if (g_hBrush != NULL)
+        {
+            DeleteObject(g_hBrush);
+            g_hBrush = NULL;
+        }
+    }
+    break;
+
+    case WM_CLOSE:
+        // 关闭对话框
+        EndDialog(hDlg, 0);
+        break;
+    default:
+        return DefWindowProc(hDlg, uMsg, wParam, lParam);
+    }
+    return FALSE;
+}
+
+INT_PTR ScaleControl_缩放控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_UPDATE:
+    case WM_INITDIALOG:
+    {
+        Vector v = current_project->DETAWND->GetTarget()->GetPosition();
+        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
+        std::wstring wstr = std::to_wstring(v.x);
+        SetWindowText(hWndEdit, wstr.c_str());
+        hWndEdit = GetDlgItem(hDlg, IDC_Y);
+        wstr = std::to_wstring(v.y);
+        SetWindowText(hWndEdit, wstr.c_str());
+        hWndEdit = GetDlgItem(hDlg, IDC_Z);
+        wstr = std::to_wstring(v.z);
+        SetWindowText(hWndEdit, wstr.c_str());
+        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+        SetWindowText(hWndEdit, L"");
+        break;
+    }
+    case WM_SIZE:
+    {
+        RECT EditRect;
+        RECT hDlgRect;
+        GetWindowRect(hDlg, &hDlgRect);
+        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
+        GetWindowRect(hWndEdit, &EditRect);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        hWndEdit = GetDlgItem(hDlg, IDC_Y);
+        GetWindowRect(hWndEdit, &EditRect);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        hWndEdit = GetDlgItem(hDlg, IDC_Z);
+        GetWindowRect(hWndEdit, &EditRect);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        hWndEdit = GetDlgItem(hDlg, IDC_TITLE);
+        GetWindowRect(hWndEdit, &EditRect);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+        GetWindowRect(hWndEdit, &EditRect);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        break;
+    }
+    case WM_COMMAND:
+    {
+        if (HIWORD(wParam) == EN_CHANGE)
+        {
+            HWND hWndEdit = nullptr;
+            Vector VEC;
+            wchar_t szText[64];
+            switch (GetDlgCtrlID(GetFocus()))
+            {
+            case IDC_X:
+            {
+                hWndEdit = GetDlgItem(hDlg, IDC_X);
+                GetWindowText(hWndEdit, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    VEC.x = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().x;
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"");
+                }
+                else
+                {
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                }
+                break;
+            }
+            case IDC_Y:
+            {
+                hWndEdit = GetDlgItem(hDlg, IDC_Y);
+                GetWindowText(hWndEdit, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    VEC.y = (std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().y);
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"");
+                }
+                else
+                {
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                }
+                break;
+            }
+            case IDC_Z:
+            {
+                hWndEdit = GetDlgItem(hDlg, IDC_Z);
+                GetWindowText(hWndEdit, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    VEC.z = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().z;
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"");
+                }
+                else
+                {
+                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
+                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                }
+                break;
+            }
+            }
+            current_project->DETAWND->GetTarget()->Move(VEC);
+            InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
+        }
+
+        break;
+    }
+    case WM_CTLCOLORSTATIC:
+    {
+        HDC hdcStatic = (HDC)wParam;
+        int ctrlID = GetDlgCtrlID((HWND)lParam);
+
+        if (ctrlID == IDC_P_ERROR) // 第一个静态文本框
         {
             if (g_hBrush == NULL) // 如果画刷对象不存在，则创建一个画刷
             {

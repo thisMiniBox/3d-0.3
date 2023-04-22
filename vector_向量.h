@@ -199,11 +199,11 @@ namespace vec {
     typedef Vector Vector3;
     class Vector2 {
         // 私有成员变量
-    private:
+    public:
         double x; // x分量
         double y; // y分量
         // 公有成员函数
-    public:
+
         // 构造函数，初始化x和y
         Vector2(double x = 0, double y = 0) {
             this->x = x;
