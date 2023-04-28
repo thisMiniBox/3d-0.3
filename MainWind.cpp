@@ -431,22 +431,20 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
 }
 bool OpenGLWnd::AddModelToBuffer(Model* model)
 {
-    m_models[model] = new ModelBuffer(model, m_ModelShader);
+    m_models[model] = new OldModelBuffer(model, m_ModelShader);
     if (m_models[model])
         return true;
     return false;
 }
 void OpenGLWnd::DeleteModelBuffer(Model* model)
 {
-    if(!model->GetVertices().empty())
+    auto it = m_models.find(model);
+    if (it != m_models.end())
     {
-        auto it = m_models.find(model);
-        if (it != m_models.end())
-        {
-            delete it->second;
-            m_models.erase(it);
-        }
+        delete it->second;
+        m_models.erase(it);
     }
+
     if (!model->GetChildModel().empty())
         for (auto& cMod : model->GetChildModel())
             DeleteModelBuffer(cMod);
@@ -505,19 +503,16 @@ void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
     glm::mat4 modelP = glm::mat4(1.0f);
     for (const auto& model : models)
     {
-        if (model->GetVertices().empty())continue;
-        if (m_models[model] == nullptr)m_models[model] = new ModelBuffer(model, m_ModelShader);
+        if (!model->GetMesh())continue;
+        if (m_models[model] == nullptr)m_models[model] = new OldModelBuffer(model, m_ModelShader);
         modelP = glm::mat4(1.0f);
         
         modelP = glm::translate(modelP, (glm::vec3)model->GetWorldPosition());
-        modelP = glm::scale(modelP, (glm::vec3)model->GetScale());
+        modelP = glm::scale(modelP, (glm::vec3)model->getScale());
         modelP = glm::rotate(modelP, (float)(model->GetRotate().angle), (glm::vec3)(model->GetRotate().axis.Normalize()));
         m_models[model]->SetModelMatrix(modelP);
         m_models[model]->Draw();
     }
-
-
-
     SwapBuffers(GetDC(m_hWnd));
     EndPaint(m_hWnd, &ps);
 }

@@ -48,11 +48,33 @@ FileWind::~FileWind()
 }
 HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
 {
-    return m_FileTree_文件树.AddItem_添加节点(obj, add);
+    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, add);
+    switch (obj.GetType())
+    {
+    case OT_FOLDER:
+    {
+        SetNodeImage(hItem, 1, 2);
+        break;
+    }
+    default:
+        break;
+    }
+    return hItem;
 }
 HTREEITEM FileWind::AddItem(const Object& obj, HTREEITEM ptree)
 {
-    return m_FileTree_文件树.AddItem_添加节点(obj, ptree);
+    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, ptree);
+    switch (obj.GetType())
+    {
+    case OT_FOLDER:
+    {
+        SetNodeImage(hItem, 1, 2);
+        break;
+    }
+    default:
+        break;
+    }
+    return hItem;
 }
 void FileWind::DeleteItem(HTREEITEM a)
 {
@@ -141,4 +163,14 @@ void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
 void FileWind::MoveTree(int x, int y, int w, int h)
 {
     MoveWindow(m_Tree, x, y, w, h, true);
+}
+void FileWind::SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected)
+{
+    TVITEMEX tvItem = { 0 };
+    tvItem.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+    tvItem.hItem = hItem; 
+    tvItem.iImage = imageIndex; 
+    tvItem.iSelectedImage = imageIndexSelected;
+
+    TreeView_SetItem(m_Tree, &tvItem);
 }

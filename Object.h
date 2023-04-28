@@ -9,11 +9,27 @@
 #include <unordered_map>
 #include"vector_向量.h"
 #include"字符转换.h"
+
+//声明类（方便定位）
+class Object;
+class Folder;
+class Mesh;
+class Picture;
+class Material;
+class Model;
+class Camera;
+
+
+
+
 enum ObjectType
 {
 	OT_FOLDER,
 	OT_MODEL,
-	OT_CAMERA
+	OT_CAMERA,
+	OT_MESH,
+	OT_PICTURE,
+	OT_MATERIAL,
 };
 using namespace vec;
 
@@ -34,7 +50,7 @@ public:
 	// 设置物体名称
 	void SetName(std::string NewName);
 	// 获取物体类型，纯虚函数
-	virtual int GetType() = 0;
+	virtual ObjectType GetType()const = 0;
 	// 获取物体位置，返回默认值
 	virtual Vector GetPosition() const;
 	// 获取物体世界坐标，返回默认值
@@ -53,13 +69,6 @@ public:
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
 };
-//class ClassInfo
-//{
-//public:
-//	std::string m_Name;
-//	ClassInfo(Object*);
-//
-//};
 //材质信息结构体
 typedef struct _Material {
 	std::string name;
@@ -73,7 +82,8 @@ typedef struct _Material {
 	std::string map_Kd;
 	std::string map_Ks;
 	_Material() :Ns(0.0), Ni(0.0), Tr(0.0), Ka(), Kd(), Ks() {}
-}Material;
+}TMaterial;
+
 //用于Obj模型加载材质
 class ModelShader_模型着色器 {
 public:
@@ -82,12 +92,12 @@ public:
 	~ModelShader_模型着色器() {}
 	bool read(const std::string& filename);
 
-	Material get_materials(std::string name) const {
+	TMaterial get_materials(std::string name) const {
 		return materials.at(name);
 	}
 
 private:
-	std::unordered_map<std::string, Material> materials;
+	std::unordered_map<std::string, TMaterial> materials;
 };
 //GDI输出面数据
 typedef struct _OutPoint3
@@ -145,6 +155,8 @@ struct Vertex {
 };
 enum ReturnedOfLoadFile :unsigned int
 {
+	//默认状态
+	_Fail = 0xffff0000,
 	//默认成功消息
 	_Succese = 0xffffff00,
 	//错误
@@ -158,85 +170,181 @@ enum ReturnedOfLoadFile :unsigned int
 	_SuccessfullyLoadedMaterialMaps = 0x0400,
 
 };
+ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b);
+ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b);
 #include"stb_image.h"
-class Model : public Object
+
+class Mesh :public Object
 {
 public:
-	// 默认构造函数
-	Model();
-	// 构造函数，可指定物体名称
-	Model(std::string NAME);
+	Mesh() {}
+	Mesh(std::string&);
+	~Mesh() {}
+	std::vector<vec::Vector> m_Vertex;  // 顶点坐标数据
+	std::vector<vec::Vector> m_Normal;  // 法向量数据
+	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
+	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
+	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
+};
+#include"glad.h"
+
+typedef struct _PictureData
+{
+	unsigned char* m_Data;
+	int m_Width, m_Height, m_NrComponents;
+}PictureData;
+class Picture :public Object
+{
+	unsigned char* m_Data;
+	unsigned int m_ID;
+	int m_Width, m_Height, m_NrComponents;
+public:
+	Picture();
+	Picture(std::string& name);
+	~Picture();
+	//加载图片
+	PictureData LoadPicture(const std::string& path);
+	PictureData GetPicture()const;
+	//加载图片并载入到OpenGl
+	unsigned int loadTexture(char const* path);
+	unsigned int GetID() { return m_ID; }
+	//释放图片
+	void FreePictureData();
+	virtual ObjectType GetType() const override { return OT_PICTURE; }
+};
+class Material :public Object
+{
+public:
+	// 构造函数
+	Material();
+	Material(std::string& name) { m_Name = name; }
 	// 析构函数
-	~Model();
+	~Material();
 
-	// 创建子模型，返回子模型指针
-	Model* CreateChildModel(std::string Name);
+	// 访问器方法，用于设置或读取私有成员变量的值
+	float getNs() const;
+	void setNs(float ns);
+	float getNi() const;
+	void setNi(float ni);
+	float getTr() const;
+	void setTr(float tr);
+	const float* getKa() const;
+	void setKa(const float ka[3]);
+	const float* getKd() const;
+	void setKd(const float kd[3]);
+	const float* getKs() const;
+	void setKs(const float ks[3]);
+	Picture* getMapKa() const;
+	void setMapKa(Picture* mapKa);
+	Picture* getMapKd() const;
+	void setMapKd(Picture* mapKd);
+	Picture* getMapKs() const;
+	void setMapKs(Picture* mapKs);
+	virtual ObjectType GetType() const override { return OT_MATERIAL; }
+private:
+	// 私有成员变量
+	float m_Ns;
+	float m_Ni;
+	float m_Tr;
+	float m_Ka[3];
+	float m_Kd[3];
+	float m_Ks[3];
+	Picture* m_MapKa;
+	Picture* m_MapKd;
+	Picture* m_MapKs;
+};
+//用于读取与临时存储材质
+class MatFileReader {
+public:
+	// 构造函数
+	MatFileReader() {}
+	//析构函数
+	~MatFileReader() {}
 
-	// 获取顶点坐标数据
-	const std::vector<vec::Vector>& GetVertexData() const { return vertex_顶点坐标数据; }
-	// 获取法向量数据
-	const std::vector<vec::Vector>& GetNormalData() const { return normal_法向量数据; }
-	// 获取贴图坐标数据
-	const std::vector<vec::Vector2>& GetTexCoordData() const { return texCoords_贴图坐标数据; }
-	// 获取材质信息
-	const Material& GetMaterial() const { return mtl; }
-	// 获取模型文件路径
-	std::string GetFileAddress()const { return fileAddress; }
-	// 获取面信息
-	const std::vector<FaceData_面信息>& GetFaceData() const { return face_面的读取位置; }
-	// 获取子模型指针列表
-	const std::vector<Model*>& GetChildModel()const { return child_子模型指针; }
-	// 获取父模型指针
-	const Model* GetParentModel()const { return parent_父模型指针; }
+	//读取mat文件
+	bool read(const std::string& filename);
 
-	// 加载模型文件
-	int loadModelFile_加载模型文件(const std::wstring& filename);
-	// 获取三角形面片数据
-	const std::vector<FACE>& GetTriFace();
-	// 获取顶点数据
-	const std::vector<Vertex>& GetVertices();
-
-	// 设置缩放比例
-	void SetScale(Vector s) { m_Scale = s; }
-	// 更新三角形面片数据
-	void UpdateFACEdata() { TriFace.clear(); }
-
-	// 获取缩放比例
-	Vector GetScale()const { return m_Scale; }
-
-	// 获取物体位置
-	virtual Vector GetPosition()const override { return m_Position; }
-	// 获取物体世界坐标
-	virtual Vector GetWorldPosition() const override;
-	// 获取旋转
-	virtual Rotation GetRotate()const override;
-	//设定旋转四元数
-	virtual void SetRotate(const Rotation&) override;
-	// 设置物体位置
-	virtual void SetPosition(vec::Vector p)override;
-	// 移动物体
-	virtual void Move(const Vector3& v) override { m_Position += v; if (!TriFace.empty())TriFace.clear(); }
-	// 获取物体类型
-	virtual int GetType()override;
+	//获取材质
+	Material* getMaterial(const std::string& name) const;
 
 private:
-	void DistributeDataToChildModels();  // 将模型数据分配给子模型
-	int loadobj(const std::wstring& path, FILE* file);  // 加载 obj 文件
-	std::vector<vec::Vector> vertex_顶点坐标数据;  // 顶点坐标数据
-	std::vector<vec::Vector> normal_法向量数据;  // 法向量数据
-	std::vector<vec::Vector2> texCoords_贴图坐标数据;  // 贴图坐标数据
-	std::vector<FACE> TriFace;  // 三角形面片数据
-	std::vector<Vertex> ModelVertex;  // 顶点数据
-	Material mtl;  // 材质信息
-	std::vector<FaceData_面信息> face_面的读取位置;  // 面信息
-	Model* parent_父模型指针;  // 父模型指针
-	ModelShader_模型着色器* mtl_材质;  // 模型着色器
-	std::vector<Model*>child_子模型指针;  // 子模型指针列表
-	std::string fileAddress;  // 模型文件路径
+	std::unordered_map<std::string, Material*> m_Materials;
+};
 
-	Vector m_Position;  // 物体位置
-	Vector m_Scale;  // 缩放比例
-	Rotation m_Rotate;//旋转
+class Model : public Object {
+public:
+	Model();
+	Model(std::string& name);
+	~Model();
+
+	// 针对当前模型进行变换
+	void move(const Vector3& offset, bool add = true);
+	void scale(const Vector3& scaling, bool multiply = true);
+	void rotate(const Rotation& quaternion, bool multiply = true);
+
+	// 针对当前模型及其所有子模型进行变换
+	void moveAll(const Vector3& offset, bool add = true);
+	void scaleAll(const Vector3& scaling, bool multiply = true);
+	void rotateAll(const Rotation& quaternion, bool multiply = true);
+
+	// 获取或设置相对于父模型的变换属性
+	Vector3 getPosition() const;
+	void setPosition(const Vector3& position);
+	Vector3 getScale() const;
+	void setScale(const Vector3& scaling);
+	Rotation getRotation() const;
+	void setRotation(const Rotation& quaternion);
+
+	// 获取或设置相对于世界坐标系的变换属性
+	Vector3 getWorldPosition() const;
+	void setWorldPosition(const Vector3& position);
+	Vector3 getWorldScale() const;
+	void setWorldScale(const Vector3& scaling);
+	Rotation getWorldRotation() const;
+	void setWorldRotation(const Rotation& quaternion);
+
+	// 添加或删除子模型
+	void addChildModel(Model* model);
+	void removeChildModel(Model* model);
+
+	//修改父模型
+	void SetParent(Model* model);
+	Model* GetParent() const{ return m_Parent; }
+	//材质
+	void SetMaterial(Material* material) { m_Material = material; }
+	Material* GetMaterial() const{ return m_Material; }
+	//网格
+	Mesh* GetMesh()const;
+	void SetMesh(Mesh*);
+	const std::vector<Model*>& GetChildModel()const { return m_ChildModel; }
+	virtual ObjectType GetType() const override { return OT_MODEL; }
+	virtual void Move(const Vector3&)override;
+	// 获取物体位置，返回默认值
+	virtual Vector GetPosition() const;
+	// 获取物体世界坐标，返回默认值
+	virtual Vector GetWorldPosition() const;
+	// 获取旋转
+	virtual Rotation GetRotate()const;
+	// 设定旋转
+	virtual void SetRotate(const Rotation&);
+	// 设置物体位置，空实现
+	virtual void SetPosition(vec::Vector);
+	//删除关联物体
+	virtual void DeleteChildObject();
+
+	//GDI渲染
+	const std::vector<FACE>& GetTriFace();
+private:
+	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
+	Model* m_Parent;
+	std::vector<Model*> m_ChildModel;
+	Mesh* m_ModelMesh;
+	Material* m_Material;
+	Vector3 m_Position;
+	Vector3 m_Scale;
+	Rotation m_Rotate;
+
+	std::vector<FACE> m_GDI_TriFaceData;
 };
 #include<unordered_map>
 //对象文件/占位子类
@@ -256,7 +364,7 @@ public:
 	void ClearFolder_清空文件夹();
 	void DeleteFile_删除文件(Object*);
 	std::vector<Model*> GetAllModleFile_找到所有模型()const;
-	int GetType();
+ 	virtual ObjectType GetType()const override;
 	virtual Vector GetPosition()const override { return Vector(0, 0, 0); }
 	virtual void DeleteChildObject()override;
 };
@@ -298,7 +406,7 @@ public:
 	float GetFieldOfView() const { return m_Field; }
 	float GetNear() const { return m_Near; }
 	float GetFar() const { return m_Far; }
-	virtual int GetType()override { return OT_CAMERA; }
+	virtual ObjectType GetType()const override { return OT_CAMERA; }
 
 	Matrix4 GetView()const;
 	Matrix4 GetGLMView()const;

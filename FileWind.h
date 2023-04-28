@@ -1,5 +1,6 @@
 #pragma once
 #include<Windows.h>
+#include"resource.h"
 #include"Tree_Ê÷¿Ø¼þ.h"
 #include"Object.h"
 #include<string>
@@ -26,6 +27,7 @@ public:
 	Object* GetSelectedItemData();
 	HTREEITEM GetMousePositionItem();
 	Object* GetMousePositionItemData();
+	void SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected);
 	void FixItemName(HTREEITEM, const std::wstring Name);
 	void ShowFolder(const Folder&, HTREEITEM parent = TVI_ROOT);
 	void MoveTree(int x, int y, int w, int h);

@@ -1,7 +1,6 @@
 #pragma once
 
 #include"字符转换.h"
-//#include"Camera.h"
 #include"WndData.h"
 #include"MainWind.h"
 #include"DetaileWind.h"
@@ -12,13 +11,14 @@
 #include"Tree_树控件.h"
 #include"FileWind.h"
 #include"TextOutWind.h"
-
+#include"Object.h"
 class project
 {
 	HINSTANCE m_hInst;
 	Folder m_RootFolder;
 	std::vector<Model*>m_Models;
 	RECT m_rect;
+	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 public:
 	//窗口信息
 	HWND hWnd;
@@ -51,13 +51,16 @@ public:
 	RECT GetRect()const;
 	//修改文件名称
 	void SetFileName(Object*, const std::wstring& NewName);
-	//加载模型返回错误码
-	int loadModel(const std::wstring& path);
+	////加载模型返回错误码
+	//int loadModel(const std::wstring& path);
+	
+	//加载文件
+	ReturnedOfLoadFile LoadFile(const std::wstring& path);
 	//返回所有对象
 	std::vector<Model*>& GetModels();
 	//添加对象
 	HTREEITEM AddObject(Object*, std::string address = "0");
-	//添加对象到次节点下
+	//添加对象到此节点下
 	HTREEITEM AddObject(Object* a, HTREEITEM parent);
 	//创建物品
 	Object* CreateObject(Folder* parent = nullptr, std::string Name = "", int type = OT_FOLDER);

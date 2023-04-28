@@ -1,8 +1,6 @@
-﻿// 机器学习win.cpp : 定义应用程序的入口点。
-//
-
-#include "framework.h"
+﻿#include "framework.h"
 #include "机器学习win.h"
+#include<xlnt/xlnt.hpp>
 
 HINSTANCE hIns;
 project* current_project = new project;
@@ -12,6 +10,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+#ifdef _DEBUG
+    AllocConsole();
+    FILE* stream;
+    freopen_s(&stream, "CON", "r", stdin);//重定向输入流
+    freopen_s(&stream, "CON", "w", stdout);//重定向输入流
+#endif // DEBUG
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
     hIns = hInstance;
@@ -21,12 +25,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     current_project->CreateWind(hInstance);
 
 
-#ifdef _DEBUG
-    AllocConsole();
-    FILE* stream;
-    freopen_s(&stream, "CON", "r", stdin);//重定向输入流
-    freopen_s(&stream, "CON", "w", stdout);//重定向输入流
-#endif // DEBUG
+    //xlnt::workbook wb;
+    //xlnt::worksheet ws = wb.active_sheet();
+    //ws.cell("A1").value(5);
+    //ws.cell("B2").value("string data");
+    //ws.cell("C3").formula("=RAND()");
+    //ws.merge_cells("C3:C4");
+    //ws.freeze_panes("B2");
+    //wb.save("example.xlsx");
+
+
     HMENU hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDC_WIN));
     SetMenu(current_project->hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));

@@ -3,9 +3,11 @@
 #include<commctrl.h>
 #include"字符转换.h"
 #include"Object.h"
+HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID);
 class Tree_树控件
 {
 	HWND hWnd_树控件句柄;
+	HIMAGELIST m_hImageList;
 public:
 	Tree_树控件();
 	//返回树控件句柄
@@ -26,7 +28,7 @@ public:
 	HTREEITEM GetMouseItem_获取鼠标位置树节点();
 
 	void ClearTree_清空树();
-	void SetItemImage_设置节点图标(HTREEITEM hItem, int imageIndex_图片索引);
+	void SetItemImage_设置节点图标(HTREEITEM hItem, int imageIndex, int imageIndexSelected);
 	void SetItemText_修改节点名称(HTREEITEM hItem, std::wstring);
 	bool DragDrop_拖放节点(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags);
 	void StartEdit_编辑节点(HTREEITEM hItem);

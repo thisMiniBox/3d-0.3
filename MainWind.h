@@ -77,9 +77,9 @@ public:
 #include"Shader.h"
 #pragma comment (lib,"opengl32.lib")
 unsigned int loadTexture(char const* path);
-class ModelBuffer {
+class OldModelBuffer {
 public:
-	ModelBuffer(Model* model, OpenGLShader* shader = nullptr)
+	OldModelBuffer(Model* model, OpenGLShader* shader = nullptr)
 		: m_Model(model), m_Shader(shader),m_ModelMatrix(glm::mat4(1.0))
 	{
 		// 创建VAO
@@ -89,8 +89,8 @@ public:
 		// 创建VBO并存储顶点数据
 		glGenBuffers(1, &m_VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetVertices().size(),
-			m_Model->GetVertices().data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->m_Vertex.size(),
+			m_Model->GetMesh()->m_Vertex.data(), GL_STATIC_DRAW);
 
 		// 指定顶点属性指针
 		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
@@ -103,14 +103,14 @@ public:
 		// 解绑VAO和VBO
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		m_DiffuseMap = loadTexture((m_Model->GetFileAddress().c_str() + m_Model->GetMaterial().map_Kd).c_str());
-		m_MirrorMap= loadTexture((m_Model->GetFileAddress().c_str() + m_Model->GetMaterial().map_Ka).c_str());
+		m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->GetID();
+		m_MirrorMap= m_Model->GetMaterial()->getMapKs()->GetID();
 		m_Shader->use();
 		m_Shader->setInt("material.diffuse", 0);
 		m_Shader->setInt("material.specular", 1);
 	}
 
-	~ModelBuffer()
+	~OldModelBuffer()
 	{
 		glDeleteVertexArrays(1, &m_VAO);
 		glDeleteBuffers(1, &m_VBO);
@@ -129,7 +129,7 @@ public:
 			m_Shader->use();
 			m_Shader->setMat4("model", m_ModelMatrix);
 			glBindVertexArray(m_VAO);
-			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetVertices().size());
+			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->m_Vertex.size());
 			glBindVertexArray(0);
 		}
 	}
@@ -171,7 +171,7 @@ public:
 	void ResetOpenGLViewport();
 private:
 	HGLRC m_hglrc;
-	std::unordered_map<Model*, ModelBuffer*>m_models;
+	std::unordered_map<Model*, OldModelBuffer*>m_models;
 	OpenGLShader* m_ModelShader;
 	OpenGLShader* m_LightShader;
 

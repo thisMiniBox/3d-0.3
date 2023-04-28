@@ -1,25 +1,4 @@
 #include "Object.h"
-Model::Model()
-{
-	m_Rotate = Rotation(0, { 1, 0, 0 });
-	m_Name = "新建模型";
-	m_Scale = Vector(1.0, 1.0, 1.0);
-	parent_父模型指针 = nullptr;
-	mtl_材质 = nullptr;
-}
-Model::~Model()
-{
-	vertex_顶点坐标数据.~vector();
-	normal_法向量数据.~vector();
-	texCoords_贴图坐标数据.~vector();
-	for (const auto& i : child_子模型指针)
-	{
-		delete i;
-	}
-	if (mtl_材质)delete mtl_材质;
-	child_子模型指针.~vector();
-	face_面的读取位置.~vector();
-}
 inline FaceData_面信息 faceData(std::string cin) {
 	FaceData_面信息 result;
 	std::stringstream ss(cin);
@@ -37,165 +16,6 @@ inline FaceData_面信息 faceData(std::string cin) {
 	}
 	return result;
 }
-int Model::loadobj(const std::wstring& path, FILE* file)
-{
-	int Error = 0;
-	char c = 0;
-	size_t n = 0;
-	size_t m = 0;
-	Model* NewModel = nullptr;
-	vec::Vector vector;
-	vec::Vector2 vector2d;
-	FaceData_面信息 Face;
-	std::string FileData;
-	std::string w;
-	while (1)
-	{
-		c = fgetc(file);
-		if (c == EOF)break;
-		if (c == '\n')
-		{
-			if (FileData.size() > 0)
-			{
-				//获取了一行信息后进行解析
-				n = FileData.find_first_of(' ');
-				if (n == -1)
-				{
-					FileData.clear();
-					continue;
-				}
-				w = FileData.substr(0, n);
-				if (w == "v")
-				{
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					n = (FileData = FileData.substr(n)).find_first_of(' ');
-					vector.SetX(std::stod((w = FileData.substr(0, n)).c_str()));
-					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
-					vector.SetY(std::stod((w = FileData.substr(0, n)).c_str()));
-					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
-					vector.SetZ(std::stod((w = FileData.substr(0, n)).c_str()));
-					vertex_顶点坐标数据.push_back(vector);
-				}
-				else if (w == "vn")
-				{
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					n = (FileData = FileData.substr(n)).find_first_of(' ');
-					vector.SetX(std::stod((w = FileData.substr(0, n)).c_str()));
-					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
-					vector.SetY(std::stod((w = FileData.substr(0, n)).c_str()));
-					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
-					vector.SetZ(std::stod((w = FileData.substr(0, n)).c_str()));
-					normal_法向量数据.push_back(vector);
-				}
-				else if (w == "vt")
-				{
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					n = (FileData = FileData.substr(n)).find_first_of(' ');
-					vector2d.setX(std::stod((w = FileData.substr(0, n)).c_str()));
-					n = (FileData = FileData.substr(n + 1)).find_first_of(' ');
-					vector2d.setY(std::stod((w = FileData.substr(0, n)).c_str()));
-					texCoords_贴图坐标数据.push_back(vector2d);
-				}
-				else if (w == "f")
-				{
-					if (!NewModel)return ReturnedOfLoadFile::_DataError;
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					n = (FileData = FileData.substr(n)).find_first_of(' ');
-					NewModel->face_面的读取位置.push_back(faceData(FileData));
-				}
-				else if (w == "g" || w == "o" || w == "mg")
-				{
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					FileData = FileData.substr(n);
-					NewModel = CreateChildModel(FileData);
-					child_子模型指针.push_back(NewModel);
-				}
-				else if (w == "usemtl")
-				{
-					if (!mtl_材质)
-					{
-						FileData.clear();
-						continue;
-					}
-					if (!NewModel)return ReturnedOfLoadFile::_FailedToCreateFile;
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					FileData = FileData.substr(n);
-					NewModel->mtl = mtl_材质->get_materials(FileData);
-				}
-				else if (w == "mtllib")
-				{
-					n = (FileData = FileData.substr(n)).find_first_not_of(' ');
-					if (mtl_材质)
-						if (!mtl_材质->read(mtl_材质->file.c_str() + FileData.substr(n)))
-						{
-							delete mtl_材质;
-							mtl_材质 = nullptr;
-						}
-				}
-				FileData.clear();
-			}
-			continue;
-		}
-		FileData.push_back(c);
-	}
-	if (child_子模型指针.size() != 0)
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedVertex;
-	int width, height, channels;
-	int result = 0;
-	bool map = false;
-	for(const auto&i:child_子模型指针)
-	{
-		if (!i->mtl.map_Ka.empty())
-		{
-			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
-			map = true;
-		}
-		if (!i->mtl.map_Ka.empty())
-		{
-			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
-			map = true;
-		}
-		if (!i->mtl.map_Ka.empty())
-		{
-			result += stbi_info((fileAddress + i->mtl.map_Ka).c_str(), &width, &height, &channels);
-			map = true;
-		}
-	}
-	if (!map || result)
-	{
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps;
-	}
-	if (!mtl_材质)
-	{
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile;
-		delete mtl_材质;
-		mtl_材质 = nullptr;
-	}
-
-	return Error;
-}
-int Model::loadModelFile_加载模型文件(const std::wstring& filename)
-{
-	FILE* file = nullptr;
-	int error = 0xfffff800;
-	mtl_材质 = new ModelShader_模型着色器;
-	_wfopen_s(&file, filename.c_str(), L"r");
-	if (!file)return ReturnedOfLoadFile::_FailToOpenFile;
-	std::wstring suffix;
-	int meshNum = filename.find_last_of(L"/");
-	if (meshNum == -1)meshNum = filename.find_last_of(L"\\");
-	m_Name = wstr_str(filename.substr(meshNum + 1, filename.find_last_of(L'.') - meshNum - 1));
-	mtl_材质->file = wstr_str(filename.substr(0, meshNum + 1));
-	fileAddress = mtl_材质->file;
-	meshNum = filename.find_last_of(L'.');
-	if (meshNum >= 0)suffix = filename.substr(meshNum);
-	if (suffix == L".obj")error = error | loadobj(filename, file);
-	else
-		return ReturnedOfLoadFile::_UnknownFormat;
-	fclose(file);
-	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)DistributeDataToChildModels();
-	return error;
-}
 bool ModelShader_模型着色器::read(const std::string& filename) {
 	std::ifstream file(filename);
 	if (!file.is_open()) {
@@ -203,7 +23,7 @@ bool ModelShader_模型着色器::read(const std::string& filename) {
 		return false;
 	}
 
-	Material current_material;
+	TMaterial current_material;
 	std::string line;
 	while (std::getline(file, line)) {
 		std::istringstream iss(line);
@@ -249,10 +69,6 @@ bool ModelShader_模型着色器::read(const std::string& filename) {
 	}
 	materials[current_material.name] = current_material;
 	return true;
-}
-int Model::GetType()
-{
-	return OT_MODEL;
 }
 Folder::Folder(std::string NAME)
 {
@@ -308,38 +124,25 @@ void Folder::ClearFolder_清空文件夹()
 	}
 	m_Child.clear();
 }
-std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
-{
-	std::vector<Model*> out;
-	
-	for (const auto& kv : m_Child) 
-	{
-		if (kv.second)
-		switch (kv.second->GetType())
-		{
-		case OT_MODEL:
-		{
-			Model* mod = dynamic_cast<Model*>(kv.second);
-			out.push_back(mod);
-			out.insert(out.end(), mod->GetChildModel().begin(), mod->GetChildModel().end());
-			break;
-		}
-		case OT_FOLDER:
-		{
-			Folder* fod= dynamic_cast<Folder*>(kv.second);
-			std::vector<Model*> fc = fod->GetAllModleFile_找到所有模型();
-			out.insert(out.end(), fc.begin(), fc.end());
-		}
-		default:
-			break;
-		}
-	}
-	return out;
-}
 void Folder::AddFile_添加文件(Object* obj)
 {
-	m_Child.insert(std::make_pair(obj->GetName(), obj));
+	std::string name = obj->GetName();
+	if (m_Child.find(name) == m_Child.end()) {
+		m_Child.insert(std::make_pair(name, obj));
+		return;
+	}
+
+	// 名称已经存在，添加数字序号
+	int i = 1;
+	do {
+		name = obj->GetName() + "_" + std::to_string(i);
+		i++;
+	} while (m_Child.find(name) != m_Child.end());
+
+	obj->SetName(name);
+	m_Child.insert(std::make_pair(name, obj));
 }
+
 Object* Folder::CreateFile_创建文件(std::string Name, int type)
 {
 	Object* out = nullptr;
@@ -365,18 +168,18 @@ Object* Folder::CreateFile_创建文件(std::string Name, int type)
 	}
 	case OT_MODEL:
 	{
-		Model* a;
-		if (Name.empty())
-		{
-			a = new Model("新建模型");
-			m_Child.insert(std::make_pair("新建模型", a));
-		}
-		else
-		{
-			a = new Model(Name);
-			m_Child.insert(std::make_pair(Name, a));
-		}
-		out = a;
+		//OldModelClass* a;
+		//if (Name.empty())
+		//{
+		//	a = new OldModelClass("新建模型");
+		//	m_Child.insert(std::make_pair("新建模型", a));
+		//}
+		//else
+		//{
+		//	a = new OldModelClass(Name);
+		//	m_Child.insert(std::make_pair(Name, a));
+		//}
+		//out = a;
 		break;
 	}
 	case OT_CAMERA:
@@ -400,7 +203,7 @@ Object* Folder::CreateFile_创建文件(std::string Name, int type)
 	}
 	return out;
 }
-int Folder::GetType()
+ObjectType Folder::GetType()const
 {
 	return OT_FOLDER;
 }
@@ -415,19 +218,6 @@ void Folder::DeleteFile_删除文件(Object* obj)
 		m_Child.erase(it);
 		delete obj; // 释放内存
 	}
-}
-Model::Model(std::string NAME)
-{
-	m_Name = NAME;
-	parent_父模型指针 = nullptr;
-	mtl_材质 = nullptr;
-}
-Model* Model::CreateChildModel(std::string NAME)
-{
-	Model* child = new Model;
-	child->m_Name = NAME;
-	child->parent_父模型指针 = this;
-	return child;
 }
 // 默认构造函数
 Object::Object()
@@ -480,18 +270,6 @@ void Object::SetRotate(const Rotation&)
 {
 }
 
-Rotation Model::GetRotate()const
-{
-	if (!parent_父模型指针)
-	return m_Rotate;
-	return parent_父模型指针->GetRotate().compose(m_Rotate);
-}
-void Model::SetRotate(const Rotation& qua)
-{
-	m_Rotate = qua;
-}
-
-
 // 移动物体，空实现
 void Object::Move(const Vector3&)
 {
@@ -500,154 +278,7 @@ void Object::Move(const Vector3&)
 void Object::DeleteChildObject()
 {
 }
-Vector Model::GetWorldPosition()const
-{
-	if (parent_父模型指针)
-		return m_Position + parent_父模型指针->GetWorldPosition();
-	return m_Position;
-}
-void Model::SetPosition(vec::Vector p)
-{
-	m_Position = p;
-	for (const auto& i : child_子模型指针)
-		i->UpdateFACEdata();
-
-}
-const std::vector<FACE>& Model::GetTriFace()
-{
-	if (!ModelVertex.empty())ModelVertex.clear();
-	if (face_面的读取位置.empty())return TriFace;
-	if (TriFace.empty())
-	{
-		FACE outf;
-		for (const FaceData_面信息& fi : face_面的读取位置)
-		{
-			outf.vertexA = vertex_顶点坐标数据[fi.a[0] - 1] + GetWorldPosition();
-			outf.vertexB = vertex_顶点坐标数据[fi.a[3] - 1] + GetWorldPosition();
-			outf.vertexC = vertex_顶点坐标数据[fi.a[6] - 1] + GetWorldPosition();
-			outf.texCoordA = texCoords_贴图坐标数据[fi.a[1]-1];
-			outf.texCoordB = texCoords_贴图坐标数据[fi.a[4]-1];
-			outf.texCoordC = texCoords_贴图坐标数据[fi.a[7]-1];
-			outf.normalA = normal_法向量数据[fi.a[2]-1];
-			outf.normalB = normal_法向量数据[fi.a[5]-1];
-			outf.normalC = normal_法向量数据[fi.a[8]-1];
-			if (mtl.Kd)
-				outf.color = RGB(mtl.Kd[0] * 255, mtl.Kd[1] * 255, mtl.Kd[2] * 255);
-			else
-				outf.color = RGB(200, 200, 200);
-			TriFace.push_back(outf);
-		}
-	}
-	return TriFace;
-}
 using namespace vec;
-void Model::DistributeDataToChildModels()
-{
-	std::vector<vec::Vector> child_vertex_data;
-	std::vector<vec::Vector> child_normal_data;
-	std::vector<vec::Vector2> child_texcoord_data;
-	std::vector<FaceData_面信息> child_face_data;
-	std::unordered_map<int, int> vertex_index;
-	std::unordered_map<int, int> normal_index;
-	std::unordered_map<int, int> texcoord_index;
-
-	// 遍历子模型
-	for (auto child : child_子模型指针)
-	{
-		child->fileAddress = fileAddress;
-		vertex_index.clear();
-		normal_index.clear();
-		texcoord_index.clear();
-		child_vertex_data.clear();
-		child_normal_data.clear();
-		child_texcoord_data.clear();
-		child_face_data.clear();
-
-		// 获取子模型需要的顶点、法向量和纹理坐标数据
-		for (const auto& face : child->GetFaceData())
-		{
-			FaceData_面信息 new_face = face;  // 复制原始三角面
-
-			// 修改三角面中的索引，以反映新的数据位置
-			for (int i = 0; i < 3; ++i)  // 顶点索引
-			{
-				int index = new_face.a[3 * i];
-				if (0 != vertex_index[index])
-				{
-					new_face.a[3 * i] = vertex_index[index];
-					continue;
-				}
-				child_vertex_data.push_back(vertex_顶点坐标数据[index-1]);
-				new_face.a[3 * i] = (int)child_vertex_data.size();
-				vertex_index[index] = new_face.a[3 * i];
-			}
-
-			for (int i = 0; i < 3; ++i)  // 法向量索引
-			{
-				int index = new_face.a[3 * i + 2];
-				if (0 != normal_index[index])
-				{
-					new_face.a[3 * i + 2] = normal_index[index];
-					continue;
-				}
-				child_normal_data.push_back(normal_法向量数据[index-1]);
-				new_face.a[3 * i + 2] = (int)child_normal_data.size();
-				normal_index[index] = new_face.a[3 * i + 2];
-			}
-
-			for (int i = 0; i < 3; ++i)  // 纹理坐标索引
-			{
-				int index = new_face.a[3 * i + 1];
-				if (0 != texcoord_index[index])
-				{
-					new_face.a[3 * i + 1] = texcoord_index[index];
-					continue;
-				}
-				child_texcoord_data.push_back(texCoords_贴图坐标数据[index-1]);
-				new_face.a[3 * i + 1] = (int)child_texcoord_data.size();
-				texcoord_index[index] = new_face.a[3 * i + 1];
-			}
-
-			// 将修改后的三角面添加到子模型的面数据中
-			child_face_data.push_back(new_face);
-		}
-
-		// 将数据分配给子模型
-		child->vertex_顶点坐标数据 = (child_vertex_data);
-		child->normal_法向量数据 = (child_normal_data);
-		child->texCoords_贴图坐标数据 = (child_texcoord_data);
-		child->face_面的读取位置 = (child_face_data);
-	}
-	vertex_顶点坐标数据.clear();
-	normal_法向量数据.clear();
-	texCoords_贴图坐标数据.clear();
-	face_面的读取位置.clear();
-}
-const std::vector<Vertex>& Model::GetVertices()
-{
-	if (!TriFace.empty())TriFace.clear();
-	if (face_面的读取位置.empty())return ModelVertex;
-	if (ModelVertex.empty())
-	{
-		Vertex v0, v1, v2;
-		for (const FaceData_面信息& fi : face_面的读取位置)
-		{
-			v0.position = vertex_顶点坐标数据[fi.a[0] - 1];
-			v1.position = vertex_顶点坐标数据[fi.a[3] - 1];
-			v2.position = vertex_顶点坐标数据[fi.a[6] - 1];
-			v0.texCoord = texCoords_贴图坐标数据[fi.a[1] - 1];
-			v1.texCoord = texCoords_贴图坐标数据[fi.a[4] - 1];
-			v2.texCoord = texCoords_贴图坐标数据[fi.a[7] - 1];
-			v0.normal = normal_法向量数据[fi.a[2] - 1];
-			v1.normal = normal_法向量数据[fi.a[5] - 1];
-			v2.normal = normal_法向量数据[fi.a[8] - 1];
-			ModelVertex.push_back(v0);
-			ModelVertex.push_back(v1);
-			ModelVertex.push_back(v2);
-		}
-	}
-	return ModelVertex;
-}
 Camera::Camera() {
 	m_Name = "摄像头";
 	m_Position = vec::Vector3(0, 0, 3);
@@ -732,4 +363,512 @@ Matrix4 Camera::GetGLMView()const
 		0, 0, 1, -m_Position.z,
 		0, 0, 0, 1
 	);
+}
+inline float Material::getNs() const {
+	return m_Ns;
+}
+
+inline void Material::setNs(float ns) {
+	m_Ns = ns;
+}
+
+inline float Material::getNi() const {
+	return m_Ni;
+}
+
+inline void Material::setNi(float ni) {
+	m_Ni = ni;
+}
+
+inline float Material::getTr() const {
+	return m_Tr;
+}
+
+inline void Material::setTr(float tr) {
+	m_Tr = tr;
+}
+
+inline const float* Material::getKa() const {
+	return m_Ka;
+}
+
+inline void Material::setKa(const float ka[3]) {
+	memcpy(m_Ka, ka, sizeof(float) * 3);
+}
+
+inline const float* Material::getKd() const {
+	return m_Kd;
+}
+
+inline void Material::setKd(const float kd[3]) {
+	memcpy(m_Kd, kd, sizeof(float) * 3);
+}
+
+inline const float* Material::getKs() const {
+	return m_Ks;
+}
+
+inline void Material::setKs(const float ks[3]) {
+	memcpy(m_Ks, ks, sizeof(float) * 3);
+}
+
+Picture* Material::getMapKa() const {
+	return m_MapKa;
+}
+
+inline void Material::setMapKa(Picture* mapKa) {
+	m_MapKa = mapKa;
+}
+
+Picture* Material::getMapKd() const {
+	return m_MapKd;
+}
+
+inline void Material::setMapKd(Picture* mapKd) {
+	m_MapKd = mapKd;
+}
+
+Picture* Material::getMapKs() const {
+	return m_MapKs;
+}
+
+inline void Material::setMapKs(Picture* mapKs) {
+	m_MapKs = mapKs;
+}
+
+
+Material::Material()
+	: m_Ns(0.0f),
+	m_Ni(0.0f),
+	m_Tr(0.0f),
+	m_MapKa(nullptr),
+	m_MapKd(nullptr),
+	m_MapKs(nullptr)
+{
+	memset(m_Ka, 0, sizeof(float) * 3);
+	memset(m_Kd, 0, sizeof(float) * 3);
+	memset(m_Ks, 0, sizeof(float) * 3);
+}
+Material::~Material()
+{
+	if (m_MapKa)
+		stbi_image_free(m_MapKa);
+	if (m_MapKd)
+		stbi_image_free(m_MapKd);
+	if (m_MapKs)
+		stbi_image_free(m_MapKs);
+}
+Model::Model()
+	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
+	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
+{
+	m_Name = "新建模型";
+}
+Model::Model(std::string& name)
+	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
+	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
+{
+	m_Name = name;
+}
+Model::~Model() 
+{
+	for (auto& p : m_ChildModel)
+		if (p)
+			delete p;
+}
+
+void Model::move(const Vector3& offset, bool add) {
+	if (add) {
+		m_Position += offset;
+	}
+	else {
+		m_Position = offset;
+	}
+}
+
+void Model::scale(const Vector3& scaling, bool multiply) {
+	if (multiply) {
+		m_Scale = m_Scale * scaling;
+	}
+	else {
+		m_Scale = scaling;
+	}
+}
+
+void Model::rotate(const Rotation& quaternion, bool multiply) {
+	if (multiply) {
+		m_Rotate = m_Rotate.compose(quaternion);
+	}
+	else {
+		m_Rotate = quaternion;
+	}
+}
+
+void Model::moveAll(const Vector3& offset, bool add) {
+	move(offset, add);
+	for (auto child : m_ChildModel) {
+		child->moveAll(offset, add);
+	}
+}
+
+void Model::scaleAll(const Vector3& scaling, bool multiply) {
+	scale(scaling, multiply);
+	for (auto child : m_ChildModel) {
+		child->scaleAll(scaling, multiply);
+	}
+}
+
+void Model::rotateAll(const Rotation& quaternion, bool multiply) {
+	rotate(quaternion, multiply);
+	for (auto child : m_ChildModel) {
+		child->rotateAll(quaternion, multiply);
+	}
+}
+
+Vector3 Model::getPosition() const {
+	return m_Position;
+}
+
+void Model::setPosition(const Vector3& position) {
+	m_Position = position;
+}
+
+Vector3 Model::getScale() const {
+	return m_Scale;
+}
+
+void Model::setScale(const Vector3& scaling) {
+	m_Scale = scaling;
+}
+
+Rotation Model::getRotation() const {
+	return m_Rotate;
+}
+
+void Model::setRotation(const Rotation& quaternion) {
+	m_Rotate = quaternion;
+}
+
+Vector3 Model::getWorldPosition() const {
+	if (m_Parent) {
+		return m_Position + m_Parent->getWorldPosition();
+	}
+	else {
+		return m_Position;
+	}
+}
+
+void Model::setWorldPosition(const Vector3& position) {
+	if (m_Parent) {
+		m_Position = position - m_Parent->getWorldPosition();
+	}
+	else {
+		m_Position = position;
+	}
+}
+
+Vector3 Model::getWorldScale() const {
+	if (m_Parent) {
+		Vector out;
+		Vector ParentSanle = m_Parent->getWorldScale();
+		out.x = m_Scale.x * ParentSanle.x;
+		out.y = m_Scale.y * ParentSanle.y;
+		out.z = m_Scale.z * ParentSanle.z;
+		return out;
+	}
+	else {
+		return m_Scale;
+	}
+}
+Vector Model::GetPosition() const
+{
+	return m_Position;
+}
+Vector Model::GetWorldPosition() const
+{
+	return getWorldPosition();
+}
+Rotation Model::GetRotate()const
+{
+	return m_Rotate;
+}
+void Model::SetRotate(const Rotation& r)
+{
+	m_Rotate = r;
+}
+void Model::SetPosition(vec::Vector v)
+{
+	m_Position = v;
+}
+void Model::DeleteChildObject()
+{
+	for (auto& i : m_ChildModel)
+		delete i;
+	m_ChildModel.clear();
+}
+const std::vector<FACE>& Model::GetTriFace()
+{
+	return m_GDI_TriFaceData;
+}
+void Model::setWorldScale(const Vector3& scaling) {
+	if (m_Parent) {
+		Vector ParentSanle = m_Parent->getWorldScale();
+		m_Scale.x = scaling.x / ParentSanle.x;
+		m_Scale.y = scaling.y / ParentSanle.y;
+		m_Scale.z = scaling.z / ParentSanle.z;
+	}
+	else {
+		m_Scale = scaling;
+	}
+}
+
+Rotation Model::getWorldRotation() const {
+	if (m_Parent) {
+		return m_Parent->getWorldRotation().compose(m_Rotate);
+	}
+	else {
+		return m_Rotate;
+	}
+}
+
+void Model::setWorldRotation(const Rotation& quaternion) {
+	if (m_Parent) {
+		m_Rotate = m_Rotate.getRelativeRotation(quaternion, m_Parent->getWorldRotation());
+	}
+	else {
+		m_Rotate = quaternion;
+	}
+}
+void Model::Move(const Vector3& m)
+{
+	move(m);
+}
+
+void Model::addChildModel(Model* model) {
+	if (!model) {
+		return;
+	}
+	if (model->m_Parent) {
+		model->m_Parent->removeChildModel(model);
+	}
+	model->m_Parent = this;
+	m_ChildModel.push_back(model);
+}
+void Model::SetParent(Model* model)
+{
+	m_Parent = model;
+}
+Mesh* Model::GetMesh()const
+{
+	return m_ModelMesh;
+}
+void Model::SetMesh(Mesh* mesh)
+{
+	m_ModelMesh = mesh;
+}
+void Model::removeChildModel(Model* model) {
+	auto it = std::find(m_ChildModel.begin(), m_ChildModel.end(), model);
+	if (it != m_ChildModel.end()) {
+		(*it)->m_Parent = nullptr;
+		m_ChildModel.erase(it);
+	}
+}
+Picture::Picture() :m_Data(nullptr), m_ID(0), m_Width(0), m_Height(0), m_NrComponents(0)
+{
+}
+Picture::Picture(std::string& name) :m_Data(nullptr), m_ID(0), m_Width(0), m_Height(0), m_NrComponents(0)
+{
+	m_Name = name;
+}
+Picture::~Picture()
+{
+	if (m_Data)
+		stbi_image_free(m_Data);
+}
+void Picture::FreePictureData()
+{
+	if (m_Data)
+		stbi_image_free(m_Data);
+	m_Data = nullptr;
+}
+PictureData Picture::GetPicture()const
+{
+	return{ m_Data,m_Width,m_Height,m_NrComponents };
+}
+PictureData Picture::LoadPicture(const std::string& path)
+{
+	m_Data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_NrComponents, 0);
+	if (m_Data)
+	{
+		return{ m_Data,m_Width,m_Height,m_NrComponents };
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(m_Data);
+	}
+	return{ m_Data,m_Width,m_Height,m_NrComponents };
+}
+unsigned int Picture::loadTexture(char const* path)
+{
+	glGenTextures(1, &m_ID);
+	m_Data = stbi_load(path, &m_Width, &m_Height, &m_NrComponents, 0);
+	if (m_Data)
+	{
+		GLenum format = GL_RGB;
+		if (m_NrComponents == 1)
+			format = GL_RED;
+		else if (m_NrComponents == 3)
+			format = GL_RGB;
+		else if (m_NrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, m_ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, m_Data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		std::cout << "Texture failed to load at path: " << path << std::endl;
+		stbi_image_free(m_Data);
+	}
+
+	return m_ID;
+}
+Mesh::Mesh(std::string& Name)
+{
+	m_Name = Name;
+}
+bool MatFileReader::read(const std::string& filename) 
+{
+	std::ifstream file(filename);
+	if (!file.is_open()) {
+		std::cerr << "Failed to open file: " << filename << std::endl;
+		return false;
+	}
+	int pos = filename.find_last_of('\\');
+	if (pos == -1)
+		pos = filename.find_last_of('/');
+	std::string FolderPath = filename.substr(0, pos + 1);
+	std::string line;
+	Material* current_material = nullptr;
+	while (std::getline(file, line)) 
+	{
+		std::istringstream iss(line);
+		std::string token;
+		iss >> token;
+
+		if (token == "newmtl") {
+			if (current_material != nullptr) {
+				m_Materials[current_material->GetName()] = current_material;
+			}
+			current_material = new Material();
+			iss >> token;
+			current_material->SetName(token.c_str());
+		}
+		else if (token == "Ka") {
+			float ka[3];
+			iss >> ka[0] >> ka[1] >> ka[2];
+			current_material->setKa(ka);
+		}
+		else if (token == "Kd") {
+			float kd[3];
+			iss >> kd[0] >> kd[1] >> kd[2];
+			current_material->setKd(kd);
+		}
+		else if (token == "Ks") {
+			float ks[3];
+			iss >> ks[0] >> ks[1] >> ks[2];
+			current_material->setKs(ks);
+		}
+		else if (token == "Ns") {
+			float ns;
+			iss >> ns;
+			current_material->setNs(ns);
+		}
+		else if (token == "Ni") {
+			float ni;
+			iss >> ni;
+			current_material->setNi(ni);
+		}
+		else if (token == "d" || token == "Tr") {
+			float tr;
+			iss >> tr;
+			current_material->setTr(tr);
+		}
+		else if (token == "map_Ka") {
+			std::string filename;
+			iss >> filename;
+			Picture* mapKa = new Picture(filename);
+			mapKa->LoadPicture((FolderPath + filename));
+			current_material->setMapKa(mapKa);
+		}
+		else if (token == "map_Kd") {
+			std::string filename;
+			iss >> filename;
+			Picture* mapKd = new Picture(filename);
+			mapKd->LoadPicture((FolderPath + filename));
+			current_material->setMapKd(mapKd);
+		}
+		else if (token == "map_Ks") {
+			std::string filename;
+			iss >> filename;
+			Picture* mapKs = new Picture(filename);
+			mapKs->LoadPicture((FolderPath + filename));
+			current_material->setMapKs(mapKs);
+		}
+	}
+
+	if (current_material != nullptr)
+	{
+		m_Materials[current_material->GetName()] = current_material;
+	}
+
+	return true;
+}
+
+Material* MatFileReader::getMaterial(const std::string& name) const {
+	auto it = m_Materials.find(name);
+	if (it != m_Materials.end()) {
+		return it->second;
+	}
+	return nullptr;
+}
+ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b)
+{
+	return static_cast<ReturnedOfLoadFile>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
+}
+ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b)
+{
+	a = static_cast<ReturnedOfLoadFile>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
+	return a;
+}
+std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
+{
+	std::vector<Model*> out;
+	for (const auto& c : m_Child)
+	{
+		switch (c.second->GetType())
+		{
+		case ObjectType::OT_MODEL:
+		{
+			out.push_back(dynamic_cast<Model*>(c.second));
+			break;
+		}
+		case ObjectType::OT_FOLDER:
+		{
+			std::vector<Model*> f = dynamic_cast<Folder*>(c.second)->GetAllModleFile_找到所有模型();
+			out.insert(out.end(), f.begin(), f.end());
+			break;
+		}
+		default:
+			break;
+		}	
+	}
+	return out;
 }

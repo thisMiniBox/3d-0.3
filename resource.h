@@ -22,6 +22,11 @@
 #define IDD_SETSIZE                     135
 #define IDD_ROTATE                      138
 #define IDD_CONTENT                     139
+#define IDB_FOLDER_NON_EMPTY            141
+#define IDB_FOLDER                      142
+#define IDB_FOLDER_OPENED_EMPTY         143
+#define IDB_FOLDER_OPENED_NON           144
+#define IDB_FOLDER_OPENED_NON_EMPTY     144
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -47,7 +52,6 @@
 #define IDC_R_FOV                       1086
 #define IDC_RO_FOV                      1086
 #define IDC_R_TITLR                     1090
-#define IDC_R_TITLE                     1090
 #define IDC_RO_TITLE                    1090
 #define IDC_COMBO1                      1097
 #define IDC_RO_QUATERNION               1098
@@ -102,7 +106,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        145
 #define _APS_NEXT_COMMAND_VALUE         32806
 #define _APS_NEXT_CONTROL_VALUE         1110
 #define _APS_NEXT_SYMED_VALUE           110

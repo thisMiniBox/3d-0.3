@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.props" Condition="Exists('packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.props')" />
+  <Import Project="packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.props" Condition="Exists('packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.props')" />
+  <Import Project="packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.props" Condition="Exists('packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -24,6 +27,7 @@
     <ProjectGuid>{075c603b-6083-425f-973d-c06c809e9d62}</ProjectGuid>
     <RootNamespace>机器学习win</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>win 3d框架</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -88,13 +92,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)OpenGL\glm-0.9.9.8;$(SolutionDir)OpenGL\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)OpenGL\glm-0.9.9.8;$(SolutionDir)OpenGL\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -114,6 +119,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,13 +128,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)OpenGL\glm-0.9.9.8;$(SolutionDir)OpenGL\glad\include;$(SolutionDir)OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;$(SolutionDir)OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,7 +146,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)OpenGL\glm-0.9.9.8;$(SolutionDir)OpenGL\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -148,6 +155,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -206,17 +214,37 @@
     <ResourceCompile Include="机器学习win.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-已打开（有）16.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-已打开（空）16.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-未打开16.psd.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-未打开（有）16.png" />
+    <Image Include="icon1.ico" />
     <Image Include="small.ico" />
     <Image Include="机器学习win.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LightShader.fs" />
     <None Include="LightShader.vs" />
+    <None Include="packages.config" />
     <None Include="resource.hm" />
     <None Include="Shader\ModelShader.fs" />
     <None Include="Shader\ModelShader.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.targets" Condition="Exists('packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.targets')" />
+    <Import Project="packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.targets" Condition="Exists('packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.targets')" />
+    <Import Project="packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.targets" Condition="Exists('packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.props'))" />
+    <Error Condition="!Exists('packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.C.src.vcpkg.1.0.0\build\native\vcpkg.C.src.vcpkg.targets'))" />
+    <Error Condition="!Exists('packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.props'))" />
+    <Error Condition="!Exists('packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.D.src.vcpkg.1.0.0\build\native\vcpkg.D.src.vcpkg.targets'))" />
+    <Error Condition="!Exists('packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.props'))" />
+    <Error Condition="!Exists('packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\vcpkg.E.DATA.vcpkg.1.0.0\build\native\vcpkg.E.DATA.vcpkg.targets'))" />
+  </Target>
 </Project>

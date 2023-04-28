@@ -1,16 +1,84 @@
 #include "Tree_树控件.h"
+#include"resource.h"
+#include <wingdi.h>
+#include "stb_image.h"
+
+HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID) {
+    // 加载 PNG 图片资源
+    HRSRC hResource = FindResource(hInstance, MAKEINTRESOURCE(nID), L"PNG");
+    if (hResource == nullptr) {
+        return nullptr;
+    }
+    HGLOBAL hData = LoadResource(hInstance, hResource);
+    if (hData == nullptr) {
+        return nullptr;
+    }
+    LPBYTE pData = (LPBYTE)LockResource(hData);
+    DWORD dwSize = SizeofResource(hInstance, hResource);
+    if (pData == nullptr || dwSize == 0) {
+        return nullptr;
+    }
+
+    // 解码 PNG 图片数据
+    int width, height, channels;
+    unsigned char* image_data = stbi_load_from_memory(pData, dwSize, &width, &height, &channels, STBI_rgb_alpha);
+    FreeResource(hData);
+    if (image_data == nullptr) {
+        return nullptr;
+    }
+
+    // 创建 DIB 对象
+    BITMAPINFO bmi;
+    ZeroMemory(&bmi, sizeof(bmi));
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // 指定负数即可让像素从上到下排列
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    void* pBits = nullptr;
+    HBITMAP hBitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS, &pBits, nullptr, 0);
+    if (hBitmap == nullptr || pBits == nullptr) {
+        stbi_image_free(image_data);
+        return nullptr;
+    }
+
+    // 将像素数据复制到 DIB 对象中
+    memcpy(pBits, image_data, width * height * 4);
+
+    // 释放 PNG 图片数据内存
+    stbi_image_free(image_data);
+
+    return hBitmap;
+}
 Tree_树控件::Tree_树控件()
 {
 	hWnd_树控件句柄 = nullptr;
+    m_hImageList = nullptr;
 }
 HWND Tree_树控件::Creat_创建树列表(HWND parent_父窗口)
 {
+    HINSTANCE m_hInst = GetModuleHandle(NULL);
     RECT m_rect;
     GetWindowRect(parent_父窗口, &m_rect);
-    return hWnd_树控件句柄 = CreateWindow((LPCWSTR)L"SysTreeView32", NULL,
+    hWnd_树控件句柄 = CreateWindow((LPCWSTR)L"SysTreeView32", NULL,
         WS_CHILD | WS_BORDER | WS_VISIBLE | TVS_HASLINES | TVS_HASBUTTONS | TVS_LINESATROOT,
         0, 0, m_rect.right - m_rect.left, m_rect.bottom - m_rect.top,
-        parent_父窗口, NULL, NULL, NULL);
+        parent_父窗口, NULL, m_hInst, NULL);
+
+    
+    m_hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+        ILC_COLOR32 | ILC_MASK, 2, 0);
+    HBITMAP hbmFolderClosed = LoadPngBitmap(m_hInst, IDB_FOLDER);
+    HBITMAP hbmFolderOpen = LoadPngBitmap(m_hInst, IDB_FOLDER_OPENED_NON_EMPTY);
+    ImageList_AddMasked(m_hImageList, hbmFolderClosed, RGB(255, 0, 255));
+    ImageList_AddMasked(m_hImageList, hbmFolderOpen, RGB(255, 0, 255));
+    DeleteObject(hbmFolderClosed);
+    DeleteObject(hbmFolderOpen);
+
+    // 将图像列表与树形控件关联
+    TreeView_SetImageList(hWnd_树控件句柄, m_hImageList, TVSIL_NORMAL);
+    return hWnd_树控件句柄;
 }
 HWND Tree_树控件::GethWnd_获得句柄()
 {
@@ -119,14 +187,15 @@ Object* Tree_树控件::GetMouseOption_获取鼠标位置节点对象()
     }
     return nullptr;
 }
-void Tree_树控件::SetItemImage_设置节点图标(HTREEITEM hItem, int imageIndex_图片索引)
+void Tree_树控件::SetItemImage_设置节点图标(HTREEITEM hItem, int imageIndex, int imageIndexSelected)
 {
-    TVITEM item;
-    item.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-    item.hItem = hItem;
-    item.iImage = imageIndex_图片索引;
-    item.iSelectedImage = imageIndex_图片索引;
-    TreeView_SetItem(hWnd_树控件句柄, &item);
+    TVITEMEX tvItem = { 0 };
+    tvItem.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+    tvItem.hItem = hItem; // hTreeItem 是要设置的树控件节点句柄
+    tvItem.iImage = imageIndex; // 设置非选中时的图像索引
+    tvItem.iSelectedImage = imageIndexSelected; // 设置选中时的图像索引
+
+    TreeView_SetItem(hWnd_树控件句柄, &tvItem);
 }
 bool Tree_树控件::DragDrop_拖放节点(HTREEITEM hDragItem, HTREEITEM hDropItem, UINT flags)
 {

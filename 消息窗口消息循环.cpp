@@ -41,8 +41,8 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         HDC hdc = BeginPaint(hWnd, &ps);
         HPEN hpen = CreatePen(PS_SOLID, 0, RGB(255, 255, 255)); //创建 一条红色实线
         HGDIOBJ oldhpen = SelectObject(hdc, hpen); // 画笔选入设备环境，并保留先前画笔
-        current_project->updateMsg(hdc);
-
+        if (!current_project->m_FileLoad)
+            current_project->updateMsg(hdc);
         SelectObject(hdc, oldhpen); // 恢复先前画笔
         DeleteObject(hpen); // 删除创建画笔hpen
         EndPaint(hWnd, &ps);

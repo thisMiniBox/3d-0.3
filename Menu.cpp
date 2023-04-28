@@ -5,12 +5,11 @@ project* cp = nullptr;
 void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
 {
     current_project->m_FileLoad = true;
-    unsigned int Error = current_project->loadModel(path);
+    unsigned int Error = current_project->LoadFile(path);
     if (Error == ReturnedOfLoadFile::_Succese)
     {
         current_project->OutMessage(L"模型加载完毕：" + path, _Message);
         current_project->Model_att = 0x01;
-        InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
     }
     else if ((Error & 0xff) != 0)
     {
@@ -52,7 +51,6 @@ void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
         }
     }
     current_project->m_FileLoad = false;
-    InvalidateRect(current_project->TEXTWND->GethWnd(), nullptr, false);
 }
 LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, project* current_project)
 {

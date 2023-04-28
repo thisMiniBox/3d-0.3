@@ -473,148 +473,6 @@ namespace vec {
             }
             return result;
         }
-        // 移动矩阵的静态函数
-        static Matrix4 translate(double x, double y, double z) {
-            Matrix4 mat;
-            mat.m_data[0][0] = mat.m_data[1][1] = mat.m_data[2][2] = mat.m_data[3][3] = 1.0;
-            mat.m_data[0][3] = x;
-            mat.m_data[1][3] = y;
-            mat.m_data[2][3] = z;
-            return mat;
-        }
-
-        // 缩放矩阵的静态函数
-        static Matrix4 scale(double sx, double sy, double sz) {
-            Matrix4 mat;
-            mat.m_data[0][0] = sx;
-            mat.m_data[1][1] = sy;
-            mat.m_data[2][2] = sz;
-            mat.m_data[3][3] = 1.0;
-            return mat;
-        }
-
-        // 绕 X 轴旋转矩阵的静态函数
-        static Matrix4 rotateX(double angle) {
-            double rad = angle * PI / 180.0;
-            double c = cos(rad);
-            double s = sin(rad);
-            Matrix4 mat;
-            mat.m_data[0][0] = 1.0;
-            mat.m_data[1][1] = c;
-            mat.m_data[1][2] = -s;
-            mat.m_data[2][1] = s;
-            mat.m_data[2][2] = c;
-            mat.m_data[3][3] = 1.0;
-            return mat;
-        }
-
-        // 绕 Y 轴旋转矩阵的静态函数
-        static Matrix4 rotateY(double angle) {
-            double rad = angle * PI / 180.0;
-            double c = cos(rad);
-            double s = sin(rad);
-            Matrix4 mat;
-            mat.m_data[0][0] = c;
-            mat.m_data[0][2] = s;
-            mat.m_data[1][1] = 1.0;
-            mat.m_data[2][0] = -s;
-            mat.m_data[2][2] = c;
-            mat.m_data[3][3] = 1.0;
-            return mat;
-        }
-
-        // 绕 Z 轴旋转矩阵的静态函数
-        static Matrix4 rotateZ(double angle) {
-            double rad = angle * PI / 180.0;
-            double c = cos(rad);
-            double s = sin(rad);
-            Matrix4 mat;
-            mat.m_data[0][0] = c;
-            mat.m_data[0][1] = -s;
-            mat.m_data[1][0] = s;
-            mat.m_data[1][1] = c;
-            mat.m_data[2][2] = 1.0;
-            mat.m_data[3][3] = 1.0;
-            return mat;
-        }
-        // 移动矩阵的静态函数
-        static Matrix4 translate(const vec::Vector& v) {
-            Matrix4 mat;
-            mat.m_data[0][0] = mat.m_data[1][1] = mat.m_data[2][2] = mat.m_data[3][3] = 1.0;
-            mat.m_data[0][3] = v.x;
-            mat.m_data[1][3] = v.y;
-            mat.m_data[2][3] = v.z;
-            return mat;
-        }
-
-        // 缩放矩阵的静态函数
-        static Matrix4 scale(const vec::Vector& v) {
-            Matrix4 mat;
-            mat.m_data[0][0] = v.x;
-            mat.m_data[1][1] = v.y;
-            mat.m_data[2][2] = v.z;
-            mat.m_data[3][3] = 1.0;
-            return mat;
-        }
-        // 绕任意轴旋转矩阵的静态函数
-        static Matrix4 rotate(const vec::Vector& axis, double angle) {
-            // 计算旋转矩阵
-            double rad = angle * PI / 180.0;
-            double c = cos(rad);
-            double s = sin(rad);
-            double t = 1 - c;
-            double x = axis.x, y = axis.y, z = axis.z;
-            double m11 = t * x * x + c;
-            double m12 = t * x * y - s * z;
-            double m13 = t * x * z + s * y;
-            double m21 = t * x * y + s * z;
-            double m22 = t * y * y + c;
-            double m23 = t * y * z - s * x;
-            double m31 = t * x * z - s * y;
-            double m32 = t * y * z + s * x;
-            double m33 = t * z * z + c;
-
-            // 将旋转矩阵存储到 4x4 矩阵中
-            Matrix4 mat;
-            mat.m_data[0][0] = m11;
-            mat.m_data[0][1] = m12;
-            mat.m_data[0][2] = m13;
-            mat.m_data[0][3] = 0.0;
-            mat.m_data[1][0] = m21;
-            mat.m_data[1][1] = m22;
-            mat.m_data[1][2] = m23;
-            mat.m_data[1][3] = 0.0;
-            mat.m_data[2][0] = m31;
-            mat.m_data[2][1] = m32;
-            mat.m_data[2][2] = m33;
-            mat.m_data[2][3] = 0.0;
-            mat.m_data[3][0] = 0.0;
-            mat.m_data[3][1] = 0.0;
-            mat.m_data[3][2] = 0.0;
-            mat.m_data[3][3] = 1.0;
-
-            return mat;
-        }
-        // 设置缩放矩阵
-        void SetScale(const Vector3& scale);
-
-        // 设置旋转矩阵
-        void SetRotation(const Vector3& axis, double angle);
-
-        // 获取平移向量
-        Vector3 GetTranslation() const;
-
-        // 设置平移矩阵
-        void SetTranslation(const Vector3& pos);
-
-        // 获取缩放向量
-        Vector3 GetScale() const;
-
-        // 获取逆矩阵
-        Matrix4 GetInverse() const;
-
-        // 设置透视投影矩阵
-        void SetPerspective(double fov, double aspect, double nearClip, double farClip);
         // 输出到标准输出流
         friend std::ostream& operator<<(std::ostream& os, const Matrix4& matrix) {
             for (int i = 0; i < 4; i++) {
@@ -632,6 +490,74 @@ namespace vec {
                 m_data[0][2], m_data[1][2], m_data[2][2], m_data[3][2],
                 m_data[0][3], m_data[1][3], m_data[2][3], m_data[3][3]
             );
+        }
+        // 设置位移向量
+        void SetArrTranslation(double x, double y, double z) {
+            m_data[0][3] = x;
+            m_data[1][3] = y;
+            m_data[2][3] = z;
+        }
+
+        // 设置旋转矩阵
+        void SetArrRotation(double angle, double x, double y, double z) {
+            double cosA = cos(angle);
+            double sinA = sin(angle);
+            double u = x, v = y, w = z;
+            double len = sqrt(u * u + v * v + w * w);
+            u /= len;
+            v /= len;
+            w /= len;
+
+            double rotMat[3][3] = { {cosA + u * u * (1 - cosA), u * v * (1 - cosA) - w * sinA, u * w * (1 - cosA) + v * sinA},
+                                  {v * u * (1 - cosA) + w * sinA, cosA + v * v * (1 - cosA), v * w * (1 - cosA) - u * sinA},
+                                  {w * u * (1 - cosA) - v * sinA, w * v * (1 - cosA) + u * sinA, cosA + w * w * (1 - cosA)} };
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    m_data[i][j] = rotMat[i][j];
+                }
+            }
+        }
+
+        // 设置缩放因子
+        void SetArrScale(double sx, double sy, double sz) {
+            m_data[0][0] = sx;
+            m_data[1][1] = sy;
+            m_data[2][2] = sz;
+        }
+        // 设置位移向量
+        void SetRowTranslation(double x, double y, double z) {
+            m_data[3][0] = x;
+            m_data[3][1] = y;
+            m_data[3][2] = z;
+        }
+
+        // 设置旋转矩阵
+        void SetRowRotation(double angle, double x, double y, double z) {
+            double cosA = cos(angle);
+            double sinA = sin(angle);
+            double u = x, v = y, w = z;
+            double len = sqrt(u * u + v * v + w * w);
+            u /= len;
+            v /= len;
+            w /= len;
+
+            double rotMat[3][3] = { {cosA + u * u * (1 - cosA), u * v * (1 - cosA) - w * sinA, u * w * (1 - cosA) + v * sinA},
+                                    {v * u * (1 - cosA) + w * sinA, cosA + v * v * (1 - cosA), v * w * (1 - cosA) - u * sinA},
+                                    {w * u * (1 - cosA) - v * sinA, w * v * (1 - cosA) + u * sinA, cosA + w * w * (1 - cosA)} };
+
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    m_data[i][j] = rotMat[i][j];
+                }
+            }
+        }
+
+        // 设置缩放因子
+        void SetRowScale(double sx, double sy, double sz) {
+            m_data[0][0] = sx;
+            m_data[1][1] = sy;
+            m_data[2][2] = sz;
         }
         //static DirectX::XMFLOAT4X4 ToXMFLOAT4X4(const Matrix4x4& matrix){
         //    DirectX::XMFLOAT4X4 result;
@@ -763,7 +689,7 @@ namespace vec {
             mat[2][2] = t * z * z + c;
         }
         // 旋转叠加
-        Rotation compose(Rotation r) {
+        Rotation compose(Rotation r)const {
             // 将当前旋转和传入的旋转都转换为四元数形式
             Quaternion q1 = Quaternion::fromAxisAngle(axis, angle);
             Quaternion q2 = Quaternion::fromAxisAngle(r.axis, r.angle);
@@ -802,6 +728,28 @@ namespace vec {
             this->angle = angle;
             this->axis = axis;
         }
+        Rotation getRelativeRotation(Rotation worldRotation, Rotation parentRotation) {
+            // 将世界旋转和父对象旋转都转换为四元数
+            Quaternion qWorld = Quaternion::fromAxisAngle(worldRotation.axis, worldRotation.angle);
+            Quaternion qParent = Quaternion::fromAxisAngle(parentRotation.axis, parentRotation.angle);
+
+            // 计算父对象的世界旋转四元数
+            Quaternion qParentWorld = qParent * qWorld;
+
+            // 将当前模型的世界旋转四元数转换为轴角表示
+            double angle = 2 * std::acos(qParentWorld.w);
+            Vector3 axis;
+            if (std::fabs(std::sin(angle / 2)) < 1e-8) {
+                axis = Vector3(1, 0, 0);
+            }
+            else {
+                axis = Vector3(qParentWorld.x, qParentWorld.y, qParentWorld.z).Normalize();
+            }
+
+            // 返回旋转轴和旋转角度构成的 Rotation 类型对象
+            return Rotation(angle, axis);
+        }
+
     };
     //接受角度
     Quaternion FromAxisAngle(const Vector3& axis, float angle);
