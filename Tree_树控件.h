@@ -1,13 +1,17 @@
 #pragma once
 #include<windows.h>
+#include<unordered_map>
 #include<commctrl.h>
 #include"×Ö·û×ª»».h"
 #include"Object.h"
 HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID);
 class Tree_Ê÷¿Ø¼þ
 {
+	HINSTANCE m_hInstance;
 	HWND hWnd_Ê÷¿Ø¼þ¾ä±ú;
 	HIMAGELIST m_hImageList;
+	std::unordered_map<int, int>m_listID;
+	int LoadPngToList(int);
 public:
 	Tree_Ê÷¿Ø¼þ();
 	//·µ»ØÊ÷¿Ø¼þ¾ä±ú

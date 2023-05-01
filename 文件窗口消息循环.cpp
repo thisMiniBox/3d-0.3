@@ -1,5 +1,5 @@
  #include"消息循环声明.h"
-LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
+LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
 {
     switch (message)
     {

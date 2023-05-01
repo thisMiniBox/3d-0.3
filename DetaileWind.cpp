@@ -80,25 +80,23 @@ void DetaileWind::SetView(Object* obj)
     m_target = obj;
     if (!obj)return;
     int y = m_ControlPos;
+    y += CreateContrle(CT_NAME, 0, y, m_rect.right);
+    y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
     switch (obj->GetType())
     {
     case OT_FOLDER:
     {
-        y += CreateContrle(CT_NAME, 0, y, m_rect.right);
         break;
     }
     case OT_MODEL:
     {
-        y += CreateContrle(CT_NAME, 0, y, m_rect.right);
         y += CreateContrle(CT_POSITION, 0, y, m_rect.right);
         y += CreateContrle(CT_ROTATE, 0, y, m_rect.right);
         break;
     }
     case OT_CAMERA:
     {
-        y += CreateContrle(CT_NAME, 0, y, m_rect.right);
         y += CreateContrle(CT_POSITION, 0, y, m_rect.right);
-
         break;
     }
     }
@@ -121,6 +119,10 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w)
             break;
         case CT_ROTATE:
             m_ChildControl[type] = new Rotation_旋转控件(m_hInstance, m_hWnd, x, y, w);
+            break;
+        case CT_TRANSFORM:
+            m_ChildControl[type] = new TransForm_变换控件(m_hInstance, m_hWnd, x, y, w);
+            break;
         }
     ShowWindow(m_ChildControl[type]->GethWnd(), SW_SHOW);
     UpDate();

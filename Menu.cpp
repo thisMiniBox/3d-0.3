@@ -1,8 +1,8 @@
 
 #include"Menu.h"
 #include"resource.h"
-project* cp = nullptr;
-void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
+Controller* cp = nullptr;
+void loadModelThread(HWND hWnd,Controller* current_project,std::wstring path)
 {
     current_project->m_FileLoad = true;
     unsigned int Error = current_project->LoadFile(path);
@@ -52,7 +52,7 @@ void loadModelThread(HWND hWnd,project* current_project,std::wstring path)
     }
     current_project->m_FileLoad = false;
 }
-LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, project* current_project)
+LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, Controller* current_project)
 {
     cp = current_project;
     int wmId = LOWORD(wP);

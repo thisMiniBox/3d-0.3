@@ -1,6 +1,6 @@
 #include"消息循环声明.h"
 //此消息循环由所有画面窗口共享
-void S_旋转当前摄像机(project* CP_当前项目, const float& x_左右旋转弧度, const float& y_上下旋转弧度)
+void S_旋转当前摄像机(Controller* CP_当前项目, const float& x_左右旋转弧度, const float& y_上下旋转弧度)
 {
     vec::Vector front;
     front.SetX(cos(x_左右旋转弧度) * cos(y_上下旋转弧度));
@@ -12,7 +12,7 @@ bool compare(ModelTriData a, ModelTriData b) {
     return a > b;
 }
 //画面窗口消息循环
-LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
+LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
 {
     const float V = 10;
     static bool Mouse_是否鼠标控制 = false;

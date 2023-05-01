@@ -176,14 +176,16 @@ ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b);
 
 class Mesh :public Object
 {
+	std::vector<Vertex>m_Data;
 public:
 	Mesh() {}
 	Mesh(std::string&);
 	~Mesh() {}
-	std::vector<vec::Vector> m_Vertex;  // 顶点坐标数据
+	std::vector<vec::Vector> m_VertexPosition;  // 顶点坐标数据
 	std::vector<vec::Vector> m_Normal;  // 法向量数据
 	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
 	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
+	const std::vector<Vertex>& GetVertexData();
 	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
 };
 #include"glad.h"
@@ -206,7 +208,7 @@ public:
 	PictureData LoadPicture(const std::string& path);
 	PictureData GetPicture()const;
 	//加载图片并载入到OpenGl
-	unsigned int loadTexture(char const* path);
+	unsigned int loadTexture();
 	unsigned int GetID() { return m_ID; }
 	//释放图片
 	void FreePictureData();
@@ -267,8 +269,8 @@ public:
 	//获取材质
 	Material* getMaterial(const std::string& name) const;
 
-private:
 	std::unordered_map<std::string, Material*> m_Materials;
+	std::unordered_map<std::string, Picture*> m_Picture;
 };
 
 class Model : public Object {
@@ -320,17 +322,17 @@ public:
 	virtual ObjectType GetType() const override { return OT_MODEL; }
 	virtual void Move(const Vector3&)override;
 	// 获取物体位置，返回默认值
-	virtual Vector GetPosition() const;
+	virtual Vector GetPosition() const override;
 	// 获取物体世界坐标，返回默认值
-	virtual Vector GetWorldPosition() const;
+	virtual Vector GetWorldPosition() const override;
 	// 获取旋转
-	virtual Rotation GetRotate()const;
+	virtual Rotation GetRotate()const override;
 	// 设定旋转
-	virtual void SetRotate(const Rotation&);
+	virtual void SetRotate(const Rotation&)override;
 	// 设置物体位置，空实现
-	virtual void SetPosition(vec::Vector);
+	virtual void SetPosition(vec::Vector)override;
 	//删除关联物体
-	virtual void DeleteChildObject();
+	virtual void DeleteChildObject()override;
 
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
@@ -355,6 +357,7 @@ class Folder : public Object
 public:
 	Folder() { m_Name = "新建文件夹"; }
 	Folder(std::string NAME);
+	~Folder();
 	Object* CreateFile_创建文件(std::string Name, int type = OT_FOLDER);
 	void AddFile_添加文件(Object*);
 	//仅寻找当前目录

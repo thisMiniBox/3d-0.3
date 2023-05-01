@@ -2,21 +2,27 @@
 #include"resource.h"
 #include <wingdi.h>
 #include "stb_image.h"
-
-HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID) {
+Tree_树控件::Tree_树控件()
+{
+    m_hInstance = nullptr;
+	hWnd_树控件句柄 = nullptr;
+    m_hImageList = nullptr;
+}
+int Tree_树控件::LoadPngToList(int nID)
+{
     // 加载 PNG 图片资源
-    HRSRC hResource = FindResource(hInstance, MAKEINTRESOURCE(nID), L"PNG");
+    HRSRC hResource = FindResource(m_hInstance, MAKEINTRESOURCE(nID), L"PNG");
     if (hResource == nullptr) {
-        return nullptr;
+        return -1;
     }
-    HGLOBAL hData = LoadResource(hInstance, hResource);
+    HGLOBAL hData = LoadResource(m_hInstance, hResource);
     if (hData == nullptr) {
-        return nullptr;
+        return -1;
     }
     LPBYTE pData = (LPBYTE)LockResource(hData);
-    DWORD dwSize = SizeofResource(hInstance, hResource);
+    DWORD dwSize = SizeofResource(m_hInstance, hResource);
     if (pData == nullptr || dwSize == 0) {
-        return nullptr;
+        return -1;
     }
 
     // 解码 PNG 图片数据
@@ -24,7 +30,7 @@ HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID) {
     unsigned char* image_data = stbi_load_from_memory(pData, dwSize, &width, &height, &channels, STBI_rgb_alpha);
     FreeResource(hData);
     if (image_data == nullptr) {
-        return nullptr;
+        return -1;
     }
 
     // 创建 DIB 对象
@@ -40,25 +46,36 @@ HBITMAP LoadPngBitmap(HINSTANCE hInstance, int nID) {
     HBITMAP hBitmap = CreateDIBSection(nullptr, &bmi, DIB_RGB_COLORS, &pBits, nullptr, 0);
     if (hBitmap == nullptr || pBits == nullptr) {
         stbi_image_free(image_data);
-        return nullptr;
+        return -1;
     }
 
     // 将像素数据复制到 DIB 对象中
-    memcpy(pBits, image_data, width * height * 4);
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int index = y * width + x;
+            unsigned char r = image_data[index * 4 + 0];
+            unsigned char g = image_data[index * 4 + 1];
+            unsigned char b = image_data[index * 4 + 2];
+            unsigned char a = image_data[index * 4 + 3];
+            ((BYTE*)pBits)[index * 4 + 0] = b;
+            ((BYTE*)pBits)[index * 4 + 1] = g;
+            ((BYTE*)pBits)[index * 4 + 2] = r;
+            ((BYTE*)pBits)[index * 4 + 3] = a;
+        }
+    }
 
     // 释放 PNG 图片数据内存
     stbi_image_free(image_data);
 
-    return hBitmap;
-}
-Tree_树控件::Tree_树控件()
-{
-	hWnd_树控件句柄 = nullptr;
-    m_hImageList = nullptr;
+    int out = ImageList_AddMasked(m_hImageList, hBitmap, RGB(0, 0, 0));
+    m_listID[nID] = out;
+    DeleteObject(hBitmap);
+    return out;
 }
 HWND Tree_树控件::Creat_创建树列表(HWND parent_父窗口)
 {
     HINSTANCE m_hInst = GetModuleHandle(NULL);
+    m_hInstance = m_hInst;
     RECT m_rect;
     GetWindowRect(parent_父窗口, &m_rect);
     hWnd_树控件句柄 = CreateWindow((LPCWSTR)L"SysTreeView32", NULL,
@@ -68,13 +85,14 @@ HWND Tree_树控件::Creat_创建树列表(HWND parent_父窗口)
 
     
     m_hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
-        ILC_COLOR32 | ILC_MASK, 2, 0);
-    HBITMAP hbmFolderClosed = LoadPngBitmap(m_hInst, IDB_FOLDER);
-    HBITMAP hbmFolderOpen = LoadPngBitmap(m_hInst, IDB_FOLDER_OPENED_NON_EMPTY);
-    ImageList_AddMasked(m_hImageList, hbmFolderClosed, RGB(255, 0, 255));
-    ImageList_AddMasked(m_hImageList, hbmFolderOpen, RGB(255, 0, 255));
-    DeleteObject(hbmFolderClosed);
-    DeleteObject(hbmFolderOpen);
+        ILC_COLOR32 | ILC_MASK, 7, 0);
+    LoadPngToList(IDB_UNKNOW);
+    LoadPngToList(IDB_FOLDER);
+    LoadPngToList(IDB_FOLDER_OPENED_NON_EMPTY);
+    LoadPngToList(IDB_MODEL);
+    LoadPngToList(IDB_MESH);
+    LoadPngToList(IDB_PICTURE);
+    LoadPngToList(IDB_CAMERA);
 
     // 将图像列表与树形控件关联
     TreeView_SetImageList(hWnd_树控件句柄, m_hImageList, TVSIL_NORMAL);
@@ -192,8 +210,8 @@ void Tree_树控件::SetItemImage_设置节点图标(HTREEITEM hItem, int imageIndex, int
     TVITEMEX tvItem = { 0 };
     tvItem.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
     tvItem.hItem = hItem; // hTreeItem 是要设置的树控件节点句柄
-    tvItem.iImage = imageIndex; // 设置非选中时的图像索引
-    tvItem.iSelectedImage = imageIndexSelected; // 设置选中时的图像索引
+    tvItem.iImage = m_listID[imageIndex]; // 设置非选中时的图像索引
+    tvItem.iSelectedImage = m_listID[imageIndexSelected]; // 设置选中时的图像索引
 
     TreeView_SetItem(hWnd_树控件句柄, &tvItem);
 }

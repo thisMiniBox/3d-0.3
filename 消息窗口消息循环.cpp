@@ -1,6 +1,6 @@
 #include"消息循环声明.h"
 //文本窗口消息循环
-LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
+LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
 {
     switch (message)
     {

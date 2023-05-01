@@ -1,5 +1,5 @@
 #include "project.h"
-project::project()
+Controller::Controller()
 {
 	m_FileLoad = false;
 	FILEWND = nullptr;
@@ -12,7 +12,7 @@ project::project()
 	view = nullptr;
 	Model_att = 0;
 }
-HWND project::CreateWind(HINSTANCE hInst)
+HWND Controller::CreateWind(HINSTANCE hInst)
 {
 	TEXTWND = new TextOutWind(hInst);
 	FILEWND = new FileWind(hInst);
@@ -75,16 +75,15 @@ HWND project::CreateWind(HINSTANCE hInst)
 	UpdateWindow(hWnd);
 	return hWnd;
 }
-project::~project()
+Controller::~Controller()
 {
-	
 	m_RootFolder.ClearFolder_清空文件夹();
 	if (MAINWND)delete MAINWND;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
 	if (TEXTWND)delete TEXTWND;
 }
-void project::SetFileName(Object* obj, const std::wstring& NewName)
+void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
 	char szBuf[128];
 	WideCharToMultiByte(CP_ACP, 0, NewName.c_str(), -1, szBuf, 128, NULL, NULL);
@@ -92,35 +91,39 @@ void project::SetFileName(Object* obj, const std::wstring& NewName)
 	//DETAWND->GetTarget()->SetName(szBuf);
 	FILEWND->FixItemName(DETAWND->GetTree(), NewName.c_str());
 }
-HINSTANCE project::GethInstance()const
+HINSTANCE Controller::GethInstance()const
 {
 	return m_hInst;
 }
-void project::OutMessage(const std::string&str, const char& type)
+Object* Controller::GetFocusObject()const
+{
+	return DETAWND->GetTarget();
+}
+void Controller::OutMessage(const std::string&str, const char& type)
 {
 	TEXTWND->OutMessage(str, type);
 }
-void project::OutMessage(const std::wstring& str, const char& type)
+void Controller::OutMessage(const std::wstring& str, const char& type)
 {
 	TEXTWND->OutMessage(str, type);
 }
-void project::updateMsg(const HDC& hdc)
+void Controller::updateMsg(const HDC& hdc)
 {
 	TEXTWND->DrawWind(hdc);
 }
-HTREEITEM project::AddObject(Object* a, std::string address)
+HTREEITEM Controller::AddObject(Object* a, std::string address)
 {
 	m_Models.clear();
 	m_RootFolder.AddFile_添加文件(a);
 	return FILEWND->AddItem(*a, address);
 }
-HTREEITEM project::AddObject(Object* a, HTREEITEM parent)
+HTREEITEM Controller::AddObject(Object* a, HTREEITEM parent)
 {
 	m_Models.clear();
 	m_RootFolder.AddFile_添加文件(a);
 	return FILEWND->AddItem(*a, parent);
 }
-Object* project::CreateObject(Folder* parent, std::string name, int type)
+Object* Controller::CreateObject(Folder* parent, std::string name, int type)
 {
 	Object* out = nullptr;
 	if (!parent)
@@ -134,27 +137,27 @@ Object* project::CreateObject(Folder* parent, std::string name, int type)
 	//FILEWND->ShowFolder(m_RootFolder);
 	return out;
 }
-void project::SetRect(RECT rect)
+void Controller::SetRect(RECT rect)
 {
 	m_rect = rect;
 }
-RECT project::GetRect()const
+RECT Controller::GetRect()const
 {
 	return m_rect;
 }
-std::vector<Model*>& project::GetModels()
+std::vector<Model*>& Controller::GetModels()
 {
 	if (!m_Models.empty())return m_Models;
 	m_Models = m_RootFolder.GetAllModleFile_找到所有模型();
 	return m_Models;
 }
-std::vector<Model*>& project::UpdateModels()
+std::vector<Model*>& Controller::UpdateModels()
 {
 	m_Models.clear();
 	return GetModels();
 }
 
-void project::DeleteObject(Object* obj,HTREEITEM hTree)
+void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 {
 	if (DETAWND->GetTarget() == obj)
 		DETAWND->SetView(nullptr);
@@ -171,7 +174,7 @@ void project::DeleteObject(Object* obj,HTREEITEM hTree)
 	InvalidateRect(MAINWND->GethWnd(), NULL, true);
 }
 
-ReturnedOfLoadFile project::LoadFile(const std::wstring& path)
+ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 {
 	OutMessage(L"开始加载文件");
 	std::wstring extension = path.substr(path.find_last_of('.') + 1);
@@ -232,7 +235,7 @@ inline FaceData_面信息 faceData(std::string cin) {
 	return result;
 }
 
-ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
+ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 {
 	FILE* file = nullptr;
 	fopen_s(&file, filePath.c_str(), "r");
@@ -338,6 +341,7 @@ ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
 					FileData = FileData.substr(charLocate);
 					//NewModel->SetMaterial(mtl_材质->getMaterial(FileData));
 					CurrentMaterial = mtl_材质->getMaterial(FileData);
+					NewModel->SetMaterial(CurrentMaterial);
 				}
 				else if (w == "mtllib")
 				{
@@ -385,12 +389,7 @@ ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
 	{
 		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps;
 	}
-	if (mtl_材质)
-	{
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile;
-		delete mtl_材质;
-		mtl_材质 = nullptr;
-	}
+
 
 	std::vector<vec::Vector> child_vertex_data;
 	std::vector<vec::Vector> child_normal_data;
@@ -462,7 +461,7 @@ ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
 
 		// 将数据分配给子模型
 		
-		child->GetMesh()->m_Vertex= (child_vertex_data);
+		child->GetMesh()->m_VertexPosition= (child_vertex_data);
 		child->GetMesh()->m_Normal = (child_normal_data);
 		child->GetMesh()->m_TexCoords = (child_texcoord_data);
 		child->GetMesh()->m_FaceIndices = (child_face_data);
@@ -474,7 +473,7 @@ ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
 
 	Model* MObj = new Model();
 	m_RootFolder.AddFile_添加文件(MObj);
-	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件(filePath.substr(pos + 1), OT_FOLDER));
+	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件(filePath.substr(pos + 1) + "资源", OT_FOLDER));
 	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件("网格文件夹", OT_FOLDER));
 	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件("材质文件夹", OT_FOLDER));
 	MObj->SetName(filePath.substr(pos + 1));
@@ -482,18 +481,25 @@ ReturnedOfLoadFile project::LoadObj(const std::string& filePath)
 	{
 		MObj->addChildModel(child);
 		ModelMeshFolder->AddFile_添加文件(child->GetMesh());
-		Material* mat = child->GetMaterial();
-		if (mat)
-		{
-			ModelMaterialFolder->AddFile_添加文件(mat);
-			if (mat->getMapKa())
-				ModelMaterialFolder->AddFile_添加文件(mat->getMapKa());
-			if (mat->getMapKd())
-				ModelMaterialFolder->AddFile_添加文件(mat->getMapKd());
-			if (mat->getMapKs())
-				ModelMaterialFolder->AddFile_添加文件(mat->getMapKs());
-		}
+	}
+	for (auto& Mat : mtl_材质->m_Materials)
+	{
+		ModelMaterialFolder->AddFile_添加文件(Mat.second);
+	}
+	for (auto& picture : mtl_材质->m_Picture)
+	{
+		ModelMaterialFolder->AddFile_添加文件(picture.second);
 	}
 	fclose(file);
+	if (mtl_材质)
+	{
+		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile;
+		delete mtl_材质;
+		mtl_材质 = nullptr;
+	}
 	return Error;
+}
+void Controller::UpdateRightWind()
+{
+	
 }

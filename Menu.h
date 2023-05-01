@@ -12,7 +12,7 @@
 
 
 //菜单消息处理
-LRESULT __stdcall Menu(HINSTANCE, HWND, UINT, WPARAM, LPARAM, project*);
+LRESULT __stdcall Menu(HINSTANCE, HWND, UINT, WPARAM, LPARAM, Controller*);
 //“关于”窗口消息循环
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 //调整大小窗口

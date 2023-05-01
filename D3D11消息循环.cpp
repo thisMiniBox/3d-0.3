@@ -1,6 +1,6 @@
 #include"消息循环声明.h"
 using namespace DirectX;
-LRESULT CALLBACK cD3D11WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, project* current_project)
+LRESULT CALLBACK cD3D11WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
 {
     switch (message)
     {

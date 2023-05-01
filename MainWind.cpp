@@ -365,11 +365,6 @@ OpenGLWnd::~OpenGLWnd()
     ReleaseDC(m_hWnd, m_hdc);
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(m_hglrc);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &VAO);
-    glDeleteBuffers(1, &EBO);
-    glDeleteTextures(1, &texture1);
-    glDeleteTextures(1, &texture2);
     if (m_ModelShader)delete m_ModelShader;
     if (m_LightShader)delete m_LightShader;
     for (const auto p : m_models)
@@ -449,9 +444,19 @@ void OpenGLWnd::DeleteModelBuffer(Model* model)
         for (auto& cMod : model->GetChildModel())
             DeleteModelBuffer(cMod);
 }
-void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
+void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out)
 {
-
+    for (const auto& i : Models)
+    {
+        if (i->GetMesh())
+            out.push_back(i);
+        GetChildModel(i->GetChildModel(), out);
+    }
+}
+void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
+{
+    std::vector<Model*> models;
+    GetChildModel(Models, models);
     PAINTSTRUCT ps;
     m_hdc = BeginPaint(m_hWnd, &ps);
     wglMakeCurrent(m_hdc, m_hglrc);
@@ -459,12 +464,6 @@ void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    // bind diffuse map
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
-    // bind specular map
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture2);
     m_ModelShader->use();
 
     m_ModelShader->setVec3("viewPos", camera.GetPosition());
@@ -498,13 +497,12 @@ void OpenGLWnd::Draw(const std::vector<Model*>& models, const Camera& camera)
     glm::mat4 model = glm::mat4(1.0f);
     m_ModelShader->setMat4("model", model);
 
-    // render the cube
-    glBindVertexArray(VAO);
     glm::mat4 modelP = glm::mat4(1.0f);
     for (const auto& model : models)
     {
         if (!model->GetMesh())continue;
-        if (m_models[model] == nullptr)m_models[model] = new OldModelBuffer(model, m_ModelShader);
+        if (m_models[model] == nullptr)
+            m_models[model] = new OldModelBuffer(model, m_ModelShader);
         modelP = glm::mat4(1.0f);
         
         modelP = glm::translate(modelP, (glm::vec3)model->GetWorldPosition());

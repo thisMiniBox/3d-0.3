@@ -89,8 +89,8 @@ public:
 		// 创建VBO并存储顶点数据
 		glGenBuffers(1, &m_VBO);
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->m_Vertex.size(),
-			m_Model->GetMesh()->m_Vertex.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->GetVertexData().size(),
+			m_Model->GetMesh()->GetVertexData().data(), GL_STATIC_DRAW);
 
 		// 指定顶点属性指针
 		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
@@ -103,11 +103,18 @@ public:
 		// 解绑VAO和VBO
 		glBindVertexArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->GetID();
-		m_MirrorMap= m_Model->GetMaterial()->getMapKs()->GetID();
+		m_DiffuseMap = 0;
+		m_MirrorMap = 0;
+		if (m_Model->GetMaterial())
+		{
+			if (m_Model->GetMaterial()->getMapKd())
+				m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->loadTexture();
+			if (m_Model->GetMaterial()->getMapKs())
+				m_MirrorMap = m_Model->GetMaterial()->getMapKs()->loadTexture();
+		}
 		m_Shader->use();
-		m_Shader->setInt("material.diffuse", 0);
-		m_Shader->setInt("material.specular", 1);
+		m_Shader->setInt("material.diffuse", m_DiffuseMap);
+		m_Shader->setInt("material.specular", m_MirrorMap);
 	}
 
 	~OldModelBuffer()
@@ -129,7 +136,7 @@ public:
 			m_Shader->use();
 			m_Shader->setMat4("model", m_ModelMatrix);
 			glBindVertexArray(m_VAO);
-			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->m_Vertex.size());
+			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->GetVertexData().size());
 			glBindVertexArray(0);
 		}
 	}
@@ -174,10 +181,4 @@ private:
 	std::unordered_map<Model*, OldModelBuffer*>m_models;
 	OpenGLShader* m_ModelShader;
 	OpenGLShader* m_LightShader;
-
-	unsigned int VBO;
-	unsigned int VAO;
-	unsigned int EBO;
-	unsigned int texture1;
-	unsigned int texture2;
 };

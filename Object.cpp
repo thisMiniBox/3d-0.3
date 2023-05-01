@@ -118,7 +118,6 @@ void Folder::ClearFolder_清空文件夹()
 	{
 		if(i.second)
 		{
-			i.second->DeleteChildObject();
 			delete i.second;
 		}
 	}
@@ -451,12 +450,7 @@ Material::Material()
 }
 Material::~Material()
 {
-	if (m_MapKa)
-		stbi_image_free(m_MapKa);
-	if (m_MapKd)
-		stbi_image_free(m_MapKd);
-	if (m_MapKs)
-		stbi_image_free(m_MapKs);
+
 }
 Model::Model()
 	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
@@ -590,15 +584,15 @@ Vector Model::GetWorldPosition() const
 }
 Rotation Model::GetRotate()const
 {
-	return m_Rotate;
+	return getWorldRotation();
 }
 void Model::SetRotate(const Rotation& r)
 {
-	m_Rotate = r;
+	setWorldRotation(r);
 }
 void Model::SetPosition(vec::Vector v)
 {
-	m_Position = v;
+	setWorldPosition(v);
 }
 void Model::DeleteChildObject()
 {
@@ -662,6 +656,27 @@ Mesh* Model::GetMesh()const
 {
 	return m_ModelMesh;
 }
+const std::vector<Vertex>& Mesh::GetVertexData()
+{
+	if (!m_Data.empty())return m_Data;
+	Vertex v0, v1, v2;
+	for (const FaceData_面信息& fi : m_FaceIndices)
+	{
+		v0.position = m_VertexPosition[fi.a[0] - 1];
+		v1.position = m_VertexPosition[fi.a[3] - 1];
+		v2.position = m_VertexPosition[fi.a[6] - 1];
+		v0.texCoord = m_TexCoords[fi.a[1] - 1];
+		v1.texCoord = m_TexCoords[fi.a[4] - 1];
+		v2.texCoord = m_TexCoords[fi.a[7] - 1];
+		v0.normal = m_Normal[fi.a[2] - 1];
+		v1.normal = m_Normal[fi.a[5] - 1];
+		v2.normal = m_Normal[fi.a[8] - 1];
+		m_Data.push_back(v0);
+		m_Data.push_back(v1);
+		m_Data.push_back(v2);
+	}
+	return m_Data;
+}
 void Model::SetMesh(Mesh* mesh)
 {
 	m_ModelMesh = mesh;
@@ -709,10 +724,10 @@ PictureData Picture::LoadPicture(const std::string& path)
 	}
 	return{ m_Data,m_Width,m_Height,m_NrComponents };
 }
-unsigned int Picture::loadTexture(char const* path)
+unsigned int Picture::loadTexture()
 {
+	if (m_ID != 0)return m_ID;
 	glGenTextures(1, &m_ID);
-	m_Data = stbi_load(path, &m_Width, &m_Height, &m_NrComponents, 0);
 	if (m_Data)
 	{
 		GLenum format = GL_RGB;
@@ -732,12 +747,6 @@ unsigned int Picture::loadTexture(char const* path)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	}
-	else
-	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
-		stbi_image_free(m_Data);
-	}
-
 	return m_ID;
 }
 Mesh::Mesh(std::string& Name)
@@ -804,23 +813,32 @@ bool MatFileReader::read(const std::string& filename)
 		else if (token == "map_Ka") {
 			std::string filename;
 			iss >> filename;
-			Picture* mapKa = new Picture(filename);
-			mapKa->LoadPicture((FolderPath + filename));
-			current_material->setMapKa(mapKa);
+			if (!m_Picture[filename])
+			{
+				m_Picture[filename] = new Picture(filename);
+				m_Picture[filename]->LoadPicture((FolderPath + filename).c_str());
+			}
+			current_material->setMapKa(m_Picture[filename]);
 		}
 		else if (token == "map_Kd") {
 			std::string filename;
 			iss >> filename;
-			Picture* mapKd = new Picture(filename);
-			mapKd->LoadPicture((FolderPath + filename));
-			current_material->setMapKd(mapKd);
+			if (!m_Picture[filename])
+			{
+				m_Picture[filename] = new Picture(filename);
+				m_Picture[filename]->LoadPicture((FolderPath + filename).c_str());
+			}
+			current_material->setMapKd(m_Picture[filename]);
 		}
 		else if (token == "map_Ks") {
 			std::string filename;
 			iss >> filename;
-			Picture* mapKs = new Picture(filename);
-			mapKs->LoadPicture((FolderPath + filename));
-			current_material->setMapKs(mapKs);
+			if (!m_Picture[filename])
+			{
+				m_Picture[filename] = new Picture(filename);
+				m_Picture[filename]->LoadPicture((FolderPath + filename).c_str());
+			}
+			current_material->setMapKs(m_Picture[filename]);
 		}
 	}
 
@@ -871,4 +889,13 @@ std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
 		}	
 	}
 	return out;
+}
+Folder::~Folder()
+{
+	for (auto& c : m_Child)
+	{
+		delete c.second;
+		c.second = nullptr;
+	}
+	m_Child.clear();
 }

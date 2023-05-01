@@ -25,14 +25,20 @@
 #define IDB_FOLDER_NON_EMPTY            141
 #define IDB_FOLDER                      142
 #define IDB_FOLDER_OPENED_EMPTY         143
-#define IDB_FOLDER_OPENED_NON           144
 #define IDB_FOLDER_OPENED_NON_EMPTY     144
+#define IDB_MODEL                       145
+#define IDB_CAMERA                      146
+#define IDB_PICTURE                     147
+#define IDB_MESH                        148
+#define IDB_UNKNOW                      149
+#define IDD_TRANSFORM                   150
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
 #define IDCANCEL                        1022
 #define IDC_CANCEL                      1022
 #define IDC_FileTree                    1023
+#define IDC_TRAN_ROT_Y                  1023
 #define IDC_X                           1036
 #define IDC_Y                           1037
 #define IDC_Z                           1038
@@ -66,6 +72,21 @@
 #define IDC_RO_Z                        1107
 #define IDC_RO_ERROR                    1108
 #define IDC_RO_WEDIT                    1109
+#define IDC_TRAN_SCA_TEXT               1110
+#define IDC_TRAN_POS_TEXT               1111
+#define IDC_TRAN_ROT_TEX                1112
+#define IDC_TRAN_ROT_TEXT1              1112
+#define IDC_TRAN_ROT_TEXT2              1113
+#define IDC_TRAN_POS_X                  1114
+#define IDC_TRAN_ROT_SLIDER             1115
+#define IDC_TRAN_POS_Z                  1116
+#define IDC_TRAN_SCA_X                  1117
+#define IDC_TRAN_SCA_Y                  1118
+#define IDC_TRAN_ROT_ANG                1119
+#define IDC_TRAN_ROT_X                  1120
+#define IDC_TRAN_ROT_Z                  1122
+#define IDC_TRAN_POS_Y                  1125
+#define IDC_TRAN_SCA_Z                  1126
 #define ID_32771                        32771
 #define ID_inChar                       32772
 #define IDM_inChar                      32773
@@ -106,9 +127,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        145
+#define _APS_NEXT_RESOURCE_VALUE        151
 #define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1110
+#define _APS_NEXT_CONTROL_VALUE         1116
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

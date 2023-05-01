@@ -3,11 +3,15 @@
 #include<windows.h>
 #include"vector_向量.h"
 #include"resource.h"
+
+std::wstring NumberToWString(const double value);
+
 enum _ControlType
 {
 	CT_NAME,
 	CT_POSITION,
-	CT_ROTATE
+	CT_ROTATE,
+	CT_TRANSFORM
 };
 class DetaileControl_细节菜单控件组合
 {
@@ -22,6 +26,8 @@ public:
 	int MoveWind_移动窗口(int x, int y, int w);
 	int GetHeight();
 	static bool IsNumeric(const std::wstring& str);
+
+	virtual void updateControl() {};
 };
 class Position_位置控件 :public DetaileControl_细节菜单控件组合
 {
@@ -49,4 +55,11 @@ class ScaleControl_缩放控件 :public DetaileControl_细节菜单控件组合
 public:
 	ScaleControl_缩放控件(HINSTANCE, HWND parent, int x, int y, int w);
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+};
+class TransForm_变换控件 :public DetaileControl_细节菜单控件组合
+{
+public:
+	TransForm_变换控件(HINSTANCE, HWND parent, int x, int y, int w);
+	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	virtual void updateControl()override;
 };

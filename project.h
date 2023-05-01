@@ -12,7 +12,7 @@
 #include"FileWind.h"
 #include"TextOutWind.h"
 #include"Object.h"
-class project
+class Controller
 {
 	HINSTANCE m_hInst;
 	Folder m_RootFolder;
@@ -36,8 +36,8 @@ public:
 	//摄像机（当前视角）
 	Camera* view;
 
-	project();
-	~project();
+	Controller();
+	~Controller();
 	HWND CreateWind(HINSTANCE hInst);
 	//上传消息
 	void OutMessage(const std::string&, const char& mode = _Message);
@@ -68,5 +68,9 @@ public:
 	void DeleteObject(Object* obj,HTREEITEM=nullptr);
 	//获取当前实例
 	HINSTANCE GethInstance()const;
+	//获取焦点对象
+	Object* GetFocusObject()const;
+	//更新右窗口
+	void UpdateRightWind();
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

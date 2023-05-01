@@ -27,7 +27,8 @@ public:
 	Object* GetSelectedItemData();
 	HTREEITEM GetMousePositionItem();
 	Object* GetMousePositionItemData();
-	void SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected);
+	void SetMappingBasedOnObjects(const Object& object, HTREEITEM hItem);
+	void SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected = -1);
 	void FixItemName(HTREEITEM, const std::wstring Name);
 	void ShowFolder(const Folder&, HTREEITEM parent = TVI_ROOT);
 	void MoveTree(int x, int y, int w, int h);

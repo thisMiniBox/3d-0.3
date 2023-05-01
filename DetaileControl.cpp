@@ -71,3 +71,27 @@ ScaleControl_缩放控件::ScaleControl_缩放控件(HINSTANCE hIns, HWND parent, int x,
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_POSITION), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
+TransForm_变换控件::TransForm_变换控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
+{
+	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_TRANSFORM), parent, Dlgproc);
+	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
+}
+std::wstring NumberToWString(const double value) {
+	std::wstring wstr = std::to_wstring(value);
+	size_t dot_pos = wstr.find(L'.');
+	if (dot_pos != std::wstring::npos) {
+		size_t last_nonzero_pos = wstr.find_last_not_of(L'0');
+		if (last_nonzero_pos == dot_pos) {
+			return wstr.substr(0, dot_pos);
+		}
+		else if (last_nonzero_pos != std::wstring::npos) {
+			return wstr.substr(0, last_nonzero_pos + 1);
+		}
+	}
+	return wstr;
+}
+
+void TransForm_变换控件::updateControl()
+{
+
+}

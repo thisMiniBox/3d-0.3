@@ -46,34 +46,50 @@ FileWind::~FileWind()
     // 注销窗口类
     UnregisterClass(m_ClassName.c_str(), m_hInst);
 }
-HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
+void FileWind::SetMappingBasedOnObjects(const Object& obj, HTREEITEM hItem)
 {
-    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, add);
     switch (obj.GetType())
     {
     case OT_FOLDER:
     {
-        SetNodeImage(hItem, 1, 2);
+        SetNodeImage(hItem, IDB_FOLDER, IDB_FOLDER_OPENED_NON_EMPTY);
+        break;
+    }
+    case OT_MODEL:
+    {
+        SetNodeImage(hItem, IDB_MODEL, IDB_MODEL);
+        break;
+    }
+    case OT_CAMERA:
+    {
+        SetNodeImage(hItem, IDB_CAMERA, IDB_CAMERA);
+        break;
+    }
+    case OT_MESH:
+    {
+        SetNodeImage(hItem, IDB_MESH, IDB_MESH);
+        break;
+    }
+    case OT_PICTURE:
+    {
+        SetNodeImage(hItem, IDB_PICTURE);
         break;
     }
     default:
+        SetNodeImage(hItem, IDB_UNKNOW);
         break;
     }
+}
+HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
+{
+    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, add);
+    SetMappingBasedOnObjects(obj, hItem);
     return hItem;
 }
 HTREEITEM FileWind::AddItem(const Object& obj, HTREEITEM ptree)
 {
     HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, ptree);
-    switch (obj.GetType())
-    {
-    case OT_FOLDER:
-    {
-        SetNodeImage(hItem, 1, 2);
-        break;
-    }
-    default:
-        break;
-    }
+    SetMappingBasedOnObjects(obj, hItem);
     return hItem;
 }
 void FileWind::DeleteItem(HTREEITEM a)
@@ -112,6 +128,7 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
 {
     std::string folderName = folder.GetName();
     HTREEITEM hFolder = m_FileTree_文件树.AddItem_添加节点(folder, Parent);
+    SetMappingBasedOnObjects(folder, hFolder);
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
         switch (file->GetType())
@@ -125,10 +142,23 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
             }
             break;
         }
+        case OT_MODEL:
+        {
+            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, hFolder);
+            SetMappingBasedOnObjects(*file, i);
+            Model* Mod = dynamic_cast<Model*>(file);
+            for (auto& cm : Mod->GetChildModel())
+            {
+                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, i);
+                SetMappingBasedOnObjects(*cm, j);
+            }
+            break;
+        }
         default:
         {
             std::string fileName = file->GetName();
-            m_FileTree_文件树.AddItem_添加节点(*file, Parent);
+            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, hFolder);
+            SetMappingBasedOnObjects(*file, i);
             break;
         }
         }
@@ -151,10 +181,23 @@ void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
             }
             break;
         }
+        case OT_MODEL:
+        {
+            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
+            SetMappingBasedOnObjects(*file, i);
+            Model* Mod = dynamic_cast<Model*>(file);
+            for (auto& cm : Mod->GetChildModel())
+            {
+                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, i);
+                SetMappingBasedOnObjects(*cm, j);
+            }
+            break;
+        }
         default:
         {
             std::string fileName = file->GetName();
-            m_FileTree_文件树.AddItem_添加节点(*file, Parent);
+            HTREEITEM Item = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
+            SetMappingBasedOnObjects(*file, Item);
             break;
         }
         }
@@ -166,11 +209,7 @@ void FileWind::MoveTree(int x, int y, int w, int h)
 }
 void FileWind::SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected)
 {
-    TVITEMEX tvItem = { 0 };
-    tvItem.mask = TVIF_HANDLE | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-    tvItem.hItem = hItem; 
-    tvItem.iImage = imageIndex; 
-    tvItem.iSelectedImage = imageIndexSelected;
-
-    TreeView_SetItem(m_Tree, &tvItem);
+    if (imageIndexSelected == -1)
+        imageIndexSelected = imageIndex;
+    m_FileTree_文件树.SetItemImage_设置节点图标(hItem, imageIndex, imageIndexSelected);
 }
