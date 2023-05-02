@@ -53,6 +53,8 @@ public:
 	virtual ObjectType GetType()const = 0;
 	// 获取物体位置，返回默认值
 	virtual Vector GetPosition() const;
+	// 获取缩放
+	virtual Vector GetScale() const;
 	// 获取物体世界坐标，返回默认值
 	virtual Vector GetWorldPosition() const;
 	// 获取旋转
@@ -61,6 +63,8 @@ public:
 	virtual void SetRotate(const Rotation&);
 	// 设置物体位置，空实现
 	virtual void SetPosition(vec::Vector);
+	// 设置缩放
+	virtual void SetScale(Vector3);
 	// 移动物体，空实现
 	virtual void Move(const Vector3&);
 	//删除关联物体
@@ -210,6 +214,9 @@ public:
 	//加载图片并载入到OpenGl
 	unsigned int loadTexture();
 	unsigned int GetID() { return m_ID; }
+
+	int GetHeight() { return m_Height; }
+	int GetWidth() { return m_Width; }
 	//释放图片
 	void FreePictureData();
 	virtual ObjectType GetType() const override { return OT_PICTURE; }
@@ -333,7 +340,10 @@ public:
 	virtual void SetPosition(vec::Vector)override;
 	//删除关联物体
 	virtual void DeleteChildObject()override;
-
+	// 获取缩放
+	virtual Vector3 GetScale()const override;
+	//设置缩放
+	virtual void SetScale(Vector3)override;
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 private:

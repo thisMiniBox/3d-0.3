@@ -90,9 +90,6 @@
     <ClInclude Include="Tree_树控件.h">
       <Filter>控件类</Filter>
     </ClInclude>
-    <ClInclude Include="EditControl.h">
-      <Filter>控件类</Filter>
-    </ClInclude>
     <ClInclude Include="DetaileControl.h">
       <Filter>控件类</Filter>
     </ClInclude>
@@ -104,6 +101,9 @@
     </ClInclude>
     <ClInclude Include="TextOutWind.h">
       <Filter>窗口类</Filter>
+    </ClInclude>
+    <ClInclude Include="xzdll.h">
+      <Filter>控件类</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,9 +159,6 @@
       <Filter>窗口类\消息循环</Filter>
     </ClCompile>
     <ClCompile Include="Tree_树控件.cpp">
-      <Filter>控件类</Filter>
-    </ClCompile>
-    <ClCompile Include="EditControl.cpp">
       <Filter>控件类</Filter>
     </ClCompile>
     <ClCompile Include="DetaileControl.cpp">

@@ -253,6 +253,21 @@ Vector Object::GetPosition() const
 	return Vector(0, 0, 0);
 }
 
+Vector Object::GetScale() const
+{
+	return Vector(1, 1, 1);
+}
+void Object::SetScale(Vector3)
+{
+}
+Vector3 Model::GetScale()const
+{
+	return getScale();
+}
+void Model::SetScale(Vector3 scale)
+{
+	setScale(scale);
+}
 // 获取物体世界坐标，返回默认值
 Vector Object::GetWorldPosition() const
 {
@@ -584,15 +599,15 @@ Vector Model::GetWorldPosition() const
 }
 Rotation Model::GetRotate()const
 {
-	return getWorldRotation();
+	return getRotation();
 }
 void Model::SetRotate(const Rotation& r)
 {
-	setWorldRotation(r);
+	setRotation(r);
 }
 void Model::SetPosition(vec::Vector v)
 {
-	setWorldPosition(v);
+	setPosition(v);
 }
 void Model::DeleteChildObject()
 {
@@ -746,8 +761,9 @@ unsigned int Picture::loadTexture()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		return m_ID;
 	}
-	return m_ID;
+	return 0;
 }
 Mesh::Mesh(std::string& Name)
 {

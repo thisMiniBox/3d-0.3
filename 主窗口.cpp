@@ -1,6 +1,5 @@
 ﻿#include "framework.h"
 #include "机器学习win.h"
-#include<xlnt/xlnt.hpp>
 
 HINSTANCE hIns;
 Controller* current_project = new Controller;
@@ -16,6 +15,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     freopen_s(&stream, "CON", "r", stdin);//重定向输入流
     freopen_s(&stream, "CON", "w", stdout);//重定向输入流
 #endif // DEBUG
+
+    // 初始化 GDI+ 库
+    ULONG_PTR gdiplusToken;
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
     hIns = hInstance;
@@ -24,22 +29,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg;
     current_project->CreateWind(hInstance);
 
-
-    //xlnt::workbook wb;
-    //xlnt::worksheet ws = wb.active_sheet();
-    //ws.cell("A1").value(5);
-    //ws.cell("B2").value("string data");
-    //ws.cell("C3").formula("=RAND()");
-    //ws.merge_cells("C3:C4");
-    //ws.freeze_panes("B2");
-    //wb.save("example.xlsx");
-
-
     HMENU hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDC_WIN));
     SetMenu(current_project->hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
     SendMessage(current_project->hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+
+
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -52,6 +48,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         
     }
     delete current_project;
+    // 释放 GDI+ 资源
+    Gdiplus::GdiplusShutdown(gdiplusToken);
     return (int) msg.wParam;
 }
 
@@ -402,6 +400,7 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         hWndControl = GetDlgItem(hDlg, IDC_RO_WEDIT);
         wstr = NumberToWString(vec::RadToDeg(v.angle));
         SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_RO_FOV);
         SendMessage(hWndControl, TBM_SETPOS, TRUE, vec::RadToDeg(v.angle));
         break;
     }
@@ -620,47 +619,85 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
     return FALSE;
 }
 
-INT_PTR ScaleControl_缩放控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void MoveDlgItem(HWND hDlg, int id, int x, int y, int cx, int cy) 
+{
+    HWND hWnd = GetDlgItem(hDlg, id);
+    MoveWindow(hWnd, x, y, cx, cy, TRUE);
+}
+INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
-    case WM_UPDATE:
     case WM_INITDIALOG:
     {
-        Vector v = current_project->DETAWND->GetTarget()->GetPosition();
-        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
-        std::wstring wstr = std::to_wstring(v.x);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_Y);
-        wstr = std::to_wstring(v.y);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_Z);
-        wstr = std::to_wstring(v.z);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-        SetWindowText(hWndEdit, L"");
+        HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_SLIDER);
+        SendMessage(hWndControl, TBM_SETRANGEMIN, TRUE, -180);
+        SendMessage(hWndControl, TBM_SETRANGEMAX, TRUE, 180);
+    }
+    case WM_UPDATE:
+    {
+        Vector v = current_project->GetFocusObject()->GetPosition();
+        HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_X);
+        std::wstring wstr = NumberToWString(v.x);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_Y);
+        wstr = NumberToWString(v.y);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_Z);
+        wstr = NumberToWString(v.z);
+        SetWindowText(hWndControl, wstr.c_str());
+        v = current_project->GetFocusObject()->GetScale();
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_X);
+        wstr = NumberToWString(v.x);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_Y);
+        wstr = NumberToWString(v.y);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_Z);
+        wstr = NumberToWString(v.z);
+        SetWindowText(hWndControl, wstr.c_str());
+        Rotation rot = current_project->GetFocusObject()->GetRotate();
+        v = rot.axis;
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_X);
+        wstr = NumberToWString(v.x);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_Y);
+        wstr = NumberToWString(v.y);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_Z);
+        wstr = NumberToWString(v.z);
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_ANG);
+        wstr = NumberToWString(vec::RadToDeg(rot.angle));
+        SetWindowText(hWndControl, wstr.c_str());
+        hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_SLIDER);
+        SendMessage(hWndControl, TBM_SETPOS, TRUE, vec::RadToDeg(rot.angle));
         break;
     }
     case WM_SIZE:
     {
-        RECT EditRect;
-        RECT hDlgRect;
-        GetWindowRect(hDlg, &hDlgRect);
-        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_Y);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_Z);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_TITLE);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        // 计算子窗口区域大小和位置
+        int cxClient = LOWORD(lParam);
+        int cyClient = HIWORD(lParam);
+        float cxUnit = (float)cxClient / 30;
+        float cyUnit = (float)cyClient / 4;
+
+        // 移动子窗口
+        MoveDlgItem(hDlg, IDC_TRAN_POS_TEXT, 0, 0, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_POS_X, cxUnit * 7, 0, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_POS_Y, cxUnit * 7 * 2 + cxUnit, 0, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_POS_Z, cxUnit * 7 * 3 + cxUnit * 2, 0, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_SCA_TEXT, 0, cyUnit, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_SCA_X, cxUnit * 7, cyUnit, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_SCA_Y, cxUnit * 7 * 2 + cxUnit, cyUnit, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_SCA_Z, cxUnit * 7 * 3 + cxUnit * 2, cyUnit, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_TEXT1, 0, cyUnit * 2, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_X, cxUnit * 7, cyUnit * 2, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_Y, cxUnit * 7 * 2 + cxUnit, cyUnit * 2, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_Z, cxUnit * 7 * 3 + cxUnit * 2, cyUnit * 2, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_TEXT2, 0, cyUnit * 3, cxUnit * 7, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_SLIDER, cxUnit * 7, cyUnit * 3, cxUnit * 7 * 2 + cxUnit, cyUnit);
+        MoveDlgItem(hDlg, IDC_TRAN_ROT_ANG, cxUnit * 7 * 3 + cxUnit * 2, cyUnit * 3, cxUnit * 7, cyUnit);
         break;
     }
     case WM_COMMAND:
@@ -730,102 +767,6 @@ INT_PTR ScaleControl_缩放控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, 
 
         break;
     }
-    case WM_CTLCOLORSTATIC:
-    {
-        HDC hdcStatic = (HDC)wParam;
-        int ctrlID = GetDlgCtrlID((HWND)lParam);
-
-        if (ctrlID == IDC_P_ERROR) // 第一个静态文本框
-        {
-            if (g_hBrush == NULL) // 如果画刷对象不存在，则创建一个画刷
-            {
-                g_hBrush = CreateSolidBrush(RGB(255, 255, 0)); // 黄色画刷
-            }
-
-            SetTextColor(hdcStatic, RGB(255, 0, 0)); // 红色前景色
-            SetBkMode(hdcStatic, TRANSPARENT); // 透明背景色
-            SetBkColor(hdcStatic, RGB(255, 255, 0)); // 背景色也设置为黄色
-            return (LRESULT)g_hBrush; // 返回画刷句柄
-        }
-    }
-    break;
-    case WM_DESTROY:
-    {
-        // 销毁画刷对象
-        if (g_hBrush != NULL)
-        {
-            DeleteObject(g_hBrush);
-            g_hBrush = NULL;
-        }
-    }
-    break;
-
-    case WM_CLOSE:
-        // 关闭对话框
-        EndDialog(hDlg, 0);
-        break;
-    default:
-        return DefWindowProc(hDlg, uMsg, wParam, lParam);
-    }
-    return FALSE;
-}
-void MoveDlgItem(HWND hDlg, int id, int x, int y, int cx, int cy) 
-{
-    HWND hWnd = GetDlgItem(hDlg, id);
-    MoveWindow(hWnd, x, y, cx, cy, TRUE);
-}
-INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg)
-    {
-    case WM_UPDATE:
-    case WM_INITDIALOG:
-    {
-        Vector v = current_project->DETAWND->GetTarget()->GetPosition();
-        HWND hWndEdit = GetDlgItem(hDlg, IDC_TRAN_POS_X);
-        std::wstring wstr = NumberToWString(v.x);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_TRAN_POS_Y);
-        wstr = NumberToWString(v.y);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_TRAN_POS_Z);
-        wstr = NumberToWString(v.z);
-        SetWindowText(hWndEdit, wstr.c_str());
-
-        break;
-    }
-    case WM_SIZE:
-    {
-        // 计算子窗口区域大小和位置
-        int cxClient = LOWORD(lParam);
-        int cyClient = HIWORD(lParam);
-        int cxUnit = cxClient / 30;
-        int cyUnit = cyClient / 4;
-
-        // 移动子窗口
-        MoveDlgItem(hDlg, IDC_TRAN_POS_TEXT, 0, 0, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_POS_X, cxUnit * 7, 0, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_POS_Y, cxUnit * 7 * 2 + cxUnit, 0, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_POS_Z, cxUnit * 7 * 3 + cxUnit * 2, 0, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_SCA_TEXT, 0, cyUnit, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_SCA_X, cxUnit * 7, cyUnit, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_SCA_Y, cxUnit * 7 * 2 + cxUnit, cyUnit, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_SCA_Z, cxUnit * 7 * 3 + cxUnit * 2, cyUnit, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_TEXT1, 0, cyUnit * 2, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_X, cxUnit * 7, cyUnit * 2, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_Y, cxUnit * 7 * 2 + cxUnit, cyUnit * 2, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_Z, cxUnit * 7 * 3 + cxUnit * 2, cyUnit * 2, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_TEXT2, 0, cyUnit * 3, cxUnit * 7, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_SLIDER, cxUnit * 7, cyUnit * 3, cxUnit * 7 * 2 + cxUnit, cyUnit);
-        MoveDlgItem(hDlg, IDC_TRAN_ROT_ANG, cxUnit * 7 * 3 + cxUnit * 2, cyUnit * 3, cxUnit * 7, cyUnit);
-        break;
-    }
-
-    case WM_CREATE:
-    {
-        
-        break;
-    }
     case WM_CLOSE:
         EndDialog(hDlg, 0);
         break;
@@ -833,4 +774,19 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         return DefWindowProc(hDlg, uMsg, wParam, lParam);
     }
     return FALSE;
+}
+
+LRESULT CALLBACK DetaileWind::PictureProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_LBUTTONDBLCLK:
+    {
+
+        break;
+    }
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
 }

@@ -14,6 +14,9 @@ DetaileWind::DetaileWind() :m_TreeTarget(nullptr)
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = WindClassName.c_str();
     RegisterClassEx(&wcex);
+    wcex.lpfnWndProc = PictureProc;
+    wcex.lpszClassName = L"pictureproc";
+    RegisterClassEx(&wcex);
 }
 void DetaileWind::ControlPosMove(int change)
 {
@@ -29,6 +32,7 @@ DetaileWind::~DetaileWind()
     DestroyWindow(m_hWnd);
     // 注销窗口类
     UnregisterClass(WindClassName.c_str(), m_hInstance);
+    UnregisterClass(L"pictureproc", m_hInstance);
 }
 void DetaileWind::UpdateChildControl()
 {
@@ -37,7 +41,7 @@ void DetaileWind::UpdateChildControl()
     int width = m_rect.right - m_rect.left;   // 父窗口的宽度
     for (const auto& i : m_ChildControl)
     {
-        if (i.second->IsVisible())
+        if (i.second && i.second->IsVisible())
             y += i.second->MoveWind_移动窗口(x, y, width);
     }
 }
@@ -73,9 +77,11 @@ HWND DetaileWind::CreateWind(HWND Parent)
 }
 void DetaileWind::SetView(Object* obj)
 {
+    if (!obj)return;
     for (const auto& i : m_ChildControl)
     {
-        i.second->Hide();
+        if (i.second)
+            i.second->Hide();
     }
     m_target = obj;
     if (!obj)return;
@@ -99,6 +105,11 @@ void DetaileWind::SetView(Object* obj)
         y += CreateContrle(CT_POSITION, 0, y, m_rect.right);
         break;
     }
+    case OT_PICTURE:
+    {
+        y += CreateContrle(CT_PICTURE, 0, y, m_rect.right, obj);
+        break;
+    }
     }
 
 }
@@ -106,8 +117,13 @@ void DetaileWind::SetTree(HTREEITEM htree)
 {
     m_TreeTarget = htree;
 }
-int DetaileWind::CreateContrle(int type, int x, int y, int w)
+int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
 {
+    if (type == CT_PICTURE && m_ChildControl[type])
+    {
+        delete m_ChildControl[type];
+        m_ChildControl[type] = nullptr;
+    }
     if (!m_ChildControl[type])
         switch (type)
         {
@@ -123,7 +139,11 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w)
         case CT_TRANSFORM:
             m_ChildControl[type] = new TransForm_变换控件(m_hInstance, m_hWnd, x, y, w);
             break;
+        case CT_PICTURE:
+            m_ChildControl[type] = new PictureControl(m_hInstance, m_hWnd, x, y, w, dynamic_cast<Picture*>(obj));
+            break;
         }
+
     ShowWindow(m_ChildControl[type]->GethWnd(), SW_SHOW);
     UpDate();
     return m_ChildControl[type]->GetHeight();
@@ -136,8 +156,15 @@ void DetaileWind::UpDate(int type)
 {
     if (!m_target)return;
     if (type == -1)
+    {
         for (const auto& i : m_ChildControl)
-            PostMessage(i.second->GethWnd(), WM_UPDATE, 0, 0);
+        {
+            if (i.second)
+                PostMessage(i.second->GethWnd(), WM_UPDATE, 0, 0);
+        }
+    }
     else
-        PostMessage(m_ChildControl[type]->GethWnd(), WM_UPDATE, 0, 0);
+        if (m_ChildControl[type])
+            PostMessage(m_ChildControl[type]->GethWnd(), WM_UPDATE, 0, 0);
 }
+

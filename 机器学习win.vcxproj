@@ -94,6 +94,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).framework.h</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -112,6 +115,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).framework.h</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -130,6 +136,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;$(SolutionDir)OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).framework.h</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,6 +157,9 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).framework.h</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -161,7 +173,6 @@
   <ItemGroup>
     <ClInclude Include="DetaileControl.h" />
     <ClInclude Include="DetaileWind.h" />
-    <ClInclude Include="EditControl.h" />
     <ClInclude Include="FileWind.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LargeNumber.h" />
@@ -178,6 +189,7 @@
     <ClInclude Include="Tree_树控件.h" />
     <ClInclude Include="vector_向量.h" />
     <ClInclude Include="WndData.h" />
+    <ClInclude Include="xzdll.h" />
     <ClInclude Include="字符转换.h" />
     <ClInclude Include="机器学习win.h" />
     <ClInclude Include="消息循环声明.h" />
@@ -187,7 +199,6 @@
     <ClCompile Include="D3D11消息循环.cpp" />
     <ClCompile Include="DetaileControl.cpp" />
     <ClCompile Include="DetaileWind.cpp" />
-    <ClCompile Include="EditControl.cpp" />
     <ClCompile Include="FileWind.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="LargeNumber.cpp" />

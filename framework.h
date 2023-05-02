@@ -12,6 +12,9 @@
 #include <d2d1.h>
 #pragma comment(lib, "d2d1")
 #pragma comment (lib,"Comctl32.lib")
+#include <gdiplus.h>
+#pragma comment(lib, "gdiplus.lib")
+
 // C 运行时头文件
 #include <stdlib.h>
 #include <malloc.h>
@@ -25,3 +28,4 @@
 #include"Object.h"
 #include"project.h"
 #include"LargeNumber.h"
+#include"xzdll.h"

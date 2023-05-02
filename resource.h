@@ -21,7 +21,6 @@
 #define IDR_FILERIGHT                   134
 #define IDD_SETSIZE                     135
 #define IDD_ROTATE                      138
-#define IDD_CONTENT                     139
 #define IDB_FOLDER_NON_EMPTY            141
 #define IDB_FOLDER                      142
 #define IDB_FOLDER_OPENED_EMPTY         143
@@ -32,6 +31,7 @@
 #define IDB_MESH                        148
 #define IDB_UNKNOW                      149
 #define IDD_TRANSFORM                   150
+#define IDD_DIALOG2                     151
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -74,7 +74,6 @@
 #define IDC_RO_WEDIT                    1109
 #define IDC_TRAN_SCA_TEXT               1110
 #define IDC_TRAN_POS_TEXT               1111
-#define IDC_TRAN_ROT_TEX                1112
 #define IDC_TRAN_ROT_TEXT1              1112
 #define IDC_TRAN_ROT_TEXT2              1113
 #define IDC_TRAN_POS_X                  1114
@@ -127,9 +126,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        151
+#define _APS_NEXT_RESOURCE_VALUE        152
 #define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1116
+#define _APS_NEXT_CONTROL_VALUE         1117
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

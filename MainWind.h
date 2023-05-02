@@ -108,10 +108,19 @@ public:
 		if (m_Model->GetMaterial())
 		{
 			if (m_Model->GetMaterial()->getMapKd())
+			{
 				m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->loadTexture();
+				if (m_DiffuseMap == 0)
+					std::cout << m_Model->GetName() << "Âþ·´Éä²ÄÖÊ¼ÓÔØÊ§°Ü" << std::endl;
+			}
 			if (m_Model->GetMaterial()->getMapKs())
+			{
 				m_MirrorMap = m_Model->GetMaterial()->getMapKs()->loadTexture();
+				if (m_MirrorMap == 0)
+					std::cout << m_Model->GetName() << "¾µÃæ·´Éä²ÄÖÊ¼ÓÔØÊ§°Ü" << std::endl;
+			}
 		}
+
 		m_Shader->use();
 		m_Shader->setInt("material.diffuse", m_DiffuseMap);
 		m_Shader->setInt("material.specular", m_MirrorMap);

@@ -1,7 +1,6 @@
 #pragma once
 #include<Windows.h>
 #include"Object.h"
-#include"EditControl.h"
 #include"DetaileControl.h"
 #include"resource.h"
 #include<string>
@@ -19,7 +18,7 @@ class DetaileWind
 	std::wstring WindClassName;
 	HTREEITEM m_TreeTarget;
 	int m_ControlPos;
-	int CreateContrle(int type,int x, int y, int w);
+	int CreateContrle(int type, int x, int y, int w, Object* obj = nullptr);
 public:
 	DetaileWind();
 	~DetaileWind();
@@ -38,4 +37,5 @@ public:
 	Object* GetTarget() { return m_target; }
 	HWND CreateDialogToWind(LRESULT(CALLBACK* aWNDPROC)(HWND, UINT, WPARAM, LPARAM), LPCWSTR lpTemplate);
 	static LRESULT CALLBACK DetaileWndProc(HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK PictureProc(HWND, UINT, WPARAM, LPARAM);
 };
