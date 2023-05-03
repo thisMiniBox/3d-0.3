@@ -1,6 +1,7 @@
 #include "project.h"
 Controller::Controller()
 {
+	m_RootFolder.SetName("¸ùÄ¿Â¼");
 	m_FileLoad = false;
 	FILEWND = nullptr;
 	TEXTWND = nullptr;
@@ -171,6 +172,7 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 	UpdateModels();
 	if (hTree)
 		FILEWND->DeleteItem(hTree);
+	m_Models.clear();
 	InvalidateRect(MAINWND->GethWnd(), NULL, true);
 }
 
@@ -464,6 +466,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 		child->GetMesh()->m_VertexPosition= (child_vertex_data);
 		child->GetMesh()->m_Normal = (child_normal_data);
 		child->GetMesh()->m_TexCoords = (child_texcoord_data);
+		child->GetMesh()->m_FaceIndices.clear();
 		child->GetMesh()->m_FaceIndices = (child_face_data);
 	}
 	vertexs.clear();

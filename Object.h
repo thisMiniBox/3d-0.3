@@ -219,6 +219,7 @@ public:
 	int GetWidth() { return m_Width; }
 	//释放图片
 	void FreePictureData();
+	void FreeOpenGL();
 	virtual ObjectType GetType() const override { return OT_PICTURE; }
 };
 class Material :public Object
@@ -249,6 +250,7 @@ public:
 	void setMapKd(Picture* mapKd);
 	Picture* getMapKs() const;
 	void setMapKs(Picture* mapKs);
+	void CleanUpOpenglImageCache();
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
 private:
 	// 私有成员变量

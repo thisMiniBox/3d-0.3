@@ -77,7 +77,6 @@ HWND DetaileWind::CreateWind(HWND Parent)
 }
 void DetaileWind::SetView(Object* obj)
 {
-    if (!obj)return;
     for (const auto& i : m_ChildControl)
     {
         if (i.second)

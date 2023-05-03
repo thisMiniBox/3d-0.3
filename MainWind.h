@@ -7,6 +7,9 @@
 #include<d3dcompiler.h>
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
+
+void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out);
+
 enum MainWindType
 {
 	MGDIWND,
@@ -138,12 +141,13 @@ public:
 	{
 		if (m_Shader != nullptr)
 		{
+			m_Shader->use();
+			m_Shader->setMat4("model", m_ModelMatrix);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_MirrorMap);
-			m_Shader->use();
-			m_Shader->setMat4("model", m_ModelMatrix);
+
 			glBindVertexArray(m_VAO);
 			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->GetVertexData().size());
 			glBindVertexArray(0);

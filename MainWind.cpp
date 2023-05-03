@@ -79,8 +79,10 @@ int MainWind::GetHeight()
 bool compareFace(const Outface& p1, const Outface& p2) {
     return p1.distance > p2.distance;
 }
-void GDIWND::Draw(const std::vector<Model*>& model, const Camera& camera)
+void GDIWND::Draw(const std::vector<Model*>& Models, const Camera& camera)
 {
+    std::vector<Model*> model;
+    GetChildModel(Models, model);
     // 获取设备上下文句柄
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(m_hWnd, &ps);
@@ -368,8 +370,12 @@ OpenGLWnd::~OpenGLWnd()
     if (m_ModelShader)delete m_ModelShader;
     if (m_LightShader)delete m_LightShader;
     for (const auto p : m_models)
+    {
+        if (p.first && p.first->GetMaterial())
+            p.first->GetMaterial()->CleanUpOpenglImageCache();
         if (p.second)
             delete p.second;
+    }
     m_models.clear();
 }
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
@@ -464,29 +470,6 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    m_ModelShader->use();
-
-    m_ModelShader->setVec3("viewPos", camera.GetPosition());
-
-    m_ModelShader->setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    m_ModelShader->setVec3("dirLight.ambient", 0.3f, 0.3f, 0.3f);
-    m_ModelShader->setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-    m_ModelShader->setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
-    // point light 1
-    m_ModelShader->setVec3("pointLights[0].position", camera.GetPosition());
-    m_ModelShader->setVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-    m_ModelShader->setVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-    m_ModelShader->setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-    m_ModelShader->setFloat("pointLights[0].constant", 1.0f);
-    m_ModelShader->setFloat("pointLights[0].linear", 0.09f);
-    m_ModelShader->setFloat("pointLights[0].quadratic", 0.032f);
-
-    // material properties
-    m_ModelShader->setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-    m_ModelShader->setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-    m_ModelShader->setVec3("material.specular", 0.5f, 0.5f, 0.5f); // specular lighting doesn't have full effect on this object's material
-    m_ModelShader->setFloat("material.shininess", 32.0f);
-
     // view/projection transformations
     glm::mat4 projection = glm::perspective(glm::radians(camera.GetFieldOfView()),camera.GetAspectRatio(), camera.GetNear(), camera.GetFar());
     glm::mat4 view = camera.GetGLMView();

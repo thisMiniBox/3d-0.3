@@ -31,7 +31,8 @@
 #define IDB_MESH                        148
 #define IDB_UNKNOW                      149
 #define IDD_TRANSFORM                   150
-#define IDD_DIALOG2                     151
+#define IDD_DRAP_PICTURE                151
+#define IDD_POP_PICTURE                 151
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008

@@ -208,14 +208,25 @@ ObjectType Folder::GetType()const
 }
 void Folder::DeleteFile_删除文件(Object* obj)
 {
-	if (!obj) { // 检查 obj 是否为空指针
+	if (!obj)
+	{ // 检查 obj 是否为空指针
 		return;
 	}
-	auto it = m_Child.find(obj->GetName());
-	if (it != m_Child.end() && it->second == obj) {
-		// 如果找到了名称为 obj->GetName() 的元素且值为 obj，则删除元素
-		m_Child.erase(it);
-		delete obj; // 释放内存
+	for (auto& i : m_Child)
+	{
+		if (i.second == obj)
+		{
+			delete i.second;
+			m_Child.erase(i.first);
+			obj = nullptr;
+			return;
+		}
+		if (i.second->GetType() == ObjectType::OT_FOLDER)
+		{
+			Folder* folder = dynamic_cast<Folder*>(i.second);
+			folder->DeleteFile_删除文件(obj);
+			if (!obj)return;
+		}
 	}
 }
 // 默认构造函数
@@ -617,6 +628,27 @@ void Model::DeleteChildObject()
 }
 const std::vector<FACE>& Model::GetTriFace()
 {
+	if (m_GDI_TriFaceData.empty() && m_ModelMesh)
+	{
+		FACE outf;
+		for (const FaceData_面信息& fi : m_ModelMesh->m_FaceIndices)
+		{
+			outf.vertexA = m_ModelMesh->m_VertexPosition[fi.a[0] - 1] + GetWorldPosition();
+			outf.vertexB = m_ModelMesh->m_VertexPosition[fi.a[3] - 1] + GetWorldPosition();
+			outf.vertexC = m_ModelMesh->m_VertexPosition[fi.a[6] - 1] + GetWorldPosition();
+			outf.texCoordA = m_ModelMesh->m_TexCoords[fi.a[1] - 1];
+			outf.texCoordB = m_ModelMesh->m_TexCoords[fi.a[4] - 1];
+			outf.texCoordC = m_ModelMesh->m_TexCoords[fi.a[7] - 1];
+			outf.normalA = m_ModelMesh->m_Normal[fi.a[2] - 1];
+			outf.normalB = m_ModelMesh->m_Normal[fi.a[5] - 1];
+			outf.normalC = m_ModelMesh->m_Normal[fi.a[8] - 1];
+			if (m_Material->getKd())
+				outf.color = RGB(m_Material->getKd()[0] * 255, m_Material->getKd()[1] * 255, m_Material->getKd()[2] * 255);
+			else
+				outf.color = RGB(200, 200, 200);
+			m_GDI_TriFaceData.push_back(outf);
+		}
+	}
 	return m_GDI_TriFaceData;
 }
 void Model::setWorldScale(const Vector3& scaling) {
@@ -657,7 +689,8 @@ void Model::addChildModel(Model* model) {
 	if (!model) {
 		return;
 	}
-	if (model->m_Parent) {
+	if (model->m_Parent) 
+	{
 		model->m_Parent->removeChildModel(model);
 	}
 	model->m_Parent = this;
@@ -696,7 +729,8 @@ void Model::SetMesh(Mesh* mesh)
 {
 	m_ModelMesh = mesh;
 }
-void Model::removeChildModel(Model* model) {
+void Model::removeChildModel(Model* model) 
+{
 	auto it = std::find(m_ChildModel.begin(), m_ChildModel.end(), model);
 	if (it != m_ChildModel.end()) {
 		(*it)->m_Parent = nullptr;
@@ -720,6 +754,7 @@ void Picture::FreePictureData()
 	if (m_Data)
 		stbi_image_free(m_Data);
 	m_Data = nullptr;
+	m_ID = 0;
 }
 PictureData Picture::GetPicture()const
 {
@@ -914,4 +949,19 @@ Folder::~Folder()
 		c.second = nullptr;
 	}
 	m_Child.clear();
+}
+void Material::CleanUpOpenglImageCache()
+{
+	if (m_MapKa)
+		m_MapKa->FreeOpenGL();
+	if (m_MapKd)
+		m_MapKd->FreeOpenGL();
+	if (m_MapKs)
+		m_MapKs->FreeOpenGL();
+}
+void Picture::FreeOpenGL()
+{
+	if (m_ID)
+		glDeleteTextures(1, &m_ID);
+	m_ID = 0;
 }
