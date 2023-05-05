@@ -171,12 +171,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BottomWindow.h" />
     <ClInclude Include="DetaileControl.h" />
     <ClInclude Include="DetaileWind.h" />
     <ClInclude Include="FileWind.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="LargeNumber.h" />
-    <ClInclude Include="LgFloat.h" />
     <ClInclude Include="MainWind.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="network.h" />
@@ -185,10 +184,10 @@
     <ClInclude Include="project.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="TextOutWind.h" />
     <ClInclude Include="Tree_树控件.h" />
     <ClInclude Include="vector_向量.h" />
     <ClInclude Include="WndData.h" />
+    <ClInclude Include="Xlsx.h" />
     <ClInclude Include="xzdll.h" />
     <ClInclude Include="字符转换.h" />
     <ClInclude Include="机器学习win.h" />
@@ -196,23 +195,22 @@
     <ClInclude Include="神经网络.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BottomWindow.cpp" />
     <ClCompile Include="D3D11消息循环.cpp" />
     <ClCompile Include="DetaileControl.cpp" />
     <ClCompile Include="DetaileWind.cpp" />
     <ClCompile Include="FileWind.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="LargeNumber.cpp" />
-    <ClCompile Include="LgFloat.cpp" />
     <ClCompile Include="MainWind.cpp" />
     <ClCompile Include="Menu.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="project.cpp" />
     <ClCompile Include="stb_image.cpp" />
-    <ClCompile Include="TextOutWind.cpp" />
     <ClCompile Include="Tree_树控件.cpp" />
     <ClCompile Include="vector_向量.cpp" />
     <ClCompile Include="WndData.cpp" />
+    <ClCompile Include="Xlsx.cpp" />
     <ClCompile Include="字符转换.cpp" />
     <ClCompile Include="属性页窗口循环.cpp" />
     <ClCompile Include="文件窗口消息循环.cpp" />

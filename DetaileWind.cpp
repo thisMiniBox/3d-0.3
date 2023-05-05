@@ -66,7 +66,7 @@ HWND DetaileWind::CreateWind(HWND Parent)
         WS_CHILD | WS_BORDER | WS_VISIBLE,
         0, 0, 600, 400,
         Parent,
-        (HMENU)3,
+        (HMENU)ChildWindSign::AttributeWind,
         GetModuleHandle(NULL),
         nullptr);
     if (m_hWnd)
@@ -86,7 +86,6 @@ void DetaileWind::SetView(Object* obj)
     if (!obj)return;
     int y = m_ControlPos;
     y += CreateContrle(CT_NAME, 0, y, m_rect.right);
-    y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
     switch (obj->GetType())
     {
     case OT_FOLDER:
@@ -95,13 +94,12 @@ void DetaileWind::SetView(Object* obj)
     }
     case OT_MODEL:
     {
-        y += CreateContrle(CT_POSITION, 0, y, m_rect.right);
-        y += CreateContrle(CT_ROTATE, 0, y, m_rect.right);
+        y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
         break;
     }
     case OT_CAMERA:
     {
-        y += CreateContrle(CT_POSITION, 0, y, m_rect.right);
+        y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
         break;
     }
     case OT_PICTURE:

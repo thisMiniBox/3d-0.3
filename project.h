@@ -9,19 +9,22 @@
 #include<math.h>
 #include<CommCtrl.h>
 #include"Tree_树控件.h"
+#include"BottomWindow.h"
 #include"FileWind.h"
-#include"TextOutWind.h"
 #include"Object.h"
 class Controller
 {
 	HINSTANCE m_hInst;
 	Folder m_RootFolder;
+	Folder* m_FocusFolder;
 	std::vector<Model*>m_Models;
-	RECT m_rect;
+	BottomWindow* m_BottomWind;
+
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
+
 public:
 	//窗口信息
-	HWND hWnd;
+	HWND m_hWnd;
 	MainWind* MAINWND;
 	TextOutWind* TEXTWND;
 	WndMsg SETWND;
@@ -31,14 +34,15 @@ public:
 	bool m_FileLoad;
 	//模型数据
 	char Model_att;//显示模式
-	//std::vector<POINT>PerPIT_点缩放到屏幕;
-	std::list<ModelTriData>ModelPoint3;//利用2d渲染时三角面投影信息
 	//摄像机（当前视角）
 	Camera* view;
 
 	Controller();
 	~Controller();
 	HWND CreateWind(HINSTANCE hInst);
+	HWND GetBottomWindhWnd()const;
+	BottomWindow* GetBottom()const;
+	void Size(int w, int h);
 	//上传消息
 	void OutMessage(const std::string&, const char& mode = _Message);
 	//上传消息
@@ -47,13 +51,10 @@ public:
 	void updateMsg(const HDC&);
 	//更新模型数据
 	std::vector<Model*>& UpdateModels();
-	void SetRect(RECT rect);
 	RECT GetRect()const;
 	//修改文件名称
 	void SetFileName(Object*, const std::wstring& NewName);
-	////加载模型返回错误码
-	//int loadModel(const std::wstring& path);
-	
+
 	//加载文件
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);
 	//返回所有对象

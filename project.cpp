@@ -2,16 +2,36 @@
 Controller::Controller()
 {
 	m_RootFolder.SetName("根目录");
+	m_FocusFolder = nullptr;
 	m_FileLoad = false;
+
 	FILEWND = nullptr;
 	TEXTWND = nullptr;
+	m_BottomWind = nullptr;
 	MAINWND = new GDIWND;
 	DETAWND = new DetaileWind;
-	hWnd = nullptr;
+	m_hWnd = nullptr;
+
 	m_hInst = nullptr;
-	m_rect = { 0, 0, 800, 500 };
 	view = nullptr;
+	
 	Model_att = 0;
+}
+HWND Controller::GetBottomWindhWnd()const
+{
+	return m_BottomWind->GethWnd();
+}
+void Controller::Size(int cxClient, int cyClient)
+{
+	MoveWindow(m_BottomWind->GethWnd(), 0, cyClient - 150, cxClient / 5 * 4, 150, true);
+	MoveWindow(FILEWND->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
+	MoveWindow(DETAWND->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
+	MoveWindow(MAINWND->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
+	MoveWindow(SETWND.hWnd, 0, 0, cxClient, 50, true);
+}
+BottomWindow* Controller::GetBottom()const
+{
+	return m_BottomWind;
 }
 HWND Controller::CreateWind(HINSTANCE hInst)
 {
@@ -35,7 +55,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	}
 
 	// 执行应用程序初始化:
-	hWnd = CreateWindowW(
+	m_hWnd = CreateWindowW(
 		L"szWindowClass",
 		L"win32模型框架",
 		WS_OVERLAPPEDWINDOW,
@@ -48,19 +68,19 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		hInst,
 		nullptr);
 	m_hInst = hInst;
-	TEXTWND->CreateWind(hWnd);
-	FILEWND->CreateWind(hWnd);
+	m_BottomWind = new BottomWindow(hInst, m_hWnd);
+	TEXTWND->CreateWind(m_BottomWind->GethWnd());
+	m_BottomWind->AddWind(TEXTWND->GethWnd(), L"文本窗口");
+	FILEWND->CreateWind(m_hWnd);
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
 		"新建摄像机", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
 	AddObject(a);
 	AddObject(view);
-	MAINWND->CreateWind(hWnd);
-	DETAWND->CreateWind(hWnd);
-	OutMessage("使用GDI绘图时，先点击一下摄像机加载侧边框控件，否则无法正常渲染窗口，");
-	OutMessage("我也不知道为什么，消息循环是同一个，opengl就没问题");
+	MAINWND->CreateWind(m_hWnd);
+	DETAWND->CreateWind(m_hWnd);
 	RECT m_rect;
-	GetClientRect(hWnd, &m_rect);
+	GetClientRect(m_hWnd, &m_rect);
 	int cxClient = m_rect.right - m_rect.left;  // 获得客户区宽度
 	int cyClient = m_rect.bottom - m_rect.top;
 	SETWND.hWnd = CreateWindowW( //创建编辑框
@@ -68,21 +88,22 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		0,
 		WS_CHILD | WS_BORDER | WS_VISIBLE | ES_MULTILINE,
 		0, 0, cxClient, 50,
-		hWnd,
+		m_hWnd,
 		(HMENU)2,
 		hInst,
 		nullptr);
-	ShowWindow(hWnd, SW_SHOW);
-	UpdateWindow(hWnd);
-	return hWnd;
+	ShowWindow(m_hWnd, SW_SHOW);
+	UpdateWindow(m_hWnd);
+	return m_hWnd;
 }
 Controller::~Controller()
 {
-	m_RootFolder.ClearFolder_清空文件夹();
 	if (MAINWND)delete MAINWND;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
 	if (TEXTWND)delete TEXTWND;
+	if (m_BottomWind)delete m_BottomWind;
+	m_RootFolder.ClearFolder_清空文件夹();
 }
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
@@ -138,13 +159,11 @@ Object* Controller::CreateObject(Folder* parent, std::string name, int type)
 	//FILEWND->ShowFolder(m_RootFolder);
 	return out;
 }
-void Controller::SetRect(RECT rect)
-{
-	m_rect = rect;
-}
 RECT Controller::GetRect()const
 {
-	return m_rect;
+	RECT rect;
+	GetClientRect(m_hWnd, &rect);
+	return rect;
 }
 std::vector<Model*>& Controller::GetModels()
 {
@@ -191,6 +210,7 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 		}
 		error |= LoadObj(narrowPath);
 	}
+
 	else
 		return ReturnedOfLoadFile::_UnknownFormat;
 	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)

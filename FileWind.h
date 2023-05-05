@@ -3,6 +3,7 @@
 #include"resource.h"
 #include"Tree_Ê÷¿Ø¼þ.h"
 #include"Object.h"
+#include"WndData.h"
 #include<string>
 class FileWind
 {

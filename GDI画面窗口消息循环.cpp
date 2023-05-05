@@ -8,9 +8,7 @@ void S_旋转当前摄像机(Controller* CP_当前项目, const float& x_左右旋转弧度, cons
     front.SetZ(sin(x_左右旋转弧度) * cos(y_上下旋转弧度));
     CP_当前项目->view->SetDirection(front);
 }
-bool compare(ModelTriData a, ModelTriData b) {
-    return a > b;
-}
+
 //画面窗口消息循环
 LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
 {

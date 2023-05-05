@@ -1,14 +1,50 @@
 #pragma once
 #include<Windows.h>
-#include<CommCtrl.h>
 #include<vector>
 #include<string>
-typedef struct _T树列表节点
+
+enum class ChildWindSign
 {
-	HTREEITEM own;
-	std::vector<_T树列表节点>child;
-	_T树列表节点() :own(nullptr) {}
-}T_树节点;
+	MainWind = 1,
+	GdiWind,
+	OpenGLWind,
+	D3D11Wind,
+
+	LeftWind,
+	FileWind,
+	ProjectContentWind,
+
+	BottomWind,
+	MessageWind,
+	ControlWind,
+	KeyframeWind,
+
+	RightWind,
+	AttributeWind,
+
+	TopWind,
+	MenuWind,
+
+	LeftSeekBar,
+	BottomSeekBar,
+	RightSeekBar,
+	TopSeekBar,
+};
+
+enum MSGMode
+{
+	_ALL,
+	_ERROR,
+	_WARNING,
+	_REMIND
+};
+enum MSGtype
+{
+	_Message,
+	_Error,
+	_Warning
+};
+
 typedef struct WndMsg
 {
 	HWND hWnd;
@@ -17,28 +53,6 @@ typedef struct WndMsg
 	RECT m_rect;
 	WndMsg() :hWnd(nullptr) { m_rect = { 0 }; }
 }WndMsg;
-
-class ModelTriData
-{
-public:
-	float d;
-	POINT point[3];
-	ModelTriData()
-	{
-		point[0] = { 0 };
-		point[1] = { 0 };
-		point[2] = { 0 };
-		d = 0;
-	}
-	bool operator>(ModelTriData b)
-	{
-		return d > b.d ? true : false;
-	}
-	bool operator<(ModelTriData b)
-	{
-		return d < b.d ? true : false;
-	}
-};
 ATOM MyRegisterClass(HINSTANCE   hInstance,
 	LPCWSTR     lpszClassName,
 	LRESULT(*wnd_proc)(HWND, UINT, WPARAM, LPARAM),

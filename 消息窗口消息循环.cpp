@@ -30,7 +30,7 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             break;
         }
         }
-        SetFocus(current_project->hWnd);
+        SetFocus(current_project->m_hWnd);
         InvalidateRect(hWnd, NULL, false);
         break;
     }

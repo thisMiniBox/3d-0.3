@@ -31,8 +31,6 @@
 #define IDB_MESH                        148
 #define IDB_UNKNOW                      149
 #define IDD_TRANSFORM                   150
-#define IDD_DRAP_PICTURE                151
-#define IDD_POP_PICTURE                 151
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -120,6 +118,7 @@
 #define ID_FM_CREATEFOLDER              32803
 #define ID_FM_CREATEMODEL               32804
 #define ID_FM_CREATECAMERA              32805
+#define ID_32806                        32806
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -128,8 +127,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        152
-#define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1117
+#define _APS_NEXT_COMMAND_VALUE         32807
+#define _APS_NEXT_CONTROL_VALUE         1118
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

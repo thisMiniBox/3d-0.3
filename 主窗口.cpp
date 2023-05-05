@@ -30,10 +30,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     current_project->CreateWind(hInstance);
 
     HMENU hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDC_WIN));
-    SetMenu(current_project->hWnd, hMenu);
+    SetMenu(current_project->m_hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
-    SendMessage(current_project->hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+    SendMessage(current_project->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
 
 
     // 主消息循环:
@@ -50,6 +50,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     delete current_project;
     // 释放 GDI+ 资源
     Gdiplus::GdiplusShutdown(gdiplusToken);
+#ifdef _DEBUG
+    // 关闭重定向的流
+    fclose(stdin);
+    fclose(stdout);
+    // 释放控制台窗口
+    FreeConsole();
+    PostQuitMessage(0);
+#endif // DEBUG
+
+
     return (int) msg.wParam;
 }
 
@@ -80,18 +90,9 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     }
     case WM_SIZE:
     {
-        
         int cxClient = LOWORD(lParam);
         int cyClient = HIWORD(lParam);
-        RECT rect;
-        GetClientRect(hWnd, &rect);
-        current_project->SetRect(rect);
-        MoveWindow(current_project->TEXTWND->GethWnd(), 0, cyClient - 150, cxClient / 5 * 4, 150, true);
-        MoveWindow(current_project->FILEWND->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
-        MoveWindow(current_project->DETAWND->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
-        MoveWindow(current_project->MAINWND->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
-        MoveWindow(current_project->SETWND.hWnd, 0, 0, cxClient, 50, true);
-        
+        current_project->Size(cxClient, cyClient);
         break;
     }
     case WM_GETMINMAXINFO:
@@ -193,7 +194,7 @@ INT_PTR Position_位置控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
             {
             case IDC_X:
             {
-                hWndEdit = GetDlgItem(hDlg, IDC_X);
+                hWndEdit = (HWND)lParam;
                 GetWindowText(hWndEdit, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
@@ -704,67 +705,140 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
     {
         if (HIWORD(wParam) == EN_CHANGE)
         {
-            HWND hWndEdit = nullptr;
-            Vector VEC;
+            HWND hWndControl = (HWND)lParam;
+            Vector Position;
+            Vector Scale = current_project->GetFocusObject()->GetScale();
+            Rotation rotation = current_project->GetFocusObject()->GetRotate();
             wchar_t szText[64];
             switch (GetDlgCtrlID(GetFocus()))
             {
-            case IDC_X:
+            case IDC_TRAN_POS_X:
             {
-                hWndEdit = GetDlgItem(hDlg, IDC_X);
-                GetWindowText(hWndEdit, szText, _countof(szText));
+                GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.x = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().x;
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                    Position.x = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().x;
                 }
                 break;
             }
-            case IDC_Y:
+            case IDC_TRAN_POS_Y:
             {
-                hWndEdit = GetDlgItem(hDlg, IDC_Y);
-                GetWindowText(hWndEdit, szText, _countof(szText));
+                GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.y = (std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().y);
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                    Position.y = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().y;
                 }
                 break;
             }
-            case IDC_Z:
+            case IDC_TRAN_POS_Z:
             {
-                hWndEdit = GetDlgItem(hDlg, IDC_Z);
-                GetWindowText(hWndEdit, szText, _countof(szText));
+                GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.z = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().z;
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"");
+                    Position.z = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().z;
                 }
-                else
+                break;
+            }
+            case IDC_TRAN_SCA_X:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
                 {
-                    hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
+                    Scale.x = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_SCA_Y:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    Scale.y = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_SCA_Z:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    Scale.z = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_ROT_X:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    rotation.axis.x = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_ROT_Y:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    rotation.axis.y = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_ROT_Z:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    rotation.axis.z = std::wcstod(szText, nullptr);
+                }
+                break;
+            }
+            case IDC_TRAN_ROT_ANG:
+            {
+                GetWindowText(hWndControl, szText, _countof(szText));
+                if (IsNumeric(szText))
+                {
+                    double Angle = std::wcstod(szText, nullptr);
+                    while (Angle > 180)
+                        Angle -= 360;
+                    while (Angle < -180)
+                        Angle += 360;
+                    hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_SLIDER);
+                    SendMessage(hWndControl, TBM_SETPOS, TRUE, Angle);
+                    rotation.angle = vec::DegToRad(Angle);
                 }
                 break;
             }
             }
-            current_project->DETAWND->GetTarget()->Move(VEC);
+            current_project->DETAWND->GetTarget()->Move(Position);
+            current_project->GetFocusObject()->SetScale(Scale);
+            current_project->GetFocusObject()->SetRotate(rotation);
             InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
         }
 
+        break;
+    }
+    case WM_HSCROLL:
+    {
+        int nScrollBar = LOWORD(wParam);
+        HWND hWndCtl = (HWND)lParam;
+        int nPos = (short)HIWORD(wParam);
+        switch (nScrollBar)
+        {
+        case SB_THUMBTRACK: // 用户正在拖动滑块
+        case SB_THUMBPOSITION: // 用户释放滑块
+        {
+            HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_ANG);
+            std::wstring wstr = std::to_wstring(nPos);
+            SetWindowText(hWndControl, wstr.c_str());
+            Rotation OldQuat = current_project->DETAWND->GetTarget()->GetRotate();
+            OldQuat.angle = DegToRad(nPos);
+            current_project->DETAWND->GetTarget()->SetRotate(OldQuat);
+            break;
+        }
+        default:
+            break;
+        }
         break;
     }
     case WM_CLOSE:
@@ -787,6 +861,37 @@ LRESULT CALLBACK DetaileWind::PictureProc(HWND hWnd, UINT message, WPARAM wParam
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+LRESULT CALLBACK BottomWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
+{
+    switch (message)
+    {
+    case WM_COMMAND:
+    {
+        if ((HWND)lParam)
+            current_project->GetBottom()->Select((HWND)lParam);
+    }
+    case WM_SIZE:
+    {
+        if (current_project->GetBottom())
+        {
+            RECT rect;
+            GetClientRect(hWnd, &rect);
+            current_project->GetBottom()->Size(rect.right, rect.bottom);
+        }
+        break;
+    }
+    case WM_CREATE:
+    {
+
+        break;
+    }
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+        break;
     }
     return 0;
 }

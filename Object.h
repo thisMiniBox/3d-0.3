@@ -24,12 +24,15 @@ class Camera;
 
 enum ObjectType
 {
-	OT_FOLDER,
-	OT_MODEL,
-	OT_CAMERA,
-	OT_MESH,
-	OT_PICTURE,
-	OT_MATERIAL,
+	OT_FOLDER,				//文件夹
+	OT_MODEL,				//模型
+	OT_CAMERA,				//摄像机
+	OT_MESH,				//网格
+	OT_PICTURE,				//图片
+	OT_MATERIAL,			//材质
+	OT_POINTLIGHT,			//点光源
+	OT_PARALLELLIGHT,		//平行光光源
+	OT_KEYFRAME,			//关键帧
 };
 using namespace vec;
 
@@ -37,6 +40,7 @@ using namespace vec;
 class Object
 {
 protected:
+	bool m_Selected;
 	std::string m_Name;  // 物体名称
 public:
 	// 默认构造函数
@@ -49,6 +53,12 @@ public:
 	const std::string GetName() const;
 	// 设置物体名称
 	void SetName(std::string NewName);
+	//切换选中状态
+	void ToggleSelection();
+	void Selected();
+	void Unselected();
+	//获取选中状态
+	bool IsSelected();
 	// 获取物体类型，纯虚函数
 	virtual ObjectType GetType()const = 0;
 	// 获取物体位置，返回默认值
@@ -62,9 +72,9 @@ public:
 	// 设定旋转
 	virtual void SetRotate(const Rotation&);
 	// 设置物体位置，空实现
-	virtual void SetPosition(vec::Vector);
+	virtual void SetPosition(const vec::Vector&);
 	// 设置缩放
-	virtual void SetScale(Vector3);
+	virtual void SetScale(const Vector3&);
 	// 移动物体，空实现
 	virtual void Move(const Vector3&);
 	//删除关联物体
@@ -338,14 +348,14 @@ public:
 	virtual Rotation GetRotate()const override;
 	// 设定旋转
 	virtual void SetRotate(const Rotation&)override;
-	// 设置物体位置，空实现
-	virtual void SetPosition(vec::Vector)override;
+	// 设置物体位置
+	virtual void SetPosition(const vec::Vector&)override;
 	//删除关联物体
 	virtual void DeleteChildObject()override;
 	// 获取缩放
 	virtual Vector3 GetScale()const override;
 	//设置缩放
-	virtual void SetScale(Vector3)override;
+	virtual void SetScale(const Vector3&)override;
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 private:
@@ -401,7 +411,7 @@ public:
 	Camera(std::string name,
 		Vector3 Position, Vector3 Target, Vector3 Cameraup,
 		float aspect_ratio, float field_of_view=45.0f, float near_clip_plane=0.01f, float far_clip_plane=150.0f);
-	virtual void SetPosition(vec::Vector p)override { m_Position = p; SetDirection(m_Target - p);}
+	virtual void SetPosition(const vec::Vector& p)override { m_Position = p; SetDirection(m_Target - p);}
 	void SetDirection(const Vector&);
 	void SetTarget(const Vector3&);
 	void SetCameraUP(const Vector3&);
@@ -429,11 +439,35 @@ public:
 
 };
 
-class PointLight :public Object
+class PointLight : public Object
 {
-	Vector m_Positon;
-	Vector m_LightColor;
-	float m_Intensity;
-	float m_Range;
-	float m_SoftShadow;
+public:
+	PointLight();
+	~PointLight();
+
+	ObjectType GetType() const override;
+
+	void SetPosition(const Vector& position)override;    // 设置位置
+	Vector GetPosition() const;							 // 获取位置
+
+	void SetLightColor(const Vector& lightColor);        // 设置颜色
+	const Vector& GetLightColor() const;                 // 获取颜色
+
+	void SetIntensity(float intensity);                  // 设置强度
+	float GetIntensity() const;                          // 获取强度
+
+	void SetRange(float range);                          // 设置灯半径
+	float GetRange() const;                              // 获取灯半径
+
+	void SetSoftShadow(float softShadow);                // 设置衰减系数
+	float GetSoftShadow() const;                         // 获取衰减系数
+
+private:
+	Vector m_Position;                                   // 点光源位置
+	Vector m_LightColor;                                 // 点光源颜色
+	float m_Intensity;                                   // 点光源强度
+	float m_Range;                                       // 点光源半径
+	float m_SoftShadow;                                  // 点光源衰减系数
 };
+
+

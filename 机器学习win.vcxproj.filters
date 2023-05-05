@@ -54,12 +54,6 @@
     <ClInclude Include="project.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LgFloat.h">
-      <Filter>头文件\数据组件</Filter>
-    </ClInclude>
-    <ClInclude Include="LargeNumber.h">
-      <Filter>头文件\数据组件</Filter>
-    </ClInclude>
     <ClInclude Include="字符转换.h">
       <Filter>头文件\数据组件</Filter>
     </ClInclude>
@@ -96,14 +90,17 @@
     <ClInclude Include="Shader.h">
       <Filter>窗口类</Filter>
     </ClInclude>
-    <ClInclude Include="FileWind.h">
-      <Filter>窗口类</Filter>
-    </ClInclude>
-    <ClInclude Include="TextOutWind.h">
-      <Filter>窗口类</Filter>
-    </ClInclude>
     <ClInclude Include="xzdll.h">
       <Filter>控件类</Filter>
+    </ClInclude>
+    <ClInclude Include="Xlsx.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BottomWindow.h">
+      <Filter>窗口类</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWind.h">
+      <Filter>窗口类</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -118,12 +115,6 @@
     </ClCompile>
     <ClCompile Include="WndData.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="LargeNumber.cpp">
-      <Filter>源文件\数据组件</Filter>
-    </ClCompile>
-    <ClCompile Include="LgFloat.cpp">
-      <Filter>源文件\数据组件</Filter>
     </ClCompile>
     <ClCompile Include="字符转换.cpp">
       <Filter>源文件\数据组件</Filter>
@@ -176,7 +167,10 @@
     <ClCompile Include="FileWind.cpp">
       <Filter>窗口类</Filter>
     </ClCompile>
-    <ClCompile Include="TextOutWind.cpp">
+    <ClCompile Include="Xlsx.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BottomWindow.cpp">
       <Filter>窗口类</Filter>
     </ClCompile>
   </ItemGroup>

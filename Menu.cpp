@@ -51,6 +51,7 @@ void loadModelThread(HWND hWnd,Controller* current_project,std::wstring path)
         }
     }
     current_project->m_FileLoad = false;
+    return;
 }
 LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, Controller* current_project)
 {
@@ -92,7 +93,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         current_project->MAINWND = new GDIWND;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
         int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
-        ShowWindow(current_project->MAINWND->CreateWind(current_project->hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
+        ShowWindow(current_project->MAINWND->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
 
         // 禁用调整窗口大小功能
@@ -112,7 +113,7 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         current_project->MAINWND = new OpenGLWnd;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
         int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
-        current_project->MAINWND->CreateWind(current_project->hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
+        current_project->MAINWND->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
         LONG style = GetWindowLong(hWnd, GWL_STYLE);
 
         // 禁用调整窗口大小功能
@@ -236,10 +237,10 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             else
             {
                 RECT rcWindow;
-                GetWindowRect(cp->hWnd, &rcWindow);
+                GetWindowRect(cp->m_hWnd, &rcWindow);
                /* width = rcWindow.right - rcWindow.left;
                 height = rcWindow.bottom - rcWindow.top;*/
-                MoveWindow(cp->hWnd, rcWindow.left, rcWindow.top, width, height, false);
+                MoveWindow(cp->m_hWnd, rcWindow.left, rcWindow.top, width, height, false);
                 if (OpenGLWnd* OW = dynamic_cast<OpenGLWnd*>(cp->MAINWND))
                 {
                     OW->ResetOpenGLViewport();
@@ -253,11 +254,11 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         {
             WINDOWPLACEMENT wp;
             wp.length = sizeof(WINDOWPLACEMENT);
-            GetWindowPlacement(cp->hWnd, &wp);
+            GetWindowPlacement(cp->m_hWnd, &wp);
 
             if (wp.showCmd == SW_SHOWMAXIMIZED) // 如果窗口已被最大化
             {
-                ShowWindow(cp->hWnd, SW_RESTORE); // 还原窗口大小
+                ShowWindow(cp->m_hWnd, SW_RESTORE); // 还原窗口大小
                 if (OpenGLWnd* OW = dynamic_cast<OpenGLWnd*>(cp->MAINWND))
                 {
                     OW->ResetOpenGLViewport();
@@ -265,7 +266,7 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
             }
             else // 否则窗口未被最大化
             {
-                ShowWindow(cp->hWnd, SW_MAXIMIZE); // 最大化窗口
+                ShowWindow(cp->m_hWnd, SW_MAXIMIZE); // 最大化窗口
                 if (OpenGLWnd* OW = dynamic_cast<OpenGLWnd*>(cp->MAINWND))
                 {
                     OW->ResetOpenGLViewport();
@@ -286,13 +287,13 @@ INT_PTR CALLBACK SetSize(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         HWND hwndEditw = GetDlgItem(hDlg, IDC_width);
         HWND hwndEdith = GetDlgItem(hDlg, IDC_height);
         RECT rcWindow;
-        GetWindowRect(cp->hWnd, &rcWindow);
+        GetWindowRect(cp->m_hWnd, &rcWindow);
         std::wstring wstr = std::to_wstring(rcWindow.right - rcWindow.left);
         SetWindowText(hwndEditw, wstr.c_str());
         wstr = std::to_wstring(rcWindow.bottom - rcWindow.top);
         SetWindowText(hwndEdith, wstr.c_str());
         HWND hwndMaximize = GetDlgItem(hDlg, IDC_MAXIMIZE);
-        if(IsMaximized(cp->hWnd))
+        if(IsMaximized(cp->m_hWnd))
             SetWindowText(hwndMaximize, L"还原");
         else
             SetWindowText(hwndMaximize, L"全屏");

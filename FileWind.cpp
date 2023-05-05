@@ -26,7 +26,7 @@ HWND FileWind::CreateWind(HWND parent)
         WS_CHILD | WS_BORDER | WS_VISIBLE,
         0, 50, 100, 100,
         parent,
-        (HMENU)4,
+        (HMENU)ChildWindSign::FileWind,
         m_hInst,
         nullptr);
     if (m_hWnd)
@@ -80,7 +80,7 @@ void FileWind::SetMappingBasedOnObjects(const Object& obj, HTREEITEM hItem)
         break;
     }
 }
-HTREEITEM FileWind::AddItem(const Object& obj,const std::string& add)
+HTREEITEM FileWind::AddItem(const Object& obj, const std::string& add)
 {
     HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, add);
     SetMappingBasedOnObjects(obj, hItem);
@@ -164,7 +164,7 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
         }
     }
 }
-void FileWind::ShowFolder(const Folder& folder,HTREEITEM Parent)
+void FileWind::ShowFolder(const Folder& folder, HTREEITEM Parent)
 {
     m_FileTree_文件树.ClearTree_清空树();
     std::string folderName = folder.GetName();

@@ -231,13 +231,13 @@ void Folder::DeleteFile_删除文件(Object* obj)
 }
 // 默认构造函数
 Object::Object()
-	: m_Name("")
+	: m_Name("新建物品"), m_Selected(false)
 {
 }
 
 // 构造函数，可指定物体名称
 Object::Object(std::string nam)
-	: m_Name(nam)
+	: m_Name(nam), m_Selected(false)
 {
 }
 
@@ -268,14 +268,14 @@ Vector Object::GetScale() const
 {
 	return Vector(1, 1, 1);
 }
-void Object::SetScale(Vector3)
+void Object::SetScale(const Vector3&)
 {
 }
 Vector3 Model::GetScale()const
 {
 	return getScale();
 }
-void Model::SetScale(Vector3 scale)
+void Model::SetScale(const Vector3& scale)
 {
 	setScale(scale);
 }
@@ -288,7 +288,7 @@ Rotation Object::GetRotate()const
 {
 	return Rotation();
 }
-void Object::SetPosition(vec::Vector)
+void Object::SetPosition(const vec::Vector&)
 {
 }
 void Object::SetRotate(const Rotation&)
@@ -616,7 +616,7 @@ void Model::SetRotate(const Rotation& r)
 {
 	setRotation(r);
 }
-void Model::SetPosition(vec::Vector v)
+void Model::SetPosition(const vec::Vector& v)
 {
 	setPosition(v);
 }
@@ -769,7 +769,7 @@ PictureData Picture::LoadPicture(const std::string& path)
 	}
 	else
 	{
-		std::cout << "Texture failed to load at path: " << path << std::endl;
+		std::cout << "Texture failed to load at path: " << path.c_str() << std::endl;
 		stbi_image_free(m_Data);
 	}
 	return{ m_Data,m_Width,m_Height,m_NrComponents };
@@ -964,4 +964,79 @@ void Picture::FreeOpenGL()
 	if (m_ID)
 		glDeleteTextures(1, &m_ID);
 	m_ID = 0;
+}
+ObjectType PointLight::GetType()const
+{
+	return OT_POINTLIGHT;
+}
+PointLight::PointLight()
+{
+	m_Intensity = 100;
+	m_LightColor = Vector(255, 255, 255);
+	m_Name = "新建点光源";
+	m_Position = Vector(0, 0, 0);
+	m_Range = 0.1;
+	m_SoftShadow = 0.01;
+}
+PointLight::~PointLight()
+{
+}
+void PointLight::SetPosition(const Vector& position)
+{
+	m_Position = position;
+}
+Vector PointLight::GetPosition() const
+{
+	return m_Position;
+}
+
+void PointLight::SetLightColor(const Vector& lightColor)
+{
+	m_LightColor = lightColor;
+}
+const Vector& PointLight::GetLightColor() const
+{
+	return m_LightColor;
+}
+
+void PointLight::SetIntensity(float intensity)
+{
+	m_Intensity = intensity;
+}
+float PointLight::GetIntensity() const
+{
+	return m_Intensity;
+}
+
+void PointLight::SetRange(float range)
+{
+	m_Range = range;
+}
+float PointLight::GetRange() const
+{
+	return m_Range;
+}
+void PointLight::SetSoftShadow(float softShadow)
+{
+	m_SoftShadow = softShadow;
+}
+float PointLight::GetSoftShadow() const
+{
+	return m_SoftShadow;
+}
+void Object::ToggleSelection()
+{
+	m_Selected = !m_Selected;
+}
+bool Object::IsSelected()
+{
+	return m_Selected;
+}
+void Object::Selected()
+{
+	m_Selected = true;
+}
+void Object::Unselected()
+{
+	m_Selected = false;
 }

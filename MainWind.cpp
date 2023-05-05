@@ -57,7 +57,7 @@ HWND GDIWND::CreateWind(HWND Parent, int x, int y, int w, int h)
         WS_CHILD | WS_BORDER | WS_VISIBLE,
         x, y, w, h,
         Parent,
-        (HMENU)3,
+        (HMENU)ChildWindSign::GdiWind,
         m_hInstance,
         nullptr);
     if (m_hWnd)
@@ -204,7 +204,7 @@ HWND D3DWND11::CreateWind(HWND Parent, int x, int y, int w, int h)
     m_height = m_rect.bottom - m_rect.top;
 
     m_hWnd = CreateWindowEx(0, WndClassName.c_str(), L"D3D11 Window", WS_CHILD | WS_VISIBLE,
-        x, y, m_width, m_height, Parent, NULL, m_hInstance, NULL);
+        x, y, m_width, m_height, Parent, (HMENU)ChildWindSign::D3D11Wind, m_hInstance, NULL);
 
     if (!m_hWnd)
     {
@@ -387,7 +387,7 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
         WS_CHILD | WS_VISIBLE,
         x, y, w, h,
         Parent,
-        NULL, m_hInstance, NULL);
+        (HMENU)ChildWindSign::OpenGLWind, m_hInstance, NULL);
 
     if (!m_hWnd) {
         return NULL;
