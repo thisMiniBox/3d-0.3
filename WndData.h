@@ -2,7 +2,7 @@
 #include<Windows.h>
 #include<vector>
 #include<string>
-
+#include"resource.h"
 enum class ChildWindSign
 {
 	MainWind = 1,

@@ -188,7 +188,7 @@
     <ClInclude Include="vector_向量.h" />
     <ClInclude Include="WndData.h" />
     <ClInclude Include="Xlsx.h" />
-    <ClInclude Include="xzdll.h" />
+    <ClInclude Include="xzdll.hpp" />
     <ClInclude Include="字符转换.h" />
     <ClInclude Include="机器学习win.h" />
     <ClInclude Include="消息循环声明.h" />
@@ -196,6 +196,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BottomWindow.cpp" />
+    <ClCompile Include="Command.cpp" />
     <ClCompile Include="D3D11消息循环.cpp" />
     <ClCompile Include="DetaileControl.cpp" />
     <ClCompile Include="DetaileWind.cpp" />

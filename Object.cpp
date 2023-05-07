@@ -16,7 +16,148 @@ inline FaceData_面信息 faceData(std::string cin) {
 	}
 	return result;
 }
-bool ModelShader_模型着色器::read(const std::string& filename) {
+std::wstring ObjectTypeToWstr(ObjectType OT)
+{
+	switch (OT)
+	{
+	case OT_FOLDER:
+		return L"文件夹";
+		break;
+	case OT_MODEL:
+		return L"模型";
+		break;
+	case OT_CAMERA:
+		return L"摄像机";
+		break;
+	case OT_MESH:
+		return L"网格";
+		break;
+	case OT_PICTURE:
+		return L"图片";
+		break;
+	case OT_MATERIAL:
+		return L"材质";
+		break;
+	case OT_POINTLIGHT:
+		return L"点光源";
+		break;
+	case OT_PARALLELLIGHT:
+		return L"平行光源";
+		break;
+	case OT_KEYFRAME:
+		return L"关键帧";
+		break;
+	default:
+		return L"未知";
+		break;
+	}
+}
+std::string ObjectTypeTostr(ObjectType OT)
+{
+	switch (OT)
+	{
+	case OT_FOLDER:
+		return "文件夹";
+		break;
+	case OT_MODEL:
+		return "模型";
+		break;
+	case OT_CAMERA:
+		return "摄像机";
+		break;
+	case OT_MESH:
+		return "网格";
+		break;
+	case OT_PICTURE:
+		return "图片";
+		break;
+	case OT_MATERIAL:
+		return "材质";
+		break;
+	case OT_POINTLIGHT:
+		return "点光源";
+		break;
+	case OT_PARALLELLIGHT:
+		return "平行光源";
+		break;
+	case OT_KEYFRAME:
+		return "关键帧";
+		break;
+	default:
+		return "未知";
+		break;
+	}
+}
+ObjectType StrToObjectType(const std::string& str)
+{
+	if (str == "文件夹" || str == "Folder") {
+		return OT_FOLDER;
+	}
+	else if (str == "模型" || str == "Model") {
+		return OT_MODEL;
+	}
+	else if (str == "摄像机" || str == "Camera") {
+		return OT_CAMERA;
+	}
+	else if (str == "网格" || str == "Mesh") {
+		return OT_MESH;
+	}
+	else if (str == "图片" || str == "Picture") {
+		return OT_PICTURE;
+	}
+	else if (str == "材质" || str == "Material") {
+		return OT_MATERIAL;
+	}
+	else if (str == "点光源" || str == "PointLight") {
+		return OT_POINTLIGHT;
+	}
+	else if (str == "平行光源" || str == "ParallelLight") {
+		return OT_PARALLELLIGHT;
+	}
+	else if (str == "关键帧" || str == "Keyframe") {
+		return OT_KEYFRAME;
+	}
+	else {
+		return OT_UNKNOWN;
+	}
+}
+
+
+ObjectType  WStrToObjectType(const std::wstring& str)
+{
+	if (str == L"文件夹" || str == L"Folder") {
+		return OT_FOLDER;
+	}
+	else if (str == L"模型" || str == L"Model") {
+		return OT_MODEL;
+	}
+	else if (str == L"摄像机" || str == L"Camera") {
+		return OT_CAMERA;
+	}
+	else if (str == L"网格" || str == L"Mesh") {
+		return OT_MESH;
+	}
+	else if (str == L"图片" || str == L"Picture") {
+		return OT_PICTURE;
+	}
+	else if (str == L"材质" || str == L"Material") {
+		return OT_MATERIAL;
+	}
+	else if (str == L"点光源" || str == L"PointLight") {
+		return OT_POINTLIGHT;
+	}
+	else if (str == L"平行光源" || str == L"ParallelLight") {
+		return OT_PARALLELLIGHT;
+	}
+	else if (str == L"关键帧" || str == L"Keyframe") {
+		return OT_KEYFRAME;
+	}
+	else {
+		return OT_UNKNOWN;
+	}
+}
+bool ModelShader_模型着色器::read(const std::string& filename) 
+{
 	std::ifstream file(filename);
 	if (!file.is_open()) {
 		std::cerr << "Failed to open file: " << filename << std::endl;
@@ -75,7 +216,7 @@ Folder::Folder(std::string NAME)
 	m_Name = NAME;
 }
 Object* Folder::FindFile_寻找文件(const std::string& Name) const {
-	auto it = m_Child.find(Name);
+	auto it = m_Child.find(Name.c_str());
 	if (it != m_Child.end()) 
 	{
 		return it->second;
@@ -85,17 +226,19 @@ Object* Folder::FindFile_寻找文件(const std::string& Name) const {
 
 void Folder::SetFileName(Object* obj, const std::string& NewName)
 {
-	if (!obj)
+	if (!obj||NewName.empty()||NewName[0]=='\0')
 	{ 
-		// 检查 obj 是否为空指针
 		return;
 	}
-	auto it = m_Child.find(obj->GetName());
-	if (it != m_Child.end() && it->second == obj)
+	for (auto& f : m_Child)
 	{
-		// 如果找到了名称为 obj->GetName() 的元素且值为 obj，则更新名称
-		m_Child.erase(it);
-		m_Child.insert(std::make_pair(NewName, obj));
+		if (f.second == obj)
+		{
+			obj->SetName(NewName);
+			m_Child.erase(f.first);
+			m_Child.insert(std::make_pair(NewName.c_str(), obj));
+			return;
+		}
 	}
 }
 
@@ -125,6 +268,9 @@ void Folder::ClearFolder_清空文件夹()
 }
 void Folder::AddFile_添加文件(Object* obj)
 {
+	Folder* fold = dynamic_cast<Folder*>(obj);
+	if (fold)
+		fold->SetParent(this);
 	std::string name = obj->GetName();
 	if (m_Child.find(name) == m_Child.end()) {
 		m_Child.insert(std::make_pair(name, obj));
@@ -141,7 +287,23 @@ void Folder::AddFile_添加文件(Object* obj)
 	obj->SetName(name);
 	m_Child.insert(std::make_pair(name, obj));
 }
-
+void Folder::SetParent(Folder* parent)
+{
+	if (parent != this)
+		m_Parent = parent;
+}
+Folder* Folder::GetParent()const
+{
+	return m_Parent;
+}
+std::vector<Object*> Folder::GetFileContent()const
+{
+	std::vector<Object*> out;
+	for (const auto& c : m_Child)
+		if (c.second)
+			out.push_back(c.second);
+	return out;
+}
 Object* Folder::CreateFile_创建文件(std::string Name, int type)
 {
 	Object* out = nullptr;

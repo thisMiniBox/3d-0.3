@@ -1,5 +1,4 @@
 #pragma once
-
 #include <windows.h>
 #include <string>
 #include<CommCtrl.h>
@@ -68,4 +67,21 @@ public:
 	void DrawWind(HDC hdc);
 	HWND GethWnd();
 	static LRESULT CALLBACK TextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+};
+class InputOutput
+{
+	HWND m_hWnd;
+	HWND m_Input;
+	HWND m_Output;
+	HWND m_Enter;
+	HINSTANCE m_hInst;
+public:
+	InputOutput(HINSTANCE,HWND parent);
+	~InputOutput();
+	HWND GethWnd()const;
+	void Size();
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	std::wstring InputString();
+	void OutputString(const std::wstring&);
+	void Clear();
 };

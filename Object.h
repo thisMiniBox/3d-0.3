@@ -24,6 +24,7 @@ class Camera;
 
 enum ObjectType
 {
+	OT_UNKNOWN,
 	OT_FOLDER,				//文件夹
 	OT_MODEL,				//模型
 	OT_CAMERA,				//摄像机
@@ -35,7 +36,10 @@ enum ObjectType
 	OT_KEYFRAME,			//关键帧
 };
 using namespace vec;
-
+std::wstring ObjectTypeToWstr(ObjectType);
+std::string ObjectTypeTostr(ObjectType);
+ObjectType  StrToObjectType(const std::string&);
+ObjectType  WStrToObjectType(const std::wstring&);
 // Object 类，表示场景中的物体基类
 class Object
 {
@@ -380,7 +384,10 @@ public:
 	Folder() { m_Name = "新建文件夹"; }
 	Folder(std::string NAME);
 	~Folder();
+	Folder* GetParent()const;
+	void SetParent(Folder*);
 	Object* CreateFile_创建文件(std::string Name, int type = OT_FOLDER);
+	std::vector<Object*> GetFileContent()const;
 	void AddFile_添加文件(Object*);
 	//仅寻找当前目录
 	Object* FindFile_寻找文件(const std::string& Name)const;

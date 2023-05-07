@@ -2,7 +2,7 @@
 Controller::Controller()
 {
 	m_RootFolder.SetName("根目录");
-	m_FocusFolder = nullptr;
+	m_FocusFolder = &m_RootFolder;
 	m_FileLoad = false;
 
 	FILEWND = nullptr;
@@ -11,7 +11,7 @@ Controller::Controller()
 	MAINWND = new GDIWND;
 	DETAWND = new DetaileWind;
 	m_hWnd = nullptr;
-
+	m_IOWind = nullptr;
 	m_hInst = nullptr;
 	view = nullptr;
 	
@@ -68,9 +68,13 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		hInst,
 		nullptr);
 	m_hInst = hInst;
+	
 	m_BottomWind = new BottomWindow(hInst, m_hWnd);
 	TEXTWND->CreateWind(m_BottomWind->GethWnd());
-	m_BottomWind->AddWind(TEXTWND->GethWnd(), L"文本窗口");
+	m_BottomWind->AddWind(TEXTWND->GethWnd(), L"消息窗口");
+	m_IOWind = new InputOutput(hInst, m_BottomWind->GethWnd());
+	m_BottomWind->AddWind(m_IOWind->GethWnd(), L"控制台");
+
 	FILEWND->CreateWind(m_hWnd);
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
@@ -94,6 +98,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		nullptr);
 	ShowWindow(m_hWnd, SW_SHOW);
 	UpdateWindow(m_hWnd);
+	Command(L"");
 	return m_hWnd;
 }
 Controller::~Controller()
@@ -107,10 +112,7 @@ Controller::~Controller()
 }
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
-	char szBuf[128];
-	WideCharToMultiByte(CP_ACP, 0, NewName.c_str(), -1, szBuf, 128, NULL, NULL);
-	m_RootFolder.SetFileName(obj, szBuf);
-	//DETAWND->GetTarget()->SetName(szBuf);
+	m_RootFolder.SetFileName(obj, wstr_str(NewName));
 	FILEWND->FixItemName(DETAWND->GetTree(), NewName.c_str());
 }
 HINSTANCE Controller::GethInstance()const
@@ -522,7 +524,17 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	}
 	return Error;
 }
-void Controller::UpdateRightWind()
+void Controller::UpdateFileView()const
 {
-	
+	FILEWND->ShowFolder(m_RootFolder);
+}
+InputOutput* Controller::GetIOWind()const
+{
+	return m_IOWind;
+}
+void Print(const std::string&);
+void Controller::Print(const std::wstring& wstr)
+{
+	m_IOWind->OutputString(wstr);
+	m_IOWind->Clear();
 }

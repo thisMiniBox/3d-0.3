@@ -12,13 +12,17 @@
 #include"BottomWindow.h"
 #include"FileWind.h"
 #include"Object.h"
+#include"xzdll.hpp"
 class Controller
 {
 	HINSTANCE m_hInst;
 	Folder m_RootFolder;
 	Folder* m_FocusFolder;
+	std::wstring m_CurrentPath;
+
 	std::vector<Model*>m_Models;
 	BottomWindow* m_BottomWind;
+	InputOutput* m_IOWind;
 
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 
@@ -41,8 +45,10 @@ public:
 	~Controller();
 	HWND CreateWind(HINSTANCE hInst);
 	HWND GetBottomWindhWnd()const;
+	InputOutput* GetIOWind()const;
 	BottomWindow* GetBottom()const;
 	void Size(int w, int h);
+	
 	//上传消息
 	void OutMessage(const std::string&, const char& mode = _Message);
 	//上传消息
@@ -54,7 +60,10 @@ public:
 	RECT GetRect()const;
 	//修改文件名称
 	void SetFileName(Object*, const std::wstring& NewName);
-
+	//控制器窗口输出
+	void Print(const std::wstring&);
+	bool Command(const std::wstring&);
+	CommandData ParseCommand(const wchar_t* command);
 	//加载文件
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);
 	//返回所有对象
@@ -71,7 +80,8 @@ public:
 	HINSTANCE GethInstance()const;
 	//获取焦点对象
 	Object* GetFocusObject()const;
-	//更新右窗口
-	void UpdateRightWind();
+	//更新窗口
+	void UpdateFileView()const;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
+

@@ -49,16 +49,6 @@ bool DetaileControl_细节菜单控件组合::IsNumeric(const std::wstring& str)
 Name_对象名称控件::Name_对象名称控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
 {
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_CNAME), parent, Dlgproc);
-#ifdef _DEBUG
-	if (m_hWnd == NULL)
-	{
-		DWORD dwErrorCode = GetLastError();
-		TCHAR szBuf[100];
-		_stprintf_s(szBuf, _countof(szBuf), TEXT("CreateDialog函数错误 %d"), dwErrorCode);
-		OutputDebugString(szBuf);
-		std::cout << dwErrorCode << std::endl;
-	}
-#endif // DEBUG
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
 Rotation_旋转控件::Rotation_旋转控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
@@ -108,6 +98,7 @@ void PictureDataToBitmap(const PictureData& pictureData, HBITMAP& hBitmap)
 
     // 分配内存并填充像素数据
     unsigned char* buffer = new unsigned char[bufferSize];
+    memset(buffer, 0, bufferSize);
     unsigned char* dst = buffer;
     for (int y = 0; y < pictureData.m_Height; ++y)
     {

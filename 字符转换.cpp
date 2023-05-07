@@ -2,28 +2,16 @@
 #include"×Ö·û×ª»».h"
 std::string wstr_str(const std::wstring& str)
 {
-	int cLen = WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, NULL, 0, 0, NULL);
-	std::string newBuf;
-	newBuf.resize(cLen + 1);
-	WideCharToMultiByte(CP_ACP, 0, str.c_str(), -1, (char*)newBuf.c_str(), cLen, 0, NULL);
-	return std::move(newBuf);
+    std::string newbuf;
+    int len = WideCharToMultiByte(CP_ACP, 0, str.data(), -1, nullptr, 0, 0, NULL);
+    newbuf.resize(len);
+    WideCharToMultiByte(CP_ACP, 0, str.data(), -1, &newbuf[0], len, 0, NULL);
+    return std::move(newbuf);
 }
-//std::wstring str_wstr(const std::string& s)
-//{
-//	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-//	return converter.from_bytes(s);
-//}
 std::wstring str_wstr(const std::string& s)
 {
-	std::string curlLocale = setlocale(LC_ALL, NULL);
-	setlocale(LC_ALL, "chs");
-	const char* _Source = s.c_str();
-	size_t _Dsize = s.size() + 1;
-	wchar_t* _Dest = new wchar_t[_Dsize];
-	size_t i;
-	mbstowcs_s(&i, _Dest, _Dsize, _Source, s.size());
-	std::wstring result = _Dest;
-	delete[] _Dest;
-	setlocale(LC_ALL, curlLocale.c_str());
-	return result;
+    int len = MultiByteToWideChar(CP_ACP, 0, s.data(), -1, nullptr, 0);
+    std::wstring newbuf(len-1, L'\0');
+    MultiByteToWideChar(CP_ACP, 0, s.data(), -1, &newbuf[0], len-1);
+    return std::move(newbuf);
 }

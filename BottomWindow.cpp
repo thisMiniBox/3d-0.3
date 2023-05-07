@@ -28,7 +28,7 @@ HWND BottomWindow::CreateWind(HWND parent)
 {
 	m_hWnd = CreateWindow(
 		L"BottomWindows", NULL,
-		WS_VISIBLE | WS_CHILD | WS_OVERLAPPEDWINDOW,
+		WS_VISIBLE | WS_CHILD,
 		0, 0, 0, 0,
 		parent, NULL,
 		m_hInst, NULL);
@@ -55,10 +55,12 @@ void BottomWindow::Size(int w, int h)
 {
 	m_w = w;
 	m_h = h;
+	UINT pos = 0;
 	for (auto& c : m_Index)
 	{
-		MoveWindow(c.first, 100 * (m_ChildWindNumber - 1), h - buttonH, 100, buttonH, true);
+		MoveWindow(c.first, 100 * pos, h - buttonH, 100, buttonH, true);
 		MoveWindow(c.second, 0, 0, w, h-buttonH, true);
+		pos++;
 	}
 }
 HWND BottomWindow::Select(HWND hWnd)
@@ -359,4 +361,64 @@ void TextOutWind::UpdateWindowSize(int w, int h)
 {
 	for (int i = 0; i < 4; i++)
 		MoveWindow(m_ChildControl[i], w - 50 * (i + 1), 1, 50, 30, true);
+}
+InputOutput::InputOutput(HINSTANCE hInst, HWND parent)
+{
+	m_hInst = hInst;
+	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_IOWND), parent, WndProc);
+	m_Input = GetDlgItem(m_hWnd, IDC_IO_IN);
+	m_Output = GetDlgItem(m_hWnd, IDC_IO_OUT);
+	m_Enter = GetDlgItem(m_hWnd, IDC_IO_OK);
+}
+InputOutput::~InputOutput()
+{
+	DestroyWindow(m_hWnd);
+}
+void InputOutput::OutputString(const std::wstring& str)
+{
+	// 获取编辑框的当前文本长度
+	int nTextLength = GetWindowTextLength(m_Output);
+
+	// 将新文本追加到编辑框文本的末尾，并在末尾插入回车符
+	SendMessage(m_Output, EM_SETSEL, (WPARAM)nTextLength, (LPARAM)nTextLength);
+	if (nTextLength)
+		SendMessage(m_Output, EM_REPLACESEL, 0, (LPARAM)L"\r\n");
+	SendMessage(m_Output, EM_REPLACESEL, 0, (LPARAM)str.c_str());
+}
+
+std::wstring InputOutput::InputString()
+{
+	int nLineCount = SendMessage(m_Output, EM_GETLINECOUNT, 0, 0);
+	// 获取最后一行的起始位置和长度
+	int nLastLineStart = SendMessage(m_Output, EM_LINEINDEX, nLineCount - 1, 0);
+	int nLastLineLength = SendMessage(m_Output, EM_LINELENGTH, nLastLineStart, 0);
+
+	// 分配内存用于存储最后一行内容
+	WCHAR* szLastLine = new WCHAR[nLastLineLength + 1];
+
+	// 获取最后一行内容
+	SendMessage(m_Output, EM_GETLINE, nLineCount - 1, (LPARAM)szLastLine);
+
+	// 确保字符串以 '\0' 结尾
+	szLastLine[nLastLineLength] = L'\0';
+	std::wstring out = szLastLine;
+	// 释放内存
+	delete[] szLastLine;
+	return out;
+}
+HWND InputOutput::GethWnd()const
+{
+	return m_hWnd;
+}
+void InputOutput::Size()
+{
+	RECT rect;
+	GetClientRect(m_hWnd, &rect);
+	MoveWindow(m_Output, 0, 0, rect.right, rect.bottom-buttonH, true);
+	MoveWindow(m_Input, 0, rect.bottom - buttonH, rect.right - buttonH * 3, buttonH, true);
+	MoveWindow(m_Enter, rect.right - buttonH * 3, rect.bottom - buttonH, buttonH * 3, buttonH, true);
+}
+void InputOutput::Clear()
+{
+	SetWindowText(m_Input, NULL);
 }

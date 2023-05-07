@@ -82,7 +82,6 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         EndPaint(hWnd, &ps);
         break; 
     }
-
     case WM_DESTROY:
     {
         PostQuitMessage(0);
@@ -168,19 +167,19 @@ INT_PTR Position_位置控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         GetWindowRect(hDlg, &hDlgRect);
         HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
         GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
         hWndEdit = GetDlgItem(hDlg, IDC_Y);
         GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
         hWndEdit = GetDlgItem(hDlg, IDC_Z);
         GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
         hWndEdit = GetDlgItem(hDlg, IDC_TITLE);
         GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
         hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
         GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5, EditRect.bottom - EditRect.top, true);
+        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
         break;
     }
     case WM_COMMAND:
@@ -887,6 +886,38 @@ LRESULT CALLBACK BottomWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, L
     case WM_CREATE:
     {
 
+        break;
+    }
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+        break;
+    }
+    return 0;
+}
+
+LRESULT CALLBACK InputOutput::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_COMMAND:
+    {
+        switch (LOWORD(wParam))
+        {
+        case IDC_IO_OK:
+        {
+            wchar_t szText[128];
+            HWND hWndControl = GetDlgItem(hWnd, IDC_IO_IN);
+            GetWindowText(hWndControl, szText, _countof(szText));
+            current_project->Command(szText);
+            SetFocus(hWndControl);
+            break;
+        }
+        }
+        break;
+    }
+    case WM_SIZE:
+    {
+        current_project->GetIOWind()->Size();
         break;
     }
     default:

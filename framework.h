@@ -22,10 +22,11 @@
 #include <tchar.h>
 #include<thread>
 //功能头文件
+#include"WndData.h"
 #include"BottomWindow.h"
 #include"vector_向量.h"
 #include"消息循环声明.h"
 #include"Menu.h"
 #include"Object.h"
 #include"project.h"
-#include"xzdll.h"
+#include"xzdll.hpp"

@@ -31,9 +31,11 @@
 #define IDB_MESH                        148
 #define IDB_UNKNOW                      149
 #define IDD_TRANSFORM                   150
+#define IDD_IOWND                       152
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
+#define IDC_IO_IN                       1008
 #define IDCANCEL                        1022
 #define IDC_CANCEL                      1022
 #define IDC_FileTree                    1023
@@ -80,7 +82,10 @@
 #define IDC_TRAN_POS_Z                  1116
 #define IDC_TRAN_SCA_X                  1117
 #define IDC_TRAN_SCA_Y                  1118
+#define IDC_IO_OUT                      1118
 #define IDC_TRAN_ROT_ANG                1119
+#define IDC_IO_ENTER                    1119
+#define IDC_IO_OK                       1119
 #define IDC_TRAN_ROT_X                  1120
 #define IDC_TRAN_ROT_Z                  1122
 #define IDC_TRAN_POS_Y                  1125
@@ -126,9 +131,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32807
-#define _APS_NEXT_CONTROL_VALUE         1118
+#define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
