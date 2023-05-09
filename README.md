@@ -5,6 +5,7 @@
 glad<br>
 glm<br>
 xlnt<br>
+stb_image<br>
 # 目前已完成
 ```diff
 + 文件与资源管理
