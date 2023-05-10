@@ -1,5 +1,5 @@
 #pragma once
-
+#include<thread>
 #include"字符转换.h"
 #include"WndData.h"
 #include"MainWind.h"
@@ -62,7 +62,7 @@ public:
 	void SetFileName(Object*, const std::wstring& NewName);
 	//控制器窗口输出
 	void Print(const std::wstring&);
-	bool Command(const std::wstring&);
+	bool Command(const std::wstring&, bool ignoreOutput = false);
 	CommandData ParseCommand(const wchar_t* command);
 	//加载文件
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);
@@ -72,16 +72,22 @@ public:
 	HTREEITEM AddObject(Object*, std::string address = "0");
 	//添加对象到此节点下
 	HTREEITEM AddObject(Object* a, HTREEITEM parent);
+	//寻找文件
+	Object* SearchObject(std::wstring filename);
 	//创建物品
-	Object* CreateObject(Folder* parent = nullptr, std::string Name = "", int type = OT_FOLDER);
+	Object* CreateObject(Folder* parent = nullptr, std::string Name = "", ObjectType type = ObjectType::OT_FOLDER);
 	//删除对象
 	void DeleteObject(Object* obj,HTREEITEM=nullptr);
 	//获取当前实例
 	HINSTANCE GethInstance()const;
+	//设置焦点
+	void SetFoucusObjcet(Object*);
 	//获取焦点对象
 	Object* GetFocusObject()const;
 	//更新窗口
 	void UpdateFileView()const;
+	void UpdateDetaileViev()const;
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
+void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path);

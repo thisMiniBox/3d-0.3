@@ -1,6 +1,6 @@
 #include"project.h"
 
-bool Controller::Command(const std::wstring& command)
+bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 {
 	if (!m_FocusFolder)return false;
 	if (command.empty())
@@ -18,53 +18,35 @@ bool Controller::Command(const std::wstring& command)
 		}
 		m_CurrentPath = wstr;
 		wstr += L'>';
-		Print(wstr);
+		if (!ignoreOutput) Print(wstr);
 		return true;
 	}
 	std::wstring OutPut = m_CurrentPath.c_str();
 	OutPut += L'>';
 	OutPut += command;
-	Print(OutPut);
+	if (!ignoreOutput) Print(OutPut);
 	ComData com = ParseCommand(command.c_str());
 	switch (com.Act)
 	{
 	case CommandAct::OPEN_DIRECTORY:
 	{
-		Folder* searchP = nullptr;
-		if (com.Message[0] == L':')
+		Folder* searchP = dynamic_cast<Folder*>(SearchObject(com.Parameter));
+		if (!searchP)
 		{
-			searchP = &m_RootFolder;
-			com.Message = com.Message.substr(1);
-		}
-		else
-			searchP = m_FocusFolder;
-		if (com.Message[0] == L'/')
-			com.Message = com.Message.substr(1);
-		if (com.Message.back() == L'\0')
-			com.Message = com.Message.substr(0, com.Message.size() - 1);
-		if (com.Message.back() != L'/')
-			com.Message += L'/';
-		std::wstring strand;
-		while (!com.Message.empty())
-		{
-			strand = com.Message.substr(0, com.Message.find_first_of(L'/'));
-			if (strand == L"..")
-				searchP = searchP->GetParent();
-			else
-				searchP = dynamic_cast<Folder*>(searchP->FindFile_寻找文件(wstr_str(strand).c_str()));
-			if (!searchP)
-			{
-				Print(L"未找到文件夹");
-				return false;
-			}
-			com.Message = com.Message.substr(com.Message.find_first_of(L'/') + 1);
+			if (!ignoreOutput) Print(L"未找到文件夹");
+			return false;
 		}
 		m_FocusFolder = searchP;
+
 		break;
 	}
-		break;
+	break;
 	case CommandAct::LOAD_FILE:
-		break;
+	{
+		std::thread loadthread(loadModelThread, m_hWnd, this, com.Parameter);
+		loadthread.detach();
+	}
+	break;
 	case CommandAct::LIST_FOLDER:
 	{
 		for (auto cf : m_FocusFolder->GetFileContent())
@@ -72,45 +54,149 @@ bool Controller::Command(const std::wstring& command)
 			OutPut = strwstr(cf->GetName());
 			OutPut += L"    ";
 			OutPut += ObjectTypeToWstr(cf->GetType());
-			Print(OutPut);
+			if (!ignoreOutput) Print(OutPut);
 		}
 	}
-		break;
+	break;
 	case CommandAct::CREATE_FOLDER:
-		break;
+	{
+		if (!CreateObject(m_FocusFolder, wstrstr(com.Parameter).c_str()))
+		{
+			if (!ignoreOutput) Print(L"创建失败");
+			return false;
+		}
+	}
+	break;
 	case CommandAct::CREATE_FILE:
-		break;
+	{
+		if (!CreateObject(m_FocusFolder, wstrstr(com.Parameter.substr(com.Parameter.find_first_of(L' ') + 1)).c_str(), WStrToObjectType(com.Parameter.substr(0, com.Parameter.find_first_of(L' ')))))
+		{
+			if (!ignoreOutput) Print(L"创建失败");
+			return false;
+		}
+	}
+	break;
 	case CommandAct::DELETE_FILE:
-		break;
+	{
+		Object* file = SearchObject(com.Parameter);
+		if (!file)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		DeleteObject(file);
+		UpdateFileView();
+	}
+	break;
 	case CommandAct::OPEN_FILE:
-		break;
+	{
+		Object* file = SearchObject(com.Parameter);
+		if (!file)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+
+	}
+	break;
 	case CommandAct::MOVE_FILE:
-		break;
+	{
+		Object* aim = SearchObject(com.Parameter.substr(0, com.Parameter.find_first_of(L' ')));
+		if (!aim)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		aim->GetParent()->DeleteIndex(aim);
+		com.Parameter = com.Parameter.substr(com.Parameter.find_first_of(L' ') + 1);
+		if (com.Parameter.find_first_of(L'/') == -1)
+		{
+			aim->SetName(wstrstr(com.Parameter));
+			m_FocusFolder->AddFile_添加文件(aim);
+			UpdateFileView();
+			break;
+		}
+		std::string NewName = wstrstr(com.Parameter.substr(com.Parameter.find_first_of(L'/') + 1));
+		Folder* NewFolder = nullptr;
+		NewFolder = dynamic_cast<Folder*>(SearchObject(com.Parameter.substr(0, com.Parameter.find_first_of(L'/'))));
+		if (!NewFolder)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		aim->SetName(NewName);
+		NewFolder->AddFile_添加文件(aim);
+		UpdateFileView();
+	}
+	break;
 	case CommandAct::LIST_SUPPORTED_FILE_TYPES:
-		break;
+	{
+		for (int i = 1; i <= ObjectType::OT_KEYFRAME; i++)
+		{
+			if (!ignoreOutput) Print(ObjectTypeToWstr((ObjectType)i));
+		}
+	}
+	break;
 	case CommandAct::MOVE:
-		break;
+	{
+		GetFocusObject()->Move(vec::str_vector(com.Parameter));
+	}
+	break;
 	case CommandAct::SCALE:
-		break;
+	{
+		GetFocusObject()->SetScale(vec::str_vector(com.Parameter));
+	}
+	break;
 	case CommandAct::ROTATE:
-		break;
+	{
+		Rotation rot;
+		int pos = com.Parameter.find_first_of(' ');
+		if (!pos)
+		{
+			if (!ignoreOutput) Print(L"格式不正确");
+			return false;
+		}
+		rot.angle = std::stod((com.Parameter.substr(0, pos)).c_str());
+		rot.axis = str_vector(com.Parameter.substr(pos + 1));
+		GetFocusObject()->Rotate(rot);
+	}
+	break;
 	case CommandAct::MOVETO:
-		break;
+	{
+		GetFocusObject()->SetPosition(vec::str_vector(com.Parameter));
+	}
+	break;
 	case CommandAct::SCALETO:
-		break;
+	{
+		GetFocusObject()->SetScale(vec::str_vector(com.Parameter));
+	}
+	break;
 	case CommandAct::ROTATIONTO:
-		break;
+	{
+		Rotation rot;
+		int pos = com.Parameter.find_first_of(' ');
+		if (!pos)
+		{
+			if (!ignoreOutput) Print(L"格式不正确");
+			return false;
+		}
+		rot.angle = std::stod((com.Parameter.substr(0, pos)).c_str());
+		rot.axis = str_vector(com.Parameter.substr(pos + 1));
+		GetFocusObject()->SetRotate(rot);
+	}
+	break;
 	case CommandAct::UNKNOWN:
 	{
-		Print(L"未知指令");
+		if (!ignoreOutput) Print(L"未知指令");
 		return false;
 	}
 	default:
-		Print(L"未知指令");
+		if (!ignoreOutput) Print(L"未知指令");
 		return false;
 		break;
 	}
-	Command(L"");
+	Command(L"", ignoreOutput);
+	UpdateDetaileViev();
 	return true;
 }
 CommandData Controller::ParseCommand(const wchar_t* command)
@@ -124,50 +210,50 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 	if (cmd == L"changedirectory" || cmd == L"cd" || cmd == L"opendirectory" || cmd == L"od") {
 		comData.Act = CommandAct::OPEN_DIRECTORY;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
 	else if (cmd == L"loadfile") {
 		comData.Act = CommandAct::LOAD_FILE;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
 	else if (cmd == L"ls" || cmd == L"list") {
 		comData.Act = CommandAct::LIST_FOLDER;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
 	else if (cmd == L"mkdir" || cmd == L"create") {
 		comData.Act = CommandAct::CREATE_FOLDER;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
 	else if (cmd == L"ct") {
 		comData.Act = CommandAct::CREATE_FILE;
 		wss >> arg1 >> arg2;
-		comData.Message = arg1 + L" " + arg2;
+		comData.Parameter = arg1 + L" " + arg2;
 	}
 	else if (cmd == L"rm" || cmd == L"remove" || cmd == L"delete" || cmd == L"dlt") {
 		comData.Act = CommandAct::DELETE_FILE;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
-	else if (cmd == L"mv" || cmd == L"move") {
+	else if (cmd == L"fmv" || cmd == L"fmove") {
 		comData.Act = CommandAct::MOVE_FILE;
 		wss >> arg1 >> arg2;
-		comData.Message = arg1 + L" " + arg2;
+		comData.Parameter = arg1 + L" " + arg2;
 	}
 	else if (cmd == L"of" || cmd == L"openfile") {
 		comData.Act = CommandAct::OPEN_FILE;
 		wss >> arg1;
-		comData.Message = arg1;
+		comData.Parameter = arg1;
 	}
-	else if (cmd == L"fmv" || cmd == L"fmove") {
+	else if (cmd == L"mv" || cmd == L"move") {
 		comData.Act = CommandAct::MOVE;
 		std::wstring x, y, z;
 		std::getline(wss >> std::ws, x, L',');
 		std::getline(wss >> std::ws, y, L',');
 		std::getline(wss >> std::ws, z);
-		comData.Message = x + L" " + y + L" " + z;
+		comData.Parameter = x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"fscale" || cmd == L"scl" || cmd == L"scale") {
 		comData.Act = CommandAct::SCALE;
@@ -175,7 +261,7 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 		std::getline(wss >> std::ws, x, L',');
 		std::getline(wss >> std::ws, y, L',');
 		std::getline(wss >> std::ws, z);
-		comData.Message = x + L" " + y + L" " + z;
+		comData.Parameter = x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"frotate" || cmd == L"rte" || cmd == L"rotate") {
 		comData.Act = CommandAct::ROTATE;
@@ -184,25 +270,25 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 		std::getline(wss >> std::ws, x, L',');
 		std::getline(wss >> std::ws, y, L',');
 		std::getline(wss >> std::ws, z);
-		comData.Message = angle + L" " + x + L" " + y + L" " + z;
+		comData.Parameter = angle + L" " + x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"mvt" || cmd == L"moveto") {
 		comData.Act = CommandAct::MOVETO;
 		std::wstring x, y, z;
 		wss >> x >> y >> z;
-		comData.Message = x + L" " + y + L" " + z;
+		comData.Parameter = x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"sclto" || cmd == L"scaleto") {
 		comData.Act = CommandAct::SCALETO;
 		std::wstring x, y, z;
 		wss >> x >> y >> z;
-		comData.Message = x + L" " + y + L" " + z;
+		comData.Parameter = x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"rteto" || cmd == L"rotationto") {
 		comData.Act = CommandAct::ROTATIONTO;
 		std::wstring angle, x, y, z;
 		wss >> angle >> x >> y >> z;
-		comData.Message = angle + L" " + x + L" " + y + L" " + z;
+		comData.Parameter = angle + L" " + x + L" " + y + L" " + z;
 	}
 	else if (cmd == L"lsftp") {
 		comData.Act = CommandAct::LIST_SUPPORTED_FILE_TYPES;

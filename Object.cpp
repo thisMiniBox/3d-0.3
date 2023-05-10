@@ -90,31 +90,31 @@ std::string ObjectTypeTostr(ObjectType OT)
 }
 ObjectType StrToObjectType(const std::string& str)
 {
-	if (str == "文件夹" || str == "Folder") {
+	if (str == "文件夹" || str == "Folder" || str == "folder") {
 		return OT_FOLDER;
 	}
-	else if (str == "模型" || str == "Model") {
+	else if (str == "模型" || str == "Model" || str == "model") {
 		return OT_MODEL;
 	}
-	else if (str == "摄像机" || str == "Camera") {
+	else if (str == "摄像机" || str == "Camera" || str == "camera") {
 		return OT_CAMERA;
 	}
-	else if (str == "网格" || str == "Mesh") {
+	else if (str == "网格" || str == "Mesh"||str == "mesh") {
 		return OT_MESH;
 	}
-	else if (str == "图片" || str == "Picture") {
+	else if (str == "图片" || str == "Picture"||str == "picture") {
 		return OT_PICTURE;
 	}
-	else if (str == "材质" || str == "Material") {
+	else if (str == "材质" || str == "Material" || str == "material") {
 		return OT_MATERIAL;
 	}
-	else if (str == "点光源" || str == "PointLight") {
+	else if (str == "点光源" || str == "PointLight" || str == "pointlight") {
 		return OT_POINTLIGHT;
 	}
-	else if (str == "平行光源" || str == "ParallelLight") {
+	else if (str == "平行光源" || str == "ParallelLight" || str == "parallellight") {
 		return OT_PARALLELLIGHT;
 	}
-	else if (str == "关键帧" || str == "Keyframe") {
+	else if (str == "关键帧" || str == "Keyframe" || str == "keyframe") {
 		return OT_KEYFRAME;
 	}
 	else {
@@ -122,34 +122,33 @@ ObjectType StrToObjectType(const std::string& str)
 	}
 }
 
-
-ObjectType  WStrToObjectType(const std::wstring& str)
+ObjectType WStrToObjectType(const std::wstring& str)
 {
-	if (str == L"文件夹" || str == L"Folder") {
+	if (str == L"文件夹" || str == L"Folder" || str == L"folder") {
 		return OT_FOLDER;
 	}
-	else if (str == L"模型" || str == L"Model") {
+	else if (str == L"模型" || str == L"Model" || str == L"model") {
 		return OT_MODEL;
 	}
-	else if (str == L"摄像机" || str == L"Camera") {
+	else if (str == L"摄像机" || str == L"Camera" || str == L"camera") {
 		return OT_CAMERA;
 	}
-	else if (str == L"网格" || str == L"Mesh") {
+	else if (str == L"网格" || str == L"Mesh" || str == L"mesh") {
 		return OT_MESH;
 	}
-	else if (str == L"图片" || str == L"Picture") {
+	else if (str == L"图片" || str == L"Picture" || str == L"picture") {
 		return OT_PICTURE;
 	}
-	else if (str == L"材质" || str == L"Material") {
+	else if (str == L"材质" || str == L"Material" || str == L"material") {
 		return OT_MATERIAL;
 	}
-	else if (str == L"点光源" || str == L"PointLight") {
+	else if (str == L"点光源" || str == L"PointLight" || str == L"pointlight") {
 		return OT_POINTLIGHT;
 	}
-	else if (str == L"平行光源" || str == L"ParallelLight") {
+	else if (str == L"平行光源" || str == L"ParallelLight" || str == L"parallellight") {
 		return OT_PARALLELLIGHT;
 	}
-	else if (str == L"关键帧" || str == L"Keyframe") {
+	else if (str == L"关键帧" || str == L"Keyframe" || str == L"keyframe") {
 		return OT_KEYFRAME;
 	}
 	else {
@@ -268,6 +267,7 @@ void Folder::ClearFolder_清空文件夹()
 }
 void Folder::AddFile_添加文件(Object* obj)
 {
+	if (!obj)return;
 	Folder* fold = dynamic_cast<Folder*>(obj);
 	if (fold)
 		fold->SetParent(this);
@@ -287,14 +287,9 @@ void Folder::AddFile_添加文件(Object* obj)
 	obj->SetName(name);
 	m_Child.insert(std::make_pair(name, obj));
 }
-void Folder::SetParent(Folder* parent)
-{
-	if (parent != this)
-		m_Parent = parent;
-}
 Folder* Folder::GetParent()const
 {
-	return m_Parent;
+	return m_ParentFolder;
 }
 std::vector<Object*> Folder::GetFileContent()const
 {
@@ -304,69 +299,47 @@ std::vector<Object*> Folder::GetFileContent()const
 			out.push_back(c.second);
 	return out;
 }
-Object* Folder::CreateFile_创建文件(std::string Name, int type)
+//template<typename T>
+//T* Folder::CreateFile_创建文件(std::string Name)
+//{
+//	T* a;
+//	if (Name.empty() || Name == "")
+//	{
+//		a = new T;
+//		AddFile_添加文件(a);
+//	}
+//	else
+//	{
+//		a = new T(Name);
+//		AddFile_添加文件(a);
+//	}
+//	a->SetParent(this);
+//	return a;
+//}
+void Object::SetParent(Folder* p)
 {
-	Object* out = nullptr;
-	switch (type)
-	{
-	case OT_FOLDER:
-	{
-		Folder* a;
-		if (Name.empty())
-		{
-			a = new Folder("新建文件夹");
-			m_Child.insert(std::make_pair("新建文件夹", a));
-		}
-		else
-		{
-			a = new Folder(Name);
-			m_Child.insert(std::make_pair(Name, a));
-		}
-		a->m_Parent = this;
-		
-		out = a;
-		break;
-	}
-	case OT_MODEL:
-	{
-		//OldModelClass* a;
-		//if (Name.empty())
-		//{
-		//	a = new OldModelClass("新建模型");
-		//	m_Child.insert(std::make_pair("新建模型", a));
-		//}
-		//else
-		//{
-		//	a = new OldModelClass(Name);
-		//	m_Child.insert(std::make_pair(Name, a));
-		//}
-		//out = a;
-		break;
-	}
-	case OT_CAMERA:
-	{
-		Camera* a;
-		if (Name.empty())
-		{
-			a = new Camera;
-			m_Child.insert(std::make_pair("摄像头", a));
-		}
-		else
-		{
-			a = new Camera(Name, Vector(0, 0, 10), Vector(0, 0, 0), Vector(0, 1, 0), 1.0f);
-			m_Child.insert(std::make_pair(Name, a));
-		}
-		out = a;
-		break;
-	}
-	default:
-		break;
-	}
-	return out;
+	m_ParentFolder = p;
+}
+Folder* Object::GetParent()const
+{
+	return m_ParentFolder;
 }
 ObjectType Folder::GetType()const
 {
 	return OT_FOLDER;
+}
+void Folder::DeleteIndex(Object* child)
+{
+	if (!child)
+		return;
+	for (auto& i : m_Child)
+	{
+		if (i.second == child)
+		{
+			m_Child.erase(i.first);
+			return;
+		}
+	}
 }
 void Folder::DeleteFile_删除文件(Object* obj)
 {
@@ -393,13 +366,13 @@ void Folder::DeleteFile_删除文件(Object* obj)
 }
 // 默认构造函数
 Object::Object()
-	: m_Name("新建物品"), m_Selected(false)
+	: m_Name("新建物品"), m_Selected(false), m_ParentFolder(nullptr)
 {
 }
 
 // 构造函数，可指定物体名称
 Object::Object(std::string nam)
-	: m_Name(nam), m_Selected(false)
+	: m_Name(nam), m_Selected(false), m_ParentFolder(nullptr)
 {
 }
 
@@ -433,6 +406,9 @@ Vector Object::GetScale() const
 void Object::SetScale(const Vector3&)
 {
 }
+void Object::Scale(const Vector3&)
+{
+}
 Vector3 Model::GetScale()const
 {
 	return getScale();
@@ -440,6 +416,19 @@ Vector3 Model::GetScale()const
 void Model::SetScale(const Vector3& scale)
 {
 	setScale(scale);
+}
+void Model::Scale(const Vector3& sca)
+{
+	scale(sca);
+}
+PointLight::PointLight(const std::string& name)
+{
+	m_Intensity = 100;
+	m_LightColor = Vector(255, 255, 255);
+	m_Position = Vector(0, 0, 0);
+	m_Range = 0.1;
+	m_SoftShadow = 0.01;
+	m_Name = name;
 }
 // 获取物体世界坐标，返回默认值
 Vector Object::GetWorldPosition() const
@@ -456,7 +445,9 @@ void Object::SetPosition(const vec::Vector&)
 void Object::SetRotate(const Rotation&)
 {
 }
-
+void Object::Rotate(const Rotation&)
+{
+}
 // 移动物体，空实现
 void Object::Move(const Vector3&)
 {
@@ -644,6 +635,10 @@ Model::Model()
 	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
 	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
 {
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 	m_Name = "新建模型";
 }
 Model::Model(std::string& name)
@@ -651,6 +646,10 @@ Model::Model(std::string& name)
 	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
 {
 	m_Name = name;
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 }
 Model::~Model() 
 {
@@ -662,27 +661,42 @@ Model::~Model()
 void Model::move(const Vector3& offset, bool add) {
 	if (add) {
 		m_Position += offset;
+		m_Transform = glm::translate(m_Transform, (glm::vec3)offset);
 	}
 	else {
 		m_Position = offset;
+		m_Transform = glm::mat4(1.0f);
+		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 	}
 }
 
 void Model::scale(const Vector3& scaling, bool multiply) {
 	if (multiply) {
 		m_Scale = m_Scale * scaling;
+		m_Transform = glm::scale(m_Transform, (glm::vec3)scaling);
 	}
 	else {
 		m_Scale = scaling;
+		m_Transform = glm::mat4(1.0f);
+		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 	}
 }
 
 void Model::rotate(const Rotation& quaternion, bool multiply) {
 	if (multiply) {
 		m_Rotate = m_Rotate.compose(quaternion);
+		m_Transform = glm::rotate(m_Transform, (float)quaternion.angle, (glm::vec3)quaternion.axis);
 	}
 	else {
 		m_Rotate = quaternion;
+		m_Transform = glm::mat4(1.0f);
+		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 	}
 }
 
@@ -713,6 +727,10 @@ Vector3 Model::getPosition() const {
 
 void Model::setPosition(const Vector3& position) {
 	m_Position = position;
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 }
 
 Vector3 Model::getScale() const {
@@ -721,6 +739,10 @@ Vector3 Model::getScale() const {
 
 void Model::setScale(const Vector3& scaling) {
 	m_Scale = scaling;
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 }
 
 Rotation Model::getRotation() const {
@@ -729,6 +751,10 @@ Rotation Model::getRotation() const {
 
 void Model::setRotation(const Rotation& quaternion) {
 	m_Rotate = quaternion;
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 }
 
 Vector3 Model::getWorldPosition() const {
@@ -777,6 +803,10 @@ Rotation Model::GetRotate()const
 void Model::SetRotate(const Rotation& r)
 {
 	setRotation(r);
+}
+void Model::Rotate(const Rotation& r)
+{
+	rotate(r);
 }
 void Model::SetPosition(const vec::Vector& v)
 {
@@ -858,7 +888,7 @@ void Model::addChildModel(Model* model) {
 	model->m_Parent = this;
 	m_ChildModel.push_back(model);
 }
-void Model::SetParent(Model* model)
+void Model::SetModelParent(Model* model)
 {
 	m_Parent = model;
 }
@@ -890,6 +920,12 @@ const std::vector<Vertex>& Mesh::GetVertexData()
 void Model::SetMesh(Mesh* mesh)
 {
 	m_ModelMesh = mesh;
+}
+glm::mat4 Model::GetGLTransform()const
+{
+	if (m_Parent)
+		return m_Parent->GetGLTransform() * m_Transform;
+	return m_Transform;
 }
 void Model::removeChildModel(Model* model) 
 {

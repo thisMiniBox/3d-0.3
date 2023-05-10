@@ -96,6 +96,10 @@ void FileWind::DeleteItem(HTREEITEM a)
 {
     m_FileTree_文件树.DeleteItem_删除节点(a);
 }
+HTREEITEM FileWind::GetItemParent(HTREEITEM item)
+{
+    return TreeView_GetParent(m_Tree, item);
+}
 HTREEITEM FileWind::GetSelectedItem()
 {
     return m_FileTree_文件树.GetItem_获取被选中节点();

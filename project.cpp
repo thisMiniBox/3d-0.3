@@ -68,7 +68,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		hInst,
 		nullptr);
 	m_hInst = hInst;
-	
+
 	m_BottomWind = new BottomWindow(hInst, m_hWnd);
 	TEXTWND->CreateWind(m_BottomWind->GethWnd());
 	m_BottomWind->AddWind(TEXTWND->GethWnd(), L"消息窗口");
@@ -99,6 +99,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	ShowWindow(m_hWnd, SW_SHOW);
 	UpdateWindow(m_hWnd);
 	Command(L"");
+	DETAWND->SetView(&m_RootFolder);
 	return m_hWnd;
 }
 Controller::~Controller()
@@ -112,7 +113,7 @@ Controller::~Controller()
 }
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
-	m_RootFolder.SetFileName(obj, wstr_str(NewName));
+	m_FocusFolder->SetFileName(obj, wstr_str(NewName));
 	FILEWND->FixItemName(DETAWND->GetTree(), NewName.c_str());
 }
 HINSTANCE Controller::GethInstance()const
@@ -147,20 +148,106 @@ HTREEITEM Controller::AddObject(Object* a, HTREEITEM parent)
 	m_RootFolder.AddFile_添加文件(a);
 	return FILEWND->AddItem(*a, parent);
 }
-Object* Controller::CreateObject(Folder* parent, std::string name, int type)
+Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType type)
 {
 	Object* out = nullptr;
-	if (!parent)
-		out = m_RootFolder.CreateFile_创建文件(name, type);
-	else
-		out = parent->CreateFile_创建文件(name, type);
-	HTREEITEM New = FILEWND->AddItem(*out, DETAWND->GetTree());
-	DETAWND->SetView(out);
-	DETAWND->SetTree(New);
-	FILEWND->ExploreFolder(New);
-	//FILEWND->ShowFolder(m_RootFolder);
+	switch (type)
+	{
+	case OT_FOLDER:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Folder>(name);
+		else
+			out = parent->CreateFile_创建文件<Folder>(name);
+	}
+	break;
+
+	case OT_MODEL:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Model>(name);
+		else
+			out = parent->CreateFile_创建文件<Model>(name);
+	}
+	break;
+
+	case OT_CAMERA:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Camera>(name);
+		else
+			out = parent->CreateFile_创建文件<Camera>(name);
+	}
+	break;
+
+	case OT_MESH:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Mesh>(name);
+		else
+			out = parent->CreateFile_创建文件<Mesh>(name);
+	}
+	break;
+
+	case OT_PICTURE:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Picture>(name);
+		else
+			out = parent->CreateFile_创建文件<Picture>(name);
+	}
+	break;
+
+	case OT_MATERIAL:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<Material>(name);
+		else
+			out = parent->CreateFile_创建文件<Material>(name);
+	}
+	break;
+
+	case OT_POINTLIGHT:
+	{
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<PointLight>(name);
+		else
+			out = parent->CreateFile_创建文件<PointLight>(name);
+	}
+	break;
+
+	case OT_PARALLELLIGHT:
+	{
+		//if (!parent)
+		//	out = m_RootFolder.CreateFile_创建文件<ParallelLight>(name);
+		//else
+		//	out = parent->CreateFile_创建文件<ParallelLight>(name);
+	}
+	break;
+	case OT_KEYFRAME:
+	{
+		//if (!parent)
+		//	out = m_RootFolder.CreateFile_创建文件<KeyFrame>(name);
+		//else
+		//	out = parent->CreateFile_创建文件<KeyFrame>(name);
+	}
+	break;
+
+	default:
+		return nullptr;
+		break;
+	}
+	if (out != nullptr)
+	{
+		HTREEITEM New = FILEWND->AddItem(*out, (DETAWND->GetTree()));
+		DETAWND->SetView(out);
+		DETAWND->SetTree(New);
+		FILEWND->ExploreFolder(New);
+	}
+
 	return out;
 }
+
 RECT Controller::GetRect()const
 {
 	RECT rect;
@@ -341,7 +428,19 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 					if (!NewModel)return ReturnedOfLoadFile::_DataError;
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_of(' ');
-					NewModel->GetMesh()->m_FaceIndices.push_back(faceData(FileData));
+					FileData += ' ';
+					std::vector<std::string>vertexIncludeInLine;
+					while (1)
+					{
+						charLocate = FileData.find_first_of(' ');
+						if (charLocate == 0xFFFFFFFFFFFFFFFF)break;
+						vertexIncludeInLine.push_back(FileData.substr(0, charLocate));
+						FileData = FileData.substr(charLocate + 1);
+					}
+					for (int i = 2; i < vertexIncludeInLine.size(); i++)
+					{
+						NewModel->GetMesh()->m_FaceIndices.push_back(faceData(vertexIncludeInLine[0] + ' ' + vertexIncludeInLine[i - 1] + ' ' + vertexIncludeInLine[i]));
+					}
 				}
 				else if (w == "g" || w == "o" || w == "mg")
 				{
@@ -498,9 +597,9 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 
 	Model* MObj = new Model();
 	m_RootFolder.AddFile_添加文件(MObj);
-	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件(filePath.substr(pos + 1) + "资源", OT_FOLDER));
-	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件("网格文件夹", OT_FOLDER));
-	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件("材质文件夹", OT_FOLDER));
+	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件<Folder>(filePath.substr(pos + 1) + "资源"));
+	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("网格文件夹"));
+	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("材质文件夹"));
 	MObj->SetName(filePath.substr(pos + 1));
 	for (auto& child : Models)
 	{
@@ -528,6 +627,10 @@ void Controller::UpdateFileView()const
 {
 	FILEWND->ShowFolder(m_RootFolder);
 }
+void Controller::UpdateDetaileViev()const
+{
+	DETAWND->UpDate();
+}
 InputOutput* Controller::GetIOWind()const
 {
 	return m_IOWind;
@@ -537,4 +640,103 @@ void Controller::Print(const std::wstring& wstr)
 {
 	m_IOWind->OutputString(wstr);
 	m_IOWind->Clear();
+}
+void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path)
+{
+	current_project->m_FileLoad = true;
+	unsigned int Error = current_project->LoadFile(path);
+	if (Error == ReturnedOfLoadFile::_Succese)
+	{
+		current_project->OutMessage(L"模型加载完毕：" + path, _Message);
+		current_project->Model_att = 0x01;
+	}
+	else if ((Error & 0xff) != 0)
+	{
+		switch (Error & 0xff)
+		{
+		case ReturnedOfLoadFile::_UnknownFormat:
+			current_project->OutMessage(L"未知文件格式：" + path, _Error);
+			break;
+
+		case ReturnedOfLoadFile::_DataError:
+			current_project->OutMessage(L"数据错误：" + path, _Error);
+			break;
+
+		case ReturnedOfLoadFile::_FailToOpenFile:
+			current_project->OutMessage(L"无法打开文件：" + path, _Error);
+			break;
+
+		case ReturnedOfLoadFile::_FailedToCreateFile:
+			current_project->OutMessage(L"文件创建失败：" + path, _Error);
+			break;
+		default:
+			current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
+			break;
+		}
+	}
+	else
+	{
+		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
+		{
+			current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
+		}
+		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
+		{
+			current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
+		}
+		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
+		{
+			current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
+		}
+	}
+	current_project->m_FileLoad = false;
+	return;
+}
+Object* Controller::SearchObject(std::wstring filename)
+{
+	if (filename.empty())return nullptr;
+	Folder* searchP = nullptr;
+	if (filename[0] == L':')
+	{
+		searchP = &m_RootFolder;
+		filename = filename.substr(1);
+	}
+	else
+		searchP = m_FocusFolder;
+	if (filename[0] == L'/')
+		filename = filename.substr(1);
+	if (filename.back() == L'\0')
+		filename = filename.substr(0, filename.size() - 1);
+	if (filename.back() != L'/')
+		filename += L'/';
+	std::wstring strand;
+	Object* out = nullptr;
+	while (!filename.empty())
+	{
+		if (!searchP)return nullptr;
+		strand = filename.substr(0, filename.find_first_of(L'/'));
+		if (strand == L"..")
+			out = searchP->GetParent();
+		else
+			out = (searchP->FindFile_寻找文件(wstr_str(strand)));
+		if (!out)
+		{
+			return nullptr;
+		}
+		searchP = dynamic_cast<Folder*>(out);
+		filename = filename.substr(filename.find_first_of(L'/') + 1);
+	}
+	return out;
+}
+
+void Controller::SetFoucusObjcet(Object* aim)
+{
+	if (aim)
+	{
+		if (aim->GetParent())
+			m_FocusFolder = aim->GetParent();
+		else
+			m_FocusFolder = &m_RootFolder;
+		DETAWND->SetView(aim);
+	}
 }

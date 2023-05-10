@@ -14,7 +14,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             {
                 Object* o = current_project->FILEWND->GetMousePositionItemData();
                 if (!o)break;
-                current_project->DETAWND->SetView(o);
+                current_project->SetFoucusObjcet(o);
                 current_project->DETAWND->SetTree(current_project->FILEWND->GetMousePositionItem());
             }
             break;

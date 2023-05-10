@@ -39,6 +39,6 @@ enum class CommandAct
 typedef struct CommandData
 {
     CommandAct Act;
-    std::wstring Message;
+    std::wstring Parameter;
     CommandData():Act(CommandAct::UNKNOWN){}
 }ComData;

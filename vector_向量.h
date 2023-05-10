@@ -1,10 +1,13 @@
 #pragma once
+#include<Windows.h>
 #include<iostream>
 #include <iomanip>
 #include<cassert>
+#include<string>
 #include<math.h>
 #include <directxmath.h>
 #include<glm/glm.hpp>
+#include<sstream>
 #define PI 3.14159265358979323846
 namespace vec {
     class Vector {
@@ -196,7 +199,10 @@ namespace vec {
             return glm::vec3(x, y, z);
         }
     };
+
     typedef Vector Vector3;
+    Vector3 str_vector(std::string);
+    Vector3 str_vector(std::wstring svec);
     class Vector2 {
         // 私有成员变量
     public:

@@ -53,8 +53,9 @@ void DetaileWind::SetRect(RECT Rect)
     int width = m_rect.right - m_rect.left;   // 父窗口的宽度
     for (const auto& i : m_ChildControl)
     {
-        if (i.second->IsVisible())
-        y += i.second->MoveWind_移动窗口(x, y, width);
+        if (i.second)
+            if (i.second->IsVisible())
+                y += i.second->MoveWind_移动窗口(x, y, width);
     }
 }
 HWND DetaileWind::CreateWind(HWND Parent)
@@ -120,6 +121,7 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
     {
         delete m_ChildControl[type];
         m_ChildControl[type] = nullptr;
+        m_ChildControl.erase(type);
     }
     if (!m_ChildControl[type])
         switch (type)

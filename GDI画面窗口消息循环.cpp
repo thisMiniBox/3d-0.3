@@ -52,18 +52,22 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
     case WM_PAINT:
     {
+
         current_project->MAINWND->Draw(current_project->GetModels(), *current_project->view);
         break;
     }
     case WM_TIMER:
     {
+        MSG msg;
+        while (PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
+        {
+        }
         if ((UINT_PTR)wParam == frameRateController)
         {
             InvalidateRect(hWnd, NULL, false);
         }
         break;
     }
-
     case WM_MOUSEMOVE:
     {
         if (Mouse_ÊÇ·ñÊó±ê¿ØÖÆ)
@@ -162,14 +166,7 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             POINT pt = { current_project->MAINWND->GetRect().right / 2, current_project->MAINWND->GetRect().bottom / 2 };
             ClientToScreen(hWnd, &pt);
             SetCursorPos(pt.x, pt.y);
-            if( current_project->MAINWND->GetType() != MGDIWND)
-            frameRateController = SetTimer(hWnd, 0, 1000/60, NULL);
-            else
-                InvalidateRect(hWnd, NULL, false);
-        }
-        else
-        {
-            KillTimer(hWnd, frameRateController);
+            InvalidateRect(hWnd, NULL, false);
         }
         break;
     }
@@ -184,6 +181,17 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         GetClientRect(hWnd, &m_rect);
         current_project->MAINWND->SetRect(m_rect);
         current_project->view->SetAspectRatio((float)LOWORD(lParam)/HIWORD(lParam));
+        break;
+    }
+    case WM_CREATE:
+    {
+        if (current_project->MAINWND->GetType() != MGDIWND)
+            frameRateController = SetTimer(hWnd, 0, 1000 / 60, NULL);
+        break;
+    }
+    case WM_CLOSE:
+    {
+        KillTimer(hWnd, frameRateController);
         break;
     }
     default:

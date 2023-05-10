@@ -75,6 +75,8 @@ class InputOutput
 	HWND m_Output;
 	HWND m_Enter;
 	HINSTANCE m_hInst;
+	UINT m_MaxText;
+	UINT m_CurrentText;
 public:
 	InputOutput(HINSTANCE,HWND parent);
 	~InputOutput();
@@ -82,6 +84,7 @@ public:
 	void Size();
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	std::wstring InputString();
+	void DeleteLineText(int line);
 	void OutputString(const std::wstring&);
 	void Clear();
 };

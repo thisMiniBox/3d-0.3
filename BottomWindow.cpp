@@ -362,7 +362,7 @@ void TextOutWind::UpdateWindowSize(int w, int h)
 	for (int i = 0; i < 4; i++)
 		MoveWindow(m_ChildControl[i], w - 50 * (i + 1), 1, 50, 30, true);
 }
-InputOutput::InputOutput(HINSTANCE hInst, HWND parent)
+InputOutput::InputOutput(HINSTANCE hInst, HWND parent) :m_CurrentText(0), m_MaxText(128)
 {
 	m_hInst = hInst;
 	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_IOWND), parent, WndProc);
@@ -384,6 +384,48 @@ void InputOutput::OutputString(const std::wstring& str)
 	if (nTextLength)
 		SendMessage(m_Output, EM_REPLACESEL, 0, (LPARAM)L"\r\n");
 	SendMessage(m_Output, EM_REPLACESEL, 0, (LPARAM)str.c_str());
+	m_CurrentText++;
+	if (m_CurrentText > m_MaxText)
+	{
+		DeleteLineText(0);
+		m_CurrentText--;
+	}
+}
+void InputOutput::DeleteLineText(int line)
+{
+	// 先获取当前编辑框的总行数
+	int nLineCount = SendMessage(m_Output, EM_GETLINECOUNT, 0, 0);
+
+	// 如果删除行号大于当前行数，则将删除行号设为最大行数
+	if (line >= nLineCount) {
+		line = nLineCount - 1;
+	}
+
+	// 获取当前编辑框中第一行的字符索引
+	int nIndex = SendMessage(m_Output, EM_LINEINDEX, 0, 0);
+
+	// 遍历每一行，直到找到要删除的行
+	for (int i = 0; i < line && i < nLineCount; i++) {
+		nIndex = SendMessage(m_Output, EM_LINEINDEX, nIndex + 1, 0);
+	}
+
+	// 获取要删除行的长度
+	int nLineLen = SendMessage(m_Output, EM_LINELENGTH, nIndex, 0);
+
+	// 将编辑框设置为可写模式
+	SendMessage(m_Output, EM_SETREADONLY, FALSE, 0);
+
+	// 如果要删除的不是最后一行，则将当前行的结尾换行符也删除
+	if (line < nLineCount - 1) {
+		nLineLen += 2; // 加上结尾的换行符长度
+	}
+
+	// 删除指定行的文本（包括结尾的换行符）
+	SendMessage(m_Output, EM_SETSEL, nIndex, nIndex + nLineLen);
+	SendMessage(m_Output, WM_CLEAR, 0, 0);
+
+	// 将编辑框设置为只读模式
+	SendMessage(m_Output, EM_SETREADONLY, TRUE, 0);
 }
 
 std::wstring InputOutput::InputString()

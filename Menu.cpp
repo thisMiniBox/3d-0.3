@@ -2,57 +2,7 @@
 #include"Menu.h"
 #include"resource.h"
 Controller* cp = nullptr;
-void loadModelThread(HWND hWnd,Controller* current_project,std::wstring path)
-{
-    current_project->m_FileLoad = true;
-    unsigned int Error = current_project->LoadFile(path);
-    if (Error == ReturnedOfLoadFile::_Succese)
-    {
-        current_project->OutMessage(L"模型加载完毕：" + path, _Message);
-        current_project->Model_att = 0x01;
-    }
-    else if ((Error & 0xff) != 0)
-    {
-        switch (Error & 0xff)
-        {
-        case ReturnedOfLoadFile::_UnknownFormat:
-            current_project->OutMessage(L"未知文件格式：" + path, _Error);
-            break;
 
-        case ReturnedOfLoadFile::_DataError:
-            current_project->OutMessage(L"数据错误：" + path, _Error);
-            break;
-
-        case ReturnedOfLoadFile::_FailToOpenFile:
-            current_project->OutMessage(L"无法打开文件：" + path, _Error);
-            break;
-
-        case ReturnedOfLoadFile::_FailedToCreateFile:
-            current_project->OutMessage(L"文件创建失败：" + path, _Error);
-            break;
-        default:
-            current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
-            break;
-        }
-    }
-    else
-    {
-        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
-        {
-            current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
-        }
-        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
-        {
-            current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
-        }
-        if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
-        {
-            current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
-        }
-    }
-    current_project->m_FileLoad = false;
-    return;
-}
 LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, Controller* current_project)
 {
     cp = current_project;

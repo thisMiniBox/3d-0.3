@@ -23,6 +23,7 @@ public:
 	//非正数都会被当作0处理
 	HTREEITEM AddItem(const Object&, const std::string& address);
 	HTREEITEM AddItem(const Object&, HTREEITEM parent = TVI_ROOT);
+	HTREEITEM GetItemParent(HTREEITEM);
 	void DeleteItem(HTREEITEM);
 	HTREEITEM GetSelectedItem();
 	Object* GetSelectedItemData();

@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include"vector_向量.h"
 #include"字符转换.h"
-
+#include<glm/gtc/matrix_transform.hpp>
 //声明类（方便定位）
 class Object;
 class Folder;
@@ -45,6 +45,7 @@ class Object
 {
 protected:
 	bool m_Selected;
+	Folder* m_ParentFolder;
 	std::string m_Name;  // 物体名称
 public:
 	// 默认构造函数
@@ -53,6 +54,9 @@ public:
 	Object(std::string nam);
 	// 析构函数
 	virtual ~Object();
+	
+	void SetParent(Folder*); 
+	Folder* GetParent()const;
 	// 获取物体名称
 	const std::string GetName() const;
 	// 设置物体名称
@@ -75,10 +79,14 @@ public:
 	virtual Rotation GetRotate()const;
 	// 设定旋转
 	virtual void SetRotate(const Rotation&);
+	//旋转
+	virtual void Rotate(const Rotation&);
 	// 设置物体位置，空实现
 	virtual void SetPosition(const vec::Vector&);
 	// 设置缩放
 	virtual void SetScale(const Vector3&);
+	//缩放
+	virtual void Scale(const Vector3&);
 	// 移动物体，空实现
 	virtual void Move(const Vector3&);
 	//删除关联物体
@@ -333,8 +341,8 @@ public:
 	void removeChildModel(Model* model);
 
 	//修改父模型
-	void SetParent(Model* model);
-	Model* GetParent() const{ return m_Parent; }
+	void SetModelParent(Model* model);
+	Model* GetModelParent() const{ return m_Parent; }
 	//材质
 	void SetMaterial(Material* material) { m_Material = material; }
 	Material* GetMaterial() const{ return m_Material; }
@@ -343,6 +351,9 @@ public:
 	void SetMesh(Mesh*);
 	const std::vector<Model*>& GetChildModel()const { return m_ChildModel; }
 	virtual ObjectType GetType() const override { return OT_MODEL; }
+
+	glm::mat4 GetGLTransform()const;
+
 	virtual void Move(const Vector3&)override;
 	// 获取物体位置，返回默认值
 	virtual Vector GetPosition() const override;
@@ -352,6 +363,8 @@ public:
 	virtual Rotation GetRotate()const override;
 	// 设定旋转
 	virtual void SetRotate(const Rotation&)override;
+	//旋转
+	virtual void Rotate(const Rotation&)override;
 	// 设置物体位置
 	virtual void SetPosition(const vec::Vector&)override;
 	//删除关联物体
@@ -360,6 +373,8 @@ public:
 	virtual Vector3 GetScale()const override;
 	//设置缩放
 	virtual void SetScale(const Vector3&)override;
+	//缩放
+	virtual void Scale(const Vector3&)override;
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 private:
@@ -371,7 +386,7 @@ private:
 	Vector3 m_Position;
 	Vector3 m_Scale;
 	Rotation m_Rotate;
-
+	glm::mat4 m_Transform;
 	std::vector<FACE> m_GDI_TriFaceData;
 };
 #include<unordered_map>
@@ -379,14 +394,28 @@ private:
 class Folder : public Object
 {
 	std::unordered_map<std::string,Object*> m_Child;
-	Folder* m_Parent;
 public:
 	Folder() { m_Name = "新建文件夹"; }
 	Folder(std::string NAME);
 	~Folder();
 	Folder* GetParent()const;
-	void SetParent(Folder*);
-	Object* CreateFile_创建文件(std::string Name, int type = OT_FOLDER);
+	template<typename T>
+	T* CreateFile_创建文件(std::string Name)
+	{
+		T* a;
+		if (Name.empty() || Name == "")
+		{
+			a = new T;
+			AddFile_添加文件(a);
+		}
+		else
+		{
+			a = new T(Name);
+			AddFile_添加文件(a);
+		}
+		a->SetParent(this);
+		return a;
+	}
 	std::vector<Object*> GetFileContent()const;
 	void AddFile_添加文件(Object*);
 	//仅寻找当前目录
@@ -395,6 +424,7 @@ public:
 	std::vector<Object*> GetTheCurrentDirectoryFile()const;
 	void ClearFolder_清空文件夹();
 	void DeleteFile_删除文件(Object*);
+	void DeleteIndex(Object*);
 	std::vector<Model*> GetAllModleFile_找到所有模型()const;
  	virtual ObjectType GetType()const override;
 	virtual Vector GetPosition()const override { return Vector(0, 0, 0); }
@@ -416,8 +446,8 @@ private:
 public:
 	Camera();
 	Camera(std::string name,
-		Vector3 Position, Vector3 Target, Vector3 Cameraup,
-		float aspect_ratio, float field_of_view=45.0f, float near_clip_plane=0.01f, float far_clip_plane=150.0f);
+		Vector3 Position = (3, 3, 3), Vector3 Target = (0, 0, 0), Vector3 Cameraup = Vector(0, 1, 0),
+		float aspect_ratio = (4.0f / 3), float field_of_view = 45.0f, float near_clip_plane = 0.01f, float far_clip_plane = 150.0f);
 	virtual void SetPosition(const vec::Vector& p)override { m_Position = p; SetDirection(m_Target - p);}
 	void SetDirection(const Vector&);
 	void SetTarget(const Vector3&);
@@ -450,6 +480,7 @@ class PointLight : public Object
 {
 public:
 	PointLight();
+	PointLight(const std::string&);
 	~PointLight();
 
 	ObjectType GetType() const override;

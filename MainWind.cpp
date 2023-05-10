@@ -475,7 +475,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glm::mat4 view = camera.GetGLMView();
     m_ModelShader->setMat4("projection", projection);
     m_ModelShader->setMat4("view", view);
-
+    
     // world transformation
     glm::mat4 model = glm::mat4(1.0f);
     m_ModelShader->setMat4("model", model);
@@ -486,11 +486,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
         if (!model->GetMesh())continue;
         if (m_models[model] == nullptr)
             m_models[model] = new OldModelBuffer(model, m_ModelShader);
-        modelP = glm::mat4(1.0f);
-        
-        modelP = glm::translate(modelP, (glm::vec3)model->GetWorldPosition());
-        modelP = glm::scale(modelP, (glm::vec3)model->getScale());
-        modelP = glm::rotate(modelP, (float)(model->GetRotate().angle), (glm::vec3)(model->GetRotate().axis.Normalize()));
+        modelP = model->GetGLTransform();
         m_models[model]->SetModelMatrix(modelP);
         m_models[model]->Draw();
     }
