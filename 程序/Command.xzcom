@@ -1,0 +1,12 @@
+loadfile Tree\Tree.obj
+openfile Tree.obj
+move 2,2,2
+sleep 2000
+moveto 0,0,0
+sleep 2000
+move 1,0,0
+sleep 1000
+move 0.5,.0.5,0
+create folder 命令新建文件夹
+sleep 2000
+delete 命令新建文件夹
