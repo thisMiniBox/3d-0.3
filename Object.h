@@ -191,6 +191,7 @@ enum ReturnedOfLoadFile :unsigned int
 	_FailToOpenFile = 0b0100,
 	_FailedToCreateFile = 0b1000,
 	//模型加载细节
+	_ModelFail=0xfffff800,
 	_SuccessfullyLoadedVertex = 0x0100,
 	_SuccessfullyLoadedMaterialFile = 0x0200,
 	_SuccessfullyLoadedMaterialMaps = 0x0400,

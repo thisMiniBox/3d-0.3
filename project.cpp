@@ -299,35 +299,45 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 		}
 		error |= LoadObj(narrowPath);
 	}
-
+	else if (extension == L"xzcom")
+	{
+		error |= LoadCommand(path);
+	}
 	else
 		return ReturnedOfLoadFile::_UnknownFormat;
 	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)
 	{
 		m_Models.clear();
-		FILEWND->ShowFolder(m_RootFolder);
+		FILEWND->ShowFolder(m_RootFolder,GetFocusObject());
 	}
 	return error;
 	
 }
+ReturnedOfLoadFile Controller::LoadCommand(const std::wstring& filePath)
+{
+	size_t line = 1;
+	FILE* comfile;
+	_wfopen_s(&comfile, filePath.c_str(), L"r, ccs=UTF-8");
+	if (!comfile)
+		return ReturnedOfLoadFile::_FailToOpenFile;
 
-//int project::loadModel(const std::wstring& path)
-//{
-//	OutMessage("开始加载模型");
-//	Model* model = new Model;
-//	int error = model->loadModelFile_加载模型文件(path);
-//	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)
-//	{
-//		m_RootFolder.AddFile_添加文件(model);
-//		FILEWND->AddItem(*model);
-//		m_Models.clear();
-//	}
-//	else
-//	{
-//		delete model;
-//	}
-//	return error;
-//}
+	// 设置当前环境使用本地区设置，以支持中文字符输出
+	setlocale(LC_ALL, "");
+
+	wchar_t Line[256];
+	while (fgetws(Line, 256, comfile) != NULL)
+	{
+
+		if (!Command(Line))
+		{
+			OutMessage(L"运行错误！行：" + std::to_wstring(line), _Error);
+		}
+		line++;
+	}
+
+	fclose(comfile);
+	return ReturnedOfLoadFile::_Succese;
+}
 inline FaceData_面信息 faceData(std::string cin) {
 	FaceData_面信息 result;
 	std::stringstream ss(cin);
@@ -364,7 +374,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	MatFileReader* mtl_材质 = new MatFileReader;
 	Material* CurrentMaterial = nullptr;
 
-	ReturnedOfLoadFile Error =ReturnedOfLoadFile::_Fail;
+	ReturnedOfLoadFile Error =ReturnedOfLoadFile::_ModelFail;
 	char c = 0;
 	size_t charLocate = 0;
 	size_t m = 0;
@@ -596,11 +606,12 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	faceIndices.clear();
 
 	Model* MObj = new Model();
+	MObj->SetName(filePath.substr(pos + 1));
 	m_RootFolder.AddFile_添加文件(MObj);
 	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件<Folder>(filePath.substr(pos + 1) + "资源"));
 	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("网格文件夹"));
 	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("材质文件夹"));
-	MObj->SetName(filePath.substr(pos + 1));
+	
 	for (auto& child : Models)
 	{
 		MObj->addChildModel(child);
@@ -625,7 +636,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 }
 void Controller::UpdateFileView()const
 {
-	FILEWND->ShowFolder(m_RootFolder);
+	FILEWND->ShowFolder(m_RootFolder, GetFocusObject());
 }
 void Controller::UpdateDetaileViev()const
 {
@@ -643,11 +654,12 @@ void Controller::Print(const std::wstring& wstr)
 }
 void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path)
 {
+	//rwlock.lock();
 	current_project->m_FileLoad = true;
 	unsigned int Error = current_project->LoadFile(path);
 	if (Error == ReturnedOfLoadFile::_Succese)
 	{
-		current_project->OutMessage(L"模型加载完毕：" + path, _Message);
+		current_project->OutMessage(L"加载完毕：" + path, _Message);
 		current_project->Model_att = 0x01;
 	}
 	else if ((Error & 0xff) != 0)
@@ -690,6 +702,7 @@ void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path)
 		}
 	}
 	current_project->m_FileLoad = false;
+	//rwlock.unlock();
 	return;
 }
 Object* Controller::SearchObject(std::wstring filename)

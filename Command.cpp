@@ -43,8 +43,8 @@ bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 	break;
 	case CommandAct::LOAD_FILE:
 	{
-		std::thread loadthread(loadModelThread, m_hWnd, this, com.Parameter);
-		loadthread.detach();
+		loadModelThread(nullptr, this, com.Parameter);
+		break;
 	}
 	break;
 	case CommandAct::LIST_FOLDER:
@@ -96,7 +96,7 @@ bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 			if (!ignoreOutput) Print(L"未找到文件");
 			return false;
 		}
-
+		SetFoucusObjcet(file);
 	}
 	break;
 	case CommandAct::MOVE_FILE:
@@ -185,10 +185,22 @@ bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 		GetFocusObject()->SetRotate(rot);
 	}
 	break;
-	case CommandAct::UNKNOWN:
+	case CommandAct::OUTCONTROL:
 	{
-		if (!ignoreOutput) Print(L"未知指令");
-		return false;
+
+		break;
+	}
+	case CommandAct::UPDATE:
+	{
+
+		break;
+	}
+	case CommandAct::SLEEP:
+	{
+		LONG64 time = std::stoll(com.Parameter);
+		if (time > 0)
+			Sleep(time);
+		break;
 	}
 	default:
 		if (!ignoreOutput) Print(L"未知指令");
@@ -196,14 +208,12 @@ bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 		break;
 	}
 	Command(L"", ignoreOutput);
-	UpdateDetaileViev();
 	return true;
 }
 CommandData Controller::ParseCommand(const wchar_t* command)
 {
 	std::wstringstream wss(command);
 	std::wstring cmd, arg1, arg2;
-
 	wss >> cmd;
 	CommandData comData;
 
@@ -214,7 +224,12 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 	}
 	else if (cmd == L"loadfile") {
 		comData.Act = CommandAct::LOAD_FILE;
-		wss >> arg1;
+		arg1 = wss.str();
+		arg1 = arg1.substr(arg1.find_first_of(L' ') + 1);
+		if (arg1.back() == L'\n')
+		{
+			arg1.erase(arg1.end()-1);
+		}
 		comData.Parameter = arg1;
 	}
 	else if (cmd == L"ls" || cmd == L"list") {
@@ -222,12 +237,12 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 		wss >> arg1;
 		comData.Parameter = arg1;
 	}
-	else if (cmd == L"mkdir" || cmd == L"create") {
+	else if (cmd == L"mkdir") {
 		comData.Act = CommandAct::CREATE_FOLDER;
 		wss >> arg1;
 		comData.Parameter = arg1;
 	}
-	else if (cmd == L"ct") {
+	else if (cmd == L"ct" || cmd == L"create") {
 		comData.Act = CommandAct::CREATE_FILE;
 		wss >> arg1 >> arg2;
 		comData.Parameter = arg1 + L" " + arg2;
@@ -292,6 +307,26 @@ CommandData Controller::ParseCommand(const wchar_t* command)
 	}
 	else if (cmd == L"lsftp") {
 		comData.Act = CommandAct::LIST_SUPPORTED_FILE_TYPES;
+	}
+	else if (cmd == L"out")
+	{
+		comData.Act = CommandAct::OUTCONTROL;
+		std::wstring arg3;
+		wss >> arg1 >> arg2>>arg3;
+		comData.Parameter = arg1 + L' ' + arg2 + L' ' + arg3;
+	}
+	else if (cmd == L"update")
+	{
+		comData.Act = CommandAct::UPDATE;
+		std::wstring arg3;
+		wss >> arg1 >> arg2 >> arg3;
+		comData.Parameter = arg1 + L' ' + arg2 + L' ' + arg3;
+	}
+	else if (cmd == L"sleep")
+	{
+		comData.Act = CommandAct::SLEEP;
+		wss >> arg1;
+		comData.Parameter = arg1;
 	}
 	else {
 		comData.Act = CommandAct::UNKNOWN;

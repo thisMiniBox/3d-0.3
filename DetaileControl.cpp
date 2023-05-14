@@ -1,7 +1,8 @@
 #include "DetaileControl.h"
-Position_位置控件::Position_位置控件(HINSTANCE hIns,HWND parent, int x, int y, int w)
+FileContentView::FileContentView(HINSTANCE hIns,HWND parent, int x, int y, int w,Folder* f)
 {
-	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_POSITION), parent, Dlgproc);
+    m_folder = f;
+	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_FILE_VIEW), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
 int DetaileControl_细节菜单控件组合::GetHeight()
@@ -20,7 +21,7 @@ int DetaileControl_细节菜单控件组合::MoveWind_移动窗口(int x, int y, int w)
 	}
 	return 0;
 }
-Position_位置控件::~Position_位置控件()
+FileContentView::~FileContentView()
 {
 	DestroyWindow(m_hWnd);
 }

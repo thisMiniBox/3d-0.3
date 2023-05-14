@@ -128,7 +128,7 @@ void FileWind::FixItemName(HTREEITEM ht, const std::wstring Name)
 {
     m_FileTree_文件树.SetItemText_修改节点名称(ht, Name);
 }
-void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
+void FileWind::ShowFolderRecursion(const Folder& folder, const Object* aim, HTREEITEM Parent)
 {
     std::string folderName = folder.GetName();
     HTREEITEM hFolder = m_FileTree_文件树.AddItem_添加节点(folder, Parent);
@@ -142,7 +142,7 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
             Folder* subFolder = dynamic_cast<Folder*>(file);
             if (subFolder != nullptr)
             {
-                ShowFolderRecursion(*subFolder, hFolder);
+                ShowFolderRecursion(*subFolder,aim, hFolder);
             }
             break;
         }
@@ -156,6 +156,8 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
                 HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, i);
                 SetMappingBasedOnObjects(*cm, j);
             }
+            if (aim == file)
+                TreeView_Expand(m_hWnd, i, TVE_EXPAND);
             break;
         }
         default:
@@ -163,17 +165,20 @@ void FileWind::ShowFolderRecursion(const Folder& folder, HTREEITEM Parent)
             std::string fileName = file->GetName();
             HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, hFolder);
             SetMappingBasedOnObjects(*file, i);
+            if (aim == file)
+                TreeView_Expand(m_hWnd, i, TVE_EXPAND);
             break;
         }
         }
     }
 }
-void FileWind::ShowFolder(const Folder& folder, HTREEITEM Parent)
+void FileWind::ShowFolder(const Folder& folder, const Object* aim, HTREEITEM Parent)
 {
     m_FileTree_文件树.ClearTree_清空树();
     std::string folderName = folder.GetName();
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
+        
         switch (file->GetType())
         {
         case OT_FOLDER:
@@ -181,20 +186,22 @@ void FileWind::ShowFolder(const Folder& folder, HTREEITEM Parent)
             Folder* subFolder = dynamic_cast<Folder*>(file);
             if (subFolder != nullptr)
             {
-                ShowFolderRecursion(*subFolder, Parent);
+                ShowFolderRecursion(*subFolder, aim,Parent);
             }
             break;
         }
         case OT_MODEL:
         {
-            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
-            SetMappingBasedOnObjects(*file, i);
+            HTREEITEM Item = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
+            SetMappingBasedOnObjects(*file, Item);
             Model* Mod = dynamic_cast<Model*>(file);
             for (auto& cm : Mod->GetChildModel())
             {
-                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, i);
+                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, Item);
                 SetMappingBasedOnObjects(*cm, j);
             }
+            if (aim == file)
+                TreeView_Expand(m_hWnd, Item, TVE_EXPAND);
             break;
         }
         default:
@@ -202,6 +209,8 @@ void FileWind::ShowFolder(const Folder& folder, HTREEITEM Parent)
             std::string fileName = file->GetName();
             HTREEITEM Item = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
             SetMappingBasedOnObjects(*file, Item);
+            if (aim == file)
+                TreeView_Expand(m_hWnd, Item, TVE_EXPAND);
             break;
         }
         }

@@ -91,6 +91,7 @@ void DetaileWind::SetView(Object* obj)
     {
     case OT_FOLDER:
     {
+        y += CreateContrle(CT_FILEVIEW, 0, y, m_rect.right, obj);
         break;
     }
     case OT_MODEL:
@@ -129,8 +130,8 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
         case CT_NAME:
             m_ChildControl[type] = new Name_对象名称控件(m_hInstance, m_hWnd, x, y, w);
             break;
-        case CT_POSITION:
-            m_ChildControl[type] = new Position_位置控件(m_hInstance, m_hWnd, x, y, w);
+        case CT_FILEVIEW:
+            m_ChildControl[type] = new FileContentView(m_hInstance, m_hWnd, x, y, w, dynamic_cast<Folder*>(obj));
             break;
         case CT_ROTATE:
             m_ChildControl[type] = new Rotation_旋转控件(m_hInstance, m_hWnd, x, y, w);

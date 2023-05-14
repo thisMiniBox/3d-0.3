@@ -1,21 +1,7 @@
 #pragma once
 #include<Windows.h>
 #include<string>
-typedef struct _DllMessageOut
-{
-    char command[128];
-    _DllMessageOut()
-    {
-        std::fill(command, command + 128, 0);
-    }
-    _DllMessageOut(const char* com)
-    {
-        if (std::strlen(com) < 128)
-            strcpy_s(command, com);
-        else
-            std::fill(command, command + 128, 0);
-    }
-}DllMessageOut;
+//°æ±¾0.1
 enum class CommandAct
 {
     UNKNOWN,
@@ -34,7 +20,28 @@ enum class CommandAct
     MOVETO,
     SCALETO,
     ROTATIONTO,
+    OUTCONTROL,
+    UPDATE,
+    SLEEP,
 };
+typedef struct _DllMessageOut
+{
+    CommandAct act;
+    char command[128];
+    _DllMessageOut()
+    {
+        act == CommandAct::UNKNOWN;
+        std::fill(command, command + 128, 0);
+    }
+    _DllMessageOut(CommandAct Act, const char* com) :act(Act)
+    {
+        if (std::strlen(com) < 128)
+            strcpy_s(command, com);
+        else
+            std::fill(command, command + 128, 0);
+    }
+}DllMessageOut;
+
 
 typedef struct CommandData
 {

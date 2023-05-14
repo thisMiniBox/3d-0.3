@@ -17,7 +17,6 @@
 #define IDD_FileManage                  131
 #define IDD_CNAME                       131
 #define IDR_ACCELERATOR1                132
-#define IDD_POSITION                    133
 #define IDR_FILERIGHT                   134
 #define IDD_SETSIZE                     135
 #define IDD_ROTATE                      138
@@ -32,6 +31,11 @@
 #define IDB_UNKNOW                      149
 #define IDD_TRANSFORM                   150
 #define IDD_IOWND                       152
+#define IDD_FILE_VIEW                   153
+#define IDB_MODLE64                     154
+#define IDB_UNKNOWN64                   155
+#define IDB_PNG3                        156
+#define IDB_FOLDER64                    156
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -84,10 +88,10 @@
 #define IDC_TRAN_SCA_Y                  1118
 #define IDC_IO_OUT                      1118
 #define IDC_TRAN_ROT_ANG                1119
-#define IDC_IO_ENTER                    1119
 #define IDC_IO_OK                       1119
 #define IDC_TRAN_ROT_X                  1120
 #define IDC_TRAN_ROT_Z                  1122
+#define IDC_FILE_VIEW                   1123
 #define IDC_TRAN_POS_Y                  1125
 #define IDC_TRAN_SCA_Z                  1126
 #define ID_32771                        32771
@@ -124,6 +128,13 @@
 #define ID_FM_CREATEMODEL               32804
 #define ID_FM_CREATECAMERA              32805
 #define ID_32806                        32806
+#define ID_32807                        32807
+#define ID_FILE_UPDATE                  32808
+#define ID_FM_UPDATE                    32809
+#define ID_32810                        32810
+#define ID_32811                        32811
+#define ID_32812                        32812
+#define ID_FM_COPY                      32813
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -131,9 +142,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        153
-#define _APS_NEXT_COMMAND_VALUE         32807
-#define _APS_NEXT_CONTROL_VALUE         1120
+#define _APS_NEXT_RESOURCE_VALUE        157
+#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_CONTROL_VALUE         1124
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

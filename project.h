@@ -1,5 +1,6 @@
 #pragma once
 #include<thread>
+#include <mutex>
 #include"字符转换.h"
 #include"WndData.h"
 #include"MainWind.h"
@@ -13,6 +14,7 @@
 #include"FileWind.h"
 #include"Object.h"
 #include"xzdll.hpp"
+
 class Controller
 {
 	HINSTANCE m_hInst;
@@ -25,7 +27,7 @@ class Controller
 	InputOutput* m_IOWind;
 
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
-
+	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
 public:
 	//窗口信息
 	HWND m_hWnd;

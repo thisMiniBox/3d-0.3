@@ -63,6 +63,24 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             }
             break;
         }
+        case ID_FM_CREATECAMERA:
+        {
+            Object* par = current_project->GetFocusObject();
+            if (par->GetType() == OT_FOLDER)
+                current_project->CreateObject(dynamic_cast<Folder*>(par), "新建摄像机", OT_CAMERA);
+            else
+                current_project->CreateObject(par->GetParent(), "新建摄像机", OT_CAMERA);
+            break;
+        }
+        case ID_FM_CREATEMODEL:
+        {
+            Object* par = current_project->GetFocusObject();
+            if (par->GetType() == OT_FOLDER)
+                current_project->CreateObject(dynamic_cast<Folder*>(par), "新建模型", OT_MODEL);
+            else
+                current_project->CreateObject(par->GetParent(), "新建模型", OT_MODEL);
+            break;
+        }
         case ID_FM_CREATEFOLDER:
         {
             Object* par = current_project->DETAWND->GetTarget();
@@ -71,6 +89,10 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             else
                 current_project->CreateObject();
             break;
+        }
+        case ID_FM_UPDATE:
+        {
+            current_project->UpdateFileView();
         }
         default:
             break;

@@ -1,7 +1,7 @@
 ﻿#include "framework.h"
 #include "机器学习win.h"
 
-HINSTANCE hIns;
+HINSTANCE hInstance;
 Controller* current_project = new Controller;
 HBRUSH g_hBrush = NULL; // 全局变量，用于存储画刷
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -23,13 +23,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-    hIns = hInstance;
+    hInstance = hInstance;
     current_project->SETWND.className = L"EDIT";
     InitCommonControls();
     MSG msg;
     current_project->CreateWind(hInstance);
 
-    HMENU hMenu = LoadMenu(hIns, MAKEINTRESOURCE(IDC_WIN));
+    HMENU hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDC_WIN));
     SetMenu(current_project->m_hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
@@ -139,47 +139,52 @@ LRESULT CALLBACK TextOutWind::TextWndProc(HWND hWnd, UINT message, WPARAM wParam
     return cTextWndProc(hWnd, message, wParam, lParam, current_project);
 }
 //位置控件消息循环
-INT_PTR Position_位置控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
     case WM_UPDATE:
     case WM_INITDIALOG:
     {
-        Vector v = current_project->DETAWND->GetTarget()->GetPosition();
-        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
-        std::wstring wstr = NumberToWString(v.x);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_Y);
-        wstr = NumberToWString(v.y);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_Z);
-        wstr = NumberToWString(v.z);
-        SetWindowText(hWndEdit, wstr.c_str());
-        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-        SetWindowText(hWndEdit, L"");
+        Folder* folder = dynamic_cast<Folder*>(current_project->GetFocusObject());
+        HWND hWndList = GetDlgItem(hDlg, IDC_FILE_VIEW);
+        //LV_COLUMN lvColumn;
+        //lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+        //lvColumn.pszText = (wchar_t*)TEXT("Column1");
+        //lvColumn.cx = 100;
+        //ListView_InsertColumn(hWndList, 0, &lvColumn);
+
+        //// 加载图像列表
+        //HIMAGELIST hImageList = ImageList_Create(64, 64, ILC_COLOR32, 2, 2);
+        //LoadPngToList(IDB_FOLDER64, hImageList, hInstance);
+        //LoadPngToList(IDB_MODLE64, hImageList, hInstance);
+        //// 将图像列表与List控件关联
+        //ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
+
+        //// 添加项
+        //LV_ITEM lvItem = { 0 };
+        //lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+        //lvItem.iItem = 0;
+        //lvItem.iSubItem = 0;
+        //lvItem.pszText = (wchar_t*)L"Item1";
+        //lvItem.iImage = 0;
+        //ListView_InsertItem(hWndList, &lvItem);
+
+        //lvItem.iItem = 1;
+        //lvItem.iSubItem = 0;
+        //lvItem.pszText = (wchar_t*)TEXT("Item2");
+        //lvItem.iImage = 1;
+        //ListView_InsertItem(hWndList, &lvItem);
+
+        return TRUE;
         break;
     }
     case WM_SIZE:
     {
-        RECT EditRect;
-        RECT hDlgRect;
-        GetWindowRect(hDlg, &hDlgRect);
-        HWND hWndEdit = GetDlgItem(hDlg, IDC_X);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_Y);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_Z);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_TITLE);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
-        hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
-        GetWindowRect(hWndEdit, &EditRect);
-        MoveWindow(hWndEdit, EditRect.left - hDlgRect.left, EditRect.top - hDlgRect.top, LOWORD(lParam) - (EditRect.left - hDlgRect.left) * 1.5f, EditRect.bottom - EditRect.top, true);
+        RECT crect;
+        GetClientRect(hDlg, &crect);
+        HWND hControl = GetDlgItem(hDlg, IDC_FILE_VIEW);
+        MoveWindow(hControl, 0, 0, crect.right, crect.bottom, true);
         break;
     }
     case WM_COMMAND:

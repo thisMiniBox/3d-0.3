@@ -85,7 +85,7 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             RECT rc;
             SetRect(&rc, pt.x - 100, pt.y - 100, pt.x + 100, pt.y + 100);
             ClipCursor(&rc);
-            current_project->DETAWND->UpDate(CT_POSITION);
+            current_project->DETAWND->UpDate(CT_FILEVIEW);
         }
         else
             ClipCursor(NULL);

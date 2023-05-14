@@ -12,7 +12,7 @@ class FileWind
 	HWND m_Tree;
 	std::wstring m_ClassName;
 	Tree_Ê÷¿Ø¼þ m_FileTree_ÎÄ¼þÊ÷;
-	void ShowFolderRecursion(const Folder&, HTREEITEM);
+	void ShowFolderRecursion(const Folder&, const Object* aim, HTREEITEM);
 public:
 	FileWind(HINSTANCE hIns);
 	~FileWind();
@@ -32,7 +32,7 @@ public:
 	void SetMappingBasedOnObjects(const Object& object, HTREEITEM hItem);
 	void SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected = -1);
 	void FixItemName(HTREEITEM, const std::wstring Name);
-	void ShowFolder(const Folder&, HTREEITEM parent = TVI_ROOT);
+	void ShowFolder(const Folder&, const Object* aim, HTREEITEM parent = TVI_ROOT);
 	void MoveTree(int x, int y, int w, int h);
 	HWND GethWnd();
 	HWND GetTree();

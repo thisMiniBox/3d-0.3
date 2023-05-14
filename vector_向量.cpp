@@ -399,68 +399,118 @@ namespace vec {
 
     Vector3 str_vector(std::string svec)
     {
-        Vector out;
-        int pos = svec.find_last_not_of(' ');
-        svec = svec.substr(0, pos);
-        pos = svec.find_first_of(',');
-        if (pos!=-1)
+        Vector3 out;
+        if (svec.empty()) return out;
+        size_t pos = svec.find_first_of(',');
+        if (pos == -1)
         {
-            out.x = std::stod(svec.substr(0, pos).c_str());
-            int pos2 = svec.find_last_of(',');
-            if (pos2 == -1)return out;
-            out.y = std::stod(svec.substr(pos + 1, pos2).c_str());
-            out.z = std::stod(svec.substr(pos2 + 1).c_str());
-            return out;
+            pos = svec.find_first_of(' ');
+            if (pos == -1)
+            {
+                pos = svec.find_first_of('，');
+                if (pos == -1)return out;
+                out.x = std::stod(svec.substr(0, pos));
+                svec = svec.substr(pos + 1);
+                pos = svec.find_first_of('，');
+                if (pos == -1)return out;
+                out.y = std::stod(svec.substr(0, pos));
+                try
+                {
+                    out.z = std::stod(svec.substr(pos + 1));
+                }
+                catch (...)
+                {
+                    return out;
+                }
+            }
+            out.x = std::stod(svec.substr(0, pos));
+            svec = svec.substr(pos + 1);
+            pos = svec.find_first_of(' ');
+            if (pos == -1)return out;
+            out.y = std::stod(svec.substr(0, pos));
+            try
+            {
+                out.z = std::stod(svec.substr(pos + 1));
+            }
+            catch (...)
+            {
+                return out;
+            }
         }
         else
         {
-            
-            pos = svec.find_first_of(' ');
+            out.x = std::stod(svec.substr(0, pos));
+            svec = svec.substr(pos + 1);
+            pos = svec.find_first_of(',');
             if (pos == -1)return out;
-            out.x = std::stod(svec.substr(0, pos).c_str());
-            int pos2 = svec.find_last_of(' ');
-            if (pos2 == -1)return out;
-            out.y = std::stod(svec.substr(pos + 1, pos2).c_str());
-            out.z = std::stod(svec.substr(pos2 + 1).c_str());
-            return out;
+            out.y = std::stod(svec.substr(0, pos));
+            try
+            {
+                out.z = std::stod(svec.substr(pos + 1));
+            }
+            catch (...)
+            {
+                return out;
+            }
         }
+        return out;
     }
     Vector3 str_vector(std::wstring svec)
     {
         Vector3 out;
-        // 如果svec为空，直接返回零向量
         if (svec.empty()) return out;
-        // 使用wstringstream来分割和转换字符串
-        std::wstringstream ws(svec);
-        std::wstring token;
-        // 尝试读取第一个数字
-        try {
-            std::getline(ws, token, L',');
-            out.x = std::stod(token);
+        size_t pos = svec.find_first_of(L',');
+        if (pos == -1)
+        {
+            pos = svec.find_first_of(L' ');
+            if (pos == -1)
+            {
+                pos = svec.find_first_of(L'，');
+                if (pos == -1)return out;
+                out.x = std::stod(svec.substr(0, pos));
+                svec = svec.substr(pos + 1);
+                pos = svec.find_first_of(L'，');
+                if (pos == -1)return out;
+                out.y = std::stod(svec.substr(0, pos));
+                try
+                {
+                    out.z = std::stod(svec.substr(pos + 1));
+                }
+                catch (...)
+                {
+                    return out;
+                }
+            }
+            out.x = std::stod(svec.substr(0, pos));
+            svec = svec.substr(pos + 1);
+            pos = svec.find_first_of(L' ');
+            if (pos == -1)return out;
+            out.y = std::stod(svec.substr(0, pos));
+            try
+            {
+                out.z = std::stod(svec.substr(pos + 1));
+            }
+            catch (...)
+            {
+                return out;
+            }
         }
-        catch (...) {
-            // 如果出现异常，返回零向量
-            return out;
+        else
+        {
+            out.x = std::stod(svec.substr(0, pos));
+            svec = svec.substr(pos + 1);
+            pos = svec.find_first_of(L',');
+            if (pos == -1)return out;
+            out.y = std::stod(svec.substr(0, pos));
+            try
+            {
+                out.z = std::stod(svec.substr(pos + 1));
+            }
+            catch (...)
+            {
+                return out;
+            }
         }
-        // 尝试读取第二个数字
-        try {
-            std::getline(ws, token, L',');
-            out.y = std::stod(token);
-        }
-        catch (...) {
-            // 如果出现异常，返回零向量
-            return out;
-        }
-        // 尝试读取第三个数字
-        try {
-            std::getline(ws, token, L',');
-            out.z = std::stod(token);
-        }
-        catch (...) {
-            // 如果出现异常，返回零向量
-            return out;
-        }
-        // 返回结果
         return out;
     }
 }

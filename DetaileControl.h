@@ -12,10 +12,10 @@ bool ScaleBitmap(HBITMAP srcBitmap, int destWidth, int destHeight, HBITMAP& dest
 enum _ControlType
 {
 	CT_NAME,
-	CT_POSITION,
+	CT_FILEVIEW,
 	CT_ROTATE,
 	CT_TRANSFORM,
-	CT_PICTURE
+	CT_PICTURE,
 };
 class DetaileControl_细节菜单控件组合
 {
@@ -34,15 +34,15 @@ public:
 	virtual void updateControl() {};
 	virtual _ControlType GetType()const = 0;
 };
-class Position_位置控件 :public DetaileControl_细节菜单控件组合
+class FileContentView :public DetaileControl_细节菜单控件组合
 {
 public:
-	Position_位置控件(HINSTANCE,HWND parent, int x, int y, int w);
-	~Position_位置控件();
-	virtual _ControlType GetType()const override { return CT_POSITION; }
+	FileContentView(HINSTANCE, HWND parent, int x, int y, int w, Folder*);
+	~FileContentView();
+	virtual _ControlType GetType()const override { return CT_FILEVIEW; }
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
-	vec::Vector3 m_Position;
+	Folder* m_folder;
 };
 class Name_对象名称控件 : public DetaileControl_细节菜单控件组合
 {

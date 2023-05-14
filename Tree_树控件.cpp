@@ -8,7 +8,7 @@ Tree_树控件::Tree_树控件()
 	hWnd_树控件句柄 = nullptr;
     m_hImageList = nullptr;
 }
-int Tree_树控件::LoadPngToList(int nID)
+int Tree_树控件::TreeLoadPngToList(int nID)
 {
     // 加载 PNG 图片资源
     HRSRC hResource = FindResource(m_hInstance, MAKEINTRESOURCE(nID), L"PNG");
@@ -84,16 +84,18 @@ HWND Tree_树控件::Creat_创建树列表(HWND parent_父窗口)
         parent_父窗口, NULL, m_hInst, NULL);
 
     
-    m_hImageList = ImageList_Create(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON),
+    m_hImageList = ImageList_Create(16, 16,
         ILC_COLOR32 | ILC_MASK, 7, 0);
-    LoadPngToList(IDB_UNKNOW);
-    LoadPngToList(IDB_FOLDER);
-    LoadPngToList(IDB_FOLDER_OPENED_NON_EMPTY);
-    LoadPngToList(IDB_MODEL);
-    LoadPngToList(IDB_MESH);
-    LoadPngToList(IDB_PICTURE);
-    LoadPngToList(IDB_CAMERA);
-
+    TreeLoadPngToList(IDB_UNKNOW);
+    TreeLoadPngToList(IDB_FOLDER);
+    TreeLoadPngToList(IDB_FOLDER_OPENED_NON_EMPTY);
+    TreeLoadPngToList(IDB_MODEL);
+    TreeLoadPngToList(IDB_MESH);
+    TreeLoadPngToList(IDB_PICTURE);
+    //LoadPngToList(IDB_CAMERA);
+    int i = LoadPngToList(IDB_CAMERA, m_hImageList, m_hInst);
+    if (i >= 0)
+        m_listID[IDB_CAMERA] = i;
     // 将图像列表与树形控件关联
     TreeView_SetImageList(hWnd_树控件句柄, m_hImageList, TVSIL_NORMAL);
     return hWnd_树控件句柄;
