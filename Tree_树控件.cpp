@@ -85,13 +85,14 @@ HWND Tree_树控件::Creat_创建树列表(HWND parent_父窗口)
 
     
     m_hImageList = ImageList_Create(16, 16,
-        ILC_COLOR32 | ILC_MASK, 7, 0);
+        ILC_COLOR32 | ILC_MASK, 8, 0);
     TreeLoadPngToList(IDB_UNKNOW);
     TreeLoadPngToList(IDB_FOLDER);
     TreeLoadPngToList(IDB_FOLDER_OPENED_NON_EMPTY);
     TreeLoadPngToList(IDB_MODEL);
     TreeLoadPngToList(IDB_MESH);
     TreeLoadPngToList(IDB_PICTURE);
+    TreeLoadPngToList(IDB_MATERIAL);
     //LoadPngToList(IDB_CAMERA);
     int i = LoadPngToList(IDB_CAMERA, m_hImageList, m_hInst);
     if (i >= 0)

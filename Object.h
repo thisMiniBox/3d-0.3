@@ -4,11 +4,13 @@
 #include <iostream>
 #include <fstream>
 #include <array>
+#include <set>
 #include<d3d11.h>
 #include<sstream>
 #include <unordered_map>
 #include"vector_向量.h"
 #include"字符转换.h"
+#include"WndData.h"
 #include<glm/gtc/matrix_transform.hpp>
 //声明类（方便定位）
 class Object;
@@ -18,23 +20,14 @@ class Picture;
 class Material;
 class Model;
 class Camera;
+class PointLight;
+class Room;
+class Button;
+class FixedUI;
+
+class Keyframe;
 
 
-
-
-enum ObjectType
-{
-	OT_UNKNOWN,
-	OT_FOLDER,				//文件夹
-	OT_MODEL,				//模型
-	OT_CAMERA,				//摄像机
-	OT_MESH,				//网格
-	OT_PICTURE,				//图片
-	OT_MATERIAL,			//材质
-	OT_POINTLIGHT,			//点光源
-	OT_PARALLELLIGHT,		//平行光光源
-	OT_KEYFRAME,			//关键帧
-};
 using namespace vec;
 std::wstring ObjectTypeToWstr(ObjectType);
 std::string ObjectTypeTostr(ObjectType);
@@ -67,6 +60,13 @@ public:
 	void Unselected();
 	//获取选中状态
 	bool IsSelected();
+	
+	//资源文件的引用状态切换
+	virtual void Reference(Object*);
+	virtual const std::set<Object*>& GetAllReference()const;
+	virtual void Dereference(Object*);
+	virtual bool IsReference(Object*)const;
+	virtual void DeleteReferenceP(Object*);
 	// 获取物体类型，纯虚函数
 	virtual ObjectType GetType()const = 0;
 	// 获取物体位置，返回默认值
@@ -89,8 +89,12 @@ public:
 	virtual void Scale(const Vector3&);
 	// 移动物体，空实现
 	virtual void Move(const Vector3&);
+	//属性窗口内容
+	virtual _ControlType SetDetaileView()const;
 	//删除关联物体
 	virtual void DeleteChildObject();
+	//list控件内容展示
+	virtual INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index);
 
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
@@ -136,7 +140,7 @@ typedef struct _OutPoint3
 //面读取信息
 typedef struct _fm_面信息
 {
-	size_t a[9];
+	LONG64 a[9];
 	_fm_面信息() :a() {}
 }FaceData_面信息;
 //三角面数据
@@ -179,40 +183,27 @@ struct Vertex {
 	vec::Vector normal;      // 顶点法线
 	vec::Vector2 texCoord;   // 纹理坐标
 };
-enum ReturnedOfLoadFile :unsigned int
-{
-	//默认状态
-	_Fail = 0xffff0000,
-	//默认成功消息
-	_Succese = 0xffffff00,
-	//错误
-	_UnknownFormat = 0b0001,
-	_DataError = 0b0010,
-	_FailToOpenFile = 0b0100,
-	_FailedToCreateFile = 0b1000,
-	//模型加载细节
-	_ModelFail=0xfffff800,
-	_SuccessfullyLoadedVertex = 0x0100,
-	_SuccessfullyLoadedMaterialFile = 0x0200,
-	_SuccessfullyLoadedMaterialMaps = 0x0400,
-
-};
-ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b);
-ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b);
 #include"stb_image.h"
 
 class Mesh :public Object
 {
 	std::vector<Vertex>m_Data;
+	std::set<Object*>m_Reference;
 public:
 	Mesh() {}
 	Mesh(std::string&);
-	~Mesh() {}
+	~Mesh();
+	void Reference(Object*);
+	const std::set<Object*>& GetAllReference()const;
+	void Dereference(Object*);
+	bool IsReference(Object*)const;
+
 	std::vector<vec::Vector> m_VertexPosition;  // 顶点坐标数据
 	std::vector<vec::Vector> m_Normal;  // 法向量数据
 	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
 	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
 	const std::vector<Vertex>& GetVertexData();
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
 };
 #include"glad.h"
@@ -224,6 +215,7 @@ typedef struct _PictureData
 }PictureData;
 class Picture :public Object
 {
+	std::set<Object*>m_Reference;
 	unsigned char* m_Data;
 	unsigned int m_ID;
 	int m_Width, m_Height, m_NrComponents;
@@ -238,11 +230,16 @@ public:
 	unsigned int loadTexture();
 	unsigned int GetID() { return m_ID; }
 
+	void Reference(Object*);
+	const std::set<Object*>& GetAllReference()const;
+	void Dereference(Object*);
+	bool IsReference(Object*)const;
 	int GetHeight() { return m_Height; }
 	int GetWidth() { return m_Width; }
 	//释放图片
 	void FreePictureData();
 	void FreeOpenGL();
+	_ControlType SetDetaileView()const override { return CT_NAME|CT_PICTURE; }
 	virtual ObjectType GetType() const override { return OT_PICTURE; }
 };
 class Material :public Object
@@ -253,7 +250,10 @@ public:
 	Material(std::string& name) { m_Name = name; }
 	// 析构函数
 	~Material();
-
+	void Reference(Object*);
+	const std::set<Object*>& GetAllReference()const;
+	void Dereference(Object*);
+	bool IsReference(Object*)const;
 	// 访问器方法，用于设置或读取私有成员变量的值
 	float getNs() const;
 	void setNs(float ns);
@@ -274,7 +274,17 @@ public:
 	Picture* getMapKs() const;
 	void setMapKs(Picture* mapKs);
 	void CleanUpOpenglImageCache();
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
+	void DeleteReferenceP(Object* obj)
+	{
+		if (obj == m_MapKa)
+			m_MapKa = nullptr;
+		if (obj == m_MapKd)
+			m_MapKd = nullptr;
+		if (obj == m_MapKs)
+			m_MapKs = nullptr;
+	}
 private:
 	// 私有成员变量
 	float m_Ns;
@@ -286,6 +296,7 @@ private:
 	Picture* m_MapKa;
 	Picture* m_MapKd;
 	Picture* m_MapKs;
+	std::set<Object*>m_Reference;
 };
 //用于读取与临时存储材质
 class MatFileReader {
@@ -378,6 +389,8 @@ public:
 	virtual void Scale(const Vector3&)override;
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index);
 private:
 	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
 	Model* m_Parent;
@@ -427,9 +440,12 @@ public:
 	void DeleteFile_删除文件(Object*);
 	void DeleteIndex(Object*);
 	std::vector<Model*> GetAllModleFile_找到所有模型()const;
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
  	virtual ObjectType GetType()const override;
 	virtual Vector GetPosition()const override { return Vector(0, 0, 0); }
 	virtual void DeleteChildObject()override;
+	
 };
 //对象摄像机子类
 class Camera : public Object {
@@ -474,7 +490,7 @@ public:
 	Matrix4 GetView()const;
 	Matrix4 GetGLMView()const;
 	Matrix4 GetProjection()const;
-
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM; }
 };
 
 class PointLight : public Object
@@ -500,7 +516,7 @@ public:
 
 	void SetSoftShadow(float softShadow);                // 设置衰减系数
 	float GetSoftShadow() const;                         // 获取衰减系数
-
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
 private:
 	Vector m_Position;                                   // 点光源位置
 	Vector m_LightColor;                                 // 点光源颜色
@@ -509,4 +525,17 @@ private:
 	float m_SoftShadow;                                  // 点光源衰减系数
 };
 
+class Room :public Object
+{
+public:
+	virtual ObjectType GetType()const override;
+private:
+	Folder m_RoomContent;
 
+};
+class Keyframe :public Object
+{
+public:
+	
+	virtual ObjectType GetType()const override;
+};

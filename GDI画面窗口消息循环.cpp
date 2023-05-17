@@ -85,7 +85,6 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             RECT rc;
             SetRect(&rc, pt.x - 100, pt.y - 100, pt.x + 100, pt.y + 100);
             ClipCursor(&rc);
-            current_project->DETAWND->UpDate(CT_FILEVIEW);
         }
         else
             ClipCursor(NULL);
@@ -185,8 +184,7 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     }
     case WM_CREATE:
     {
-        if (current_project->MAINWND->GetType() != MGDIWND)
-            frameRateController = SetTimer(hWnd, 0, 1000 / 60, NULL);
+        frameRateController = SetTimer(hWnd, 0, 1000 / 60, NULL);
         break;
     }
     case WM_CLOSE:

@@ -437,6 +437,14 @@ bool OpenGLWnd::AddModelToBuffer(Model* model)
         return true;
     return false;
 }
+void OpenGLWnd::SetRect(RECT NewRect)
+{
+    m_rect = NewRect;
+    m_width = m_rect.right - m_rect.left;
+    m_height = m_rect.bottom - m_rect.top;
+    if (m_hWnd)
+        ResetOpenGLViewport();
+}
 void OpenGLWnd::DeleteModelBuffer(Model* model)
 {
     auto it = m_models.find(model);

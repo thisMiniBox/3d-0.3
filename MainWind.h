@@ -184,6 +184,7 @@ public:
 	virtual int GetType() override {
 		return MOPENGL;
 	}
+	virtual void SetRect(RECT rect)override;
 	bool AddModelToBuffer(Model*);
 	void DeleteModelBuffer(Model*);
 	void SetModelShader(const char* vertexPath, const char* fragmentPath);

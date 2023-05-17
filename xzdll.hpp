@@ -30,7 +30,7 @@ typedef struct _DllMessageOut
     char command[128];
     _DllMessageOut()
     {
-        act == CommandAct::UNKNOWN;
+        act = CommandAct::UNKNOWN;
         std::fill(command, command + 128, 0);
     }
     _DllMessageOut(CommandAct Act, const char* com) :act(Act)

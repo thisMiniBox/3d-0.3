@@ -240,8 +240,10 @@ void Folder::SetFileName(Object* obj, const std::string& NewName)
 		}
 	}
 }
-
-
+INT_PTR Object::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int,int>& index)
+{
+	return false;
+}
 std::vector<Object*> Folder::GetTheCurrentDirectoryFile()const
 {
 	std::vector<Object*> out;
@@ -596,6 +598,8 @@ Picture* Material::getMapKa() const {
 
 inline void Material::setMapKa(Picture* mapKa) {
 	m_MapKa = mapKa;
+	if (m_MapKa)
+		m_MapKa->Reference(this);
 }
 
 Picture* Material::getMapKd() const {
@@ -604,6 +608,8 @@ Picture* Material::getMapKd() const {
 
 inline void Material::setMapKd(Picture* mapKd) {
 	m_MapKd = mapKd;
+	if (m_MapKd)
+		m_MapKd->Reference(this);
 }
 
 Picture* Material::getMapKs() const {
@@ -612,6 +618,8 @@ Picture* Material::getMapKs() const {
 
 inline void Material::setMapKs(Picture* mapKs) {
 	m_MapKs = mapKs;
+	if (m_MapKs)
+		m_MapKs->Reference(this);
 }
 
 
@@ -627,9 +635,20 @@ Material::Material()
 	memset(m_Kd, 0, sizeof(float) * 3);
 	memset(m_Ks, 0, sizeof(float) * 3);
 }
+void Object::DeleteReferenceP(Object*)
+{}
 Material::~Material()
 {
-
+	for (auto& re : m_Reference)
+	{
+		re->DeleteReferenceP(this);
+	}
+	if (m_MapKa)
+		m_MapKa->Dereference(this);
+	if (m_MapKd)
+		m_MapKd->Dereference(this);
+	if (m_MapKs)
+		m_MapKs->Dereference(this);
 }
 Model::Model()
 	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
@@ -656,6 +675,10 @@ Model::~Model()
 	for (auto& p : m_ChildModel)
 		if (p)
 			delete p;
+	if (m_ModelMesh)
+		m_ModelMesh->Dereference(this);
+	if (m_Material)
+		m_Material->Dereference(this);
 }
 
 void Model::move(const Vector3& offset, bool add) {
@@ -946,6 +969,10 @@ Picture::~Picture()
 {
 	if (m_Data)
 		stbi_image_free(m_Data);
+	for (auto& re : m_Reference)
+	{
+		re->DeleteReferenceP(this);
+	}
 }
 void Picture::FreePictureData()
 {
@@ -960,6 +987,7 @@ PictureData Picture::GetPicture()const
 }
 PictureData Picture::LoadPicture(const std::string& path)
 {
+	stbi_set_flip_vertically_on_load(true);
 	m_Data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_NrComponents, 0);
 	if (m_Data)
 	{
@@ -1001,6 +1029,13 @@ unsigned int Picture::loadTexture()
 Mesh::Mesh(std::string& Name)
 {
 	m_Name = Name;
+}
+Mesh::~Mesh()
+{
+	for (auto& re : m_Reference)
+	{
+		re->DeleteReferenceP(this);
+	}
 }
 bool MatFileReader::read(const std::string& filename) 
 {
@@ -1106,15 +1141,7 @@ Material* MatFileReader::getMaterial(const std::string& name) const {
 	}
 	return nullptr;
 }
-ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b)
-{
-	return static_cast<ReturnedOfLoadFile>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
-}
-ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b)
-{
-	a = static_cast<ReturnedOfLoadFile>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
-	return a;
-}
+
 std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
 {
 	std::vector<Model*> out;
@@ -1237,4 +1264,169 @@ void Object::Selected()
 void Object::Unselected()
 {
 	m_Selected = false;
+}
+ObjectType Room::GetType()const
+{
+	return ObjectType::OT_ROOM;
+}
+ObjectType Keyframe::GetType()const
+{
+	return ObjectType::OT_KEYFRAME;
+}
+INT_PTR Folder::ListControlView(const HWND hWndList,HIMAGELIST hImageList, std::unordered_map<int, int>& index)
+{
+	ListView_SetView(hWndList, LV_VIEW_ICON);
+	ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
+	int item = 0;
+	ListView_DeleteAllItems(hWndList);
+	// 添加项
+	LV_ITEM lvItem = { 0 };
+	lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+
+	lvItem.iSubItem = 0;
+	std::wstring name;
+	for (auto& c : m_Child)
+	{
+		lvItem.iItem = item;
+		item++;
+		name = strwstr(c.second->GetName());
+		lvItem.pszText = (wchar_t*)name.c_str();
+		switch (c.second->GetType())
+		{
+		case OT_FOLDER:
+		{
+			lvItem.iImage = index[IDB_FOLDER64];
+			break;
+		}
+		case OT_MODEL:
+		{
+			lvItem.iImage = index[IDB_MODEL64];
+			break;
+		}
+		case OT_CAMERA:
+		{
+			lvItem.iImage = index[IDB_CAMERA64];
+			break;
+		}
+		case OT_MESH:
+		{
+			lvItem.iImage = index[IDB_MESH64];
+			break;
+		}
+		case OT_PICTURE:
+		{
+			lvItem.iImage = index[IDB_PICTURE64];
+			break;
+		}
+		case OT_MATERIAL:
+		{
+			lvItem.iImage = index[IDB_MATERIAL64];
+			break;
+		}
+		default:
+			lvItem.iImage = index[IDB_UNKNOWN64];
+			break;
+		}
+		ListView_InsertItem(hWndList, &lvItem);
+	}
+	return TRUE;
+}
+void Mesh::Reference(Object* obj)
+{
+	m_Reference.emplace(obj);
+}
+const std::set<Object*>& Mesh::GetAllReference()const
+{
+	return m_Reference;
+}
+void Mesh::Dereference(Object* obj)
+{
+	m_Reference.erase(obj);
+}
+bool Mesh::IsReference(Object* obj)const
+{
+	if (m_Reference.find(obj) == m_Reference.end())
+		return false;
+	return true;
+}
+void Picture::Reference(Object* obj)
+{
+	m_Reference.emplace(obj);
+}
+const std::set<Object*>& Picture::GetAllReference()const
+{
+	return m_Reference;
+}
+void Picture::Dereference(Object* obj)
+{
+	m_Reference.erase(obj);
+}
+bool Picture::IsReference(Object* obj)const
+{
+	if (m_Reference.find(obj) == m_Reference.end())
+		return false;
+	return true;
+}
+void Material::Reference(Object* obj)
+{
+	m_Reference.emplace(obj);
+}
+const std::set<Object*>& Material::GetAllReference()const
+{
+	return m_Reference;
+}
+void Material::Dereference(Object* obj)
+{
+	m_Reference.erase(obj);
+}
+bool Material::IsReference(Object* obj)const
+{
+	if (m_Reference.find(obj) == m_Reference.end())
+		return false;
+	return true;
+}
+void Object::Reference(Object* obj){}
+const std::set<Object*>& Object::GetAllReference()const
+{
+	std::set<Object*>a;
+	return a;
+}
+void Object::Dereference(Object* obj){}
+bool Object::IsReference(Object* obj)const
+{
+	return true;
+}
+INT_PTR Model::ListControlView(const HWND hWndList, HIMAGELIST hImageList, std::unordered_map<int, int>& index)
+{
+	ListView_SetView(hWndList, LV_VIEW_ICON);
+	ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
+	int item = 0;
+	ListView_DeleteAllItems(hWndList);
+	// 添加项
+	LV_ITEM lvItem = { 0 };
+	lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+
+	lvItem.iSubItem = 0;
+	std::wstring name;
+	lvItem.iItem = item;
+	item++;
+	if(m_ModelMesh)
+	{
+		name = strwstr(m_ModelMesh->GetName());
+		lvItem.pszText = (wchar_t*)name.c_str();
+		lvItem.iImage = index[IDB_MESH64];
+		ListView_InsertItem(hWndList, &lvItem);
+	}
+	if(m_Material)
+	{
+		name = strwstr(m_Material->GetName());
+		lvItem.pszText = (wchar_t*)name.c_str();
+		lvItem.iImage = index[IDB_MATERIAL64];
+		ListView_InsertItem(hWndList, &lvItem);
+	}
+	return TRUE;
+}
+_ControlType Object::SetDetaileView()const
+{
+	return CT_NAME;
 }

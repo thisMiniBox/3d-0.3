@@ -44,7 +44,54 @@ enum MSGtype
 	_Error,
 	_Warning
 };
+enum ObjectType
+{
+	OT_UNKNOWN,
+	OT_FOLDER,				//文件夹
+	OT_MODEL,				//模型
+	OT_CAMERA,				//摄像机
+	OT_MESH,				//网格
+	OT_PICTURE,				//图片
+	OT_MATERIAL,			//材质
+	OT_POINTLIGHT,			//点光源
+	OT_PARALLELLIGHT,		//平行光光源
+	OT_KEYFRAME,			//关键帧
+	OT_ROOM,				//房间
+	OT_BUTTON,				//交互键
+	OT_UI,					//固定ui 
+};
+enum ReturnedOfLoadFile :unsigned int
+{
+	//默认状态
+	_Fail = 0xffff0000,
+	//默认成功消息
+	_Succese = 0xffffff00,
+	//错误
+	_UnknownFormat = 0b0001,
+	_DataError = 0b0010,
+	_FailToOpenFile = 0b0100,
+	_FailedToCreateFile = 0b1000,
+	//模型加载细节
+	_ModelFail = 0xfffff800,
+	_SuccessfullyLoadedVertex = 0x0100,
+	_SuccessfullyLoadedMaterialFile = 0x0200,
+	_SuccessfullyLoadedMaterialMaps = 0x0400,
 
+};
+ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b);
+ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b);
+enum _ControlType
+{
+	CT_NAME = 0b00001,
+	CT_TRANSFORM = 0b00010,
+	CT_ROTATE = 0b00100,
+	CT_FILEVIEW = 0b01000,
+	CT_PICTURE = 0b10000,
+};
+inline _ControlType operator|(const _ControlType& lhs, const _ControlType& rhs)
+{
+	return static_cast<_ControlType>(static_cast<int>(lhs) | static_cast<int>(rhs));
+}
 typedef struct WndMsg
 {
 	HWND hWnd;
@@ -64,3 +111,4 @@ ATOM MyRegisterClass(HINSTANCE   hInstance,
 	HICON       hIcon = NULL,
 	int         cbClsExtra = 0,
 	int         cbWndExtra = 0);
+int getBit(int num, int pos);

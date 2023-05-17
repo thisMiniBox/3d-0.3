@@ -75,6 +75,11 @@ void FileWind::SetMappingBasedOnObjects(const Object& obj, HTREEITEM hItem)
         SetNodeImage(hItem, IDB_PICTURE);
         break;
     }
+    case OT_MATERIAL:
+    {
+        SetNodeImage(hItem, IDB_MATERIAL);
+        break;
+    }
     default:
         SetNodeImage(hItem, IDB_UNKNOW);
         break;

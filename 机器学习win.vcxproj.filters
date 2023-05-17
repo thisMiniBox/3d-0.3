@@ -228,6 +228,21 @@
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹64.png">
       <Filter>资源文件</Filter>
     </Image>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\材质.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\材质64.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\摄像机64.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\图片64.png">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\网格64.png">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="resource.hm">

@@ -138,53 +138,22 @@ LRESULT CALLBACK TextOutWind::TextWndProc(HWND hWnd, UINT message, WPARAM wParam
 {
     return cTextWndProc(hWnd, message, wParam, lParam, current_project);
 }
-//位置控件消息循环
+//内容控件消息循环
 INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
     case WM_UPDATE:
-    case WM_INITDIALOG:
     {
-        Folder* folder = dynamic_cast<Folder*>(current_project->GetFocusObject());
         HWND hWndList = GetDlgItem(hDlg, IDC_FILE_VIEW);
-        //LV_COLUMN lvColumn;
-        //lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
-        //lvColumn.pszText = (wchar_t*)TEXT("Column1");
-        //lvColumn.cx = 100;
-        //ListView_InsertColumn(hWndList, 0, &lvColumn);
-
-        //// 加载图像列表
-        //HIMAGELIST hImageList = ImageList_Create(64, 64, ILC_COLOR32, 2, 2);
-        //LoadPngToList(IDB_FOLDER64, hImageList, hInstance);
-        //LoadPngToList(IDB_MODLE64, hImageList, hInstance);
-        //// 将图像列表与List控件关联
-        //ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
-
-        //// 添加项
-        //LV_ITEM lvItem = { 0 };
-        //lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
-        //lvItem.iItem = 0;
-        //lvItem.iSubItem = 0;
-        //lvItem.pszText = (wchar_t*)L"Item1";
-        //lvItem.iImage = 0;
-        //ListView_InsertItem(hWndList, &lvItem);
-
-        //lvItem.iItem = 1;
-        //lvItem.iSubItem = 0;
-        //lvItem.pszText = (wchar_t*)TEXT("Item2");
-        //lvItem.iImage = 1;
-        //ListView_InsertItem(hWndList, &lvItem);
-
-        return TRUE;
-        break;
+        return current_project->GetFocusObject()->ListControlView(hWndList,current_project->GetImageList(),current_project->GetImageListIndex());
     }
     case WM_SIZE:
     {
         RECT crect;
         GetClientRect(hDlg, &crect);
         HWND hControl = GetDlgItem(hDlg, IDC_FILE_VIEW);
-        MoveWindow(hControl, 0, 0, crect.right, crect.bottom, true);
+        MoveWindow(hControl, 10, 10, crect.right - 20, crect.bottom - 20, true);
         break;
     }
     case WM_COMMAND:

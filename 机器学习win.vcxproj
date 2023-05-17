@@ -225,7 +225,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\图片.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\图片64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\摄像机.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\摄像机64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-已打开（有）16.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-已打开（空）16.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹-未打开16.psd.png" />
@@ -233,9 +235,12 @@
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\文件夹64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\未知64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\未知文件.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\材质.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\材质64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\模型.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\模型64.png" />
     <Image Include="C:\Users\xujiacheng\Pictures\贴图\网格.png" />
+    <Image Include="C:\Users\xujiacheng\Pictures\贴图\网格64.png" />
     <Image Include="icon1.ico" />
     <Image Include="small.ico" />
     <Image Include="机器学习win.ico" />

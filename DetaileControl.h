@@ -9,14 +9,7 @@ std::wstring NumberToWString(const double value);
 void PictureDataToBitmap(const PictureData& pictureData, HBITMAP& hBitmap);
 bool ScaleBitmap(HBITMAP srcBitmap, int destWidth, int destHeight, HBITMAP& destBitmap);
 
-enum _ControlType
-{
-	CT_NAME,
-	CT_FILEVIEW,
-	CT_ROTATE,
-	CT_TRANSFORM,
-	CT_PICTURE,
-};
+
 class DetaileControl_细节菜单控件组合
 {
 protected:
@@ -42,6 +35,7 @@ public:
 	virtual _ControlType GetType()const override { return CT_FILEVIEW; }
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 private:
+	
 	Folder* m_folder;
 };
 class Name_对象名称控件 : public DetaileControl_细节菜单控件组合

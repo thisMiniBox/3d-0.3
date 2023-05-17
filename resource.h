@@ -32,10 +32,15 @@
 #define IDD_TRANSFORM                   150
 #define IDD_IOWND                       152
 #define IDD_FILE_VIEW                   153
-#define IDB_MODLE64                     154
+#define IDB_MODEL64                     154
 #define IDB_UNKNOWN64                   155
-#define IDB_PNG3                        156
 #define IDB_FOLDER64                    156
+#define IDB_MATERIAL                    157
+#define IDB_MATERIAL64                  158
+#define IDB_CAMERA64                    159
+#define IDB_PICTURE64                   160
+#define IDB_PNG5                        161
+#define IDB_MESH64                      161
 #define IDC_EDIT2                       1008
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
@@ -142,7 +147,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        157
+#define _APS_NEXT_RESOURCE_VALUE        162
 #define _APS_NEXT_COMMAND_VALUE         32814
 #define _APS_NEXT_CONTROL_VALUE         1124
 #define _APS_NEXT_SYMED_VALUE           110

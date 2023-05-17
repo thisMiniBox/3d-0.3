@@ -44,34 +44,24 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
         int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
         ShowWindow(current_project->MAINWND->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
-        LONG style = GetWindowLong(hWnd, GWL_STYLE);
+        //LONG style = GetWindowLong(hWnd, GWL_STYLE);
 
-        // 禁用调整窗口大小功能
-        style |= WS_THICKFRAME;
-        style |= WS_MAXIMIZEBOX;
+        //// 禁用调整窗口大小功能
+        //style |= WS_THICKFRAME;
+        //style |= WS_MAXIMIZEBOX;
 
-        // 更新窗口样式
-        SetWindowLong(hWnd, GWL_STYLE, style);
+        //// 更新窗口样式
+        //SetWindowLong(hWnd, GWL_STYLE, style);
         break;
     }
     case ID_OPENGL:
     {
         current_project->OutMessage("使用OpenGL绘图");
-        current_project->OutMessage("由于一直渲染会阻塞消息，所以仅当右键窗口进入控制状态才会持续渲染");
-        current_project->OutMessage("拖拽调整窗口大小已被禁用调整窗口大小请前往设置");
         delete current_project->MAINWND;
         current_project->MAINWND = new OpenGLWnd;
         int cxClient = current_project->GetRect().right - current_project->GetRect().left;
         int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
         current_project->MAINWND->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
-        LONG style = GetWindowLong(hWnd, GWL_STYLE);
-
-        // 禁用调整窗口大小功能
-        style &= ~WS_THICKFRAME;
-        style &= ~WS_MAXIMIZEBOX;
-
-        // 更新窗口样式
-        SetWindowLong(hWnd, GWL_STYLE, style);
         break;
     }
     default:

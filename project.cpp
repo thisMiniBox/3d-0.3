@@ -4,7 +4,7 @@ Controller::Controller()
 	m_RootFolder.SetName("根目录");
 	m_FocusFolder = &m_RootFolder;
 	m_FileLoad = false;
-
+	m_ImageList = nullptr;
 	FILEWND = nullptr;
 	TEXTWND = nullptr;
 	m_BottomWind = nullptr;
@@ -100,7 +100,28 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	UpdateWindow(m_hWnd);
 	Command(L"");
 	DETAWND->SetView(&m_RootFolder);
+
+	m_ImageList = ImageList_Create(64, 64, ILC_COLOR32, 7, 0);
+	LoadPngFromResources(IDB_UNKNOWN64);
+	LoadPngFromResources(IDB_FOLDER64);
+	LoadPngFromResources(IDB_MODEL64);
+	LoadPngFromResources(IDB_CAMERA64);
+	LoadPngFromResources(IDB_MESH64);
+	LoadPngFromResources(IDB_PICTURE64);
+	LoadPngFromResources(IDB_MATERIAL64);
 	return m_hWnd;
+}
+void Controller::LoadPngFromResources(int png)
+{
+	m_ImageIndex[png] = LoadPngToList(png, m_ImageList, m_hInst);
+}
+HIMAGELIST Controller::GetImageList()const
+{
+	return m_ImageList;
+}
+int Controller::GetImageListIndex(int id)
+{
+	return m_ImageIndex[id];
 }
 Controller::~Controller()
 {
@@ -437,7 +458,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 				{
 					if (!NewModel)return ReturnedOfLoadFile::_DataError;
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_of(' ');
+					charLocate = (FileData = FileData.substr(charLocate)).find_last_not_of(' ');
+					FileData = FileData.substr(0, charLocate + 1); 
 					FileData += ' ';
 					std::vector<std::string>vertexIncludeInLine;
 					while (1)
@@ -451,8 +473,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 					{
 						NewModel->GetMesh()->m_FaceIndices.push_back(faceData(vertexIncludeInLine[0] + ' ' + vertexIncludeInLine[i - 1] + ' ' + vertexIncludeInLine[i]));
 					}
-				}
-				else if (w == "g" || w == "o" || w == "mg")
+				}				else if (w == "g" || w == "o" || w == "mg")
 				{
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
 					FileData = FileData.substr(charLocate);
@@ -552,6 +573,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 			for (int i = 0; i < 3; ++i)  // 顶点索引
 			{
 				int index = new_face.a[3 * i];
+				if (index < 0)
+					index += (vertexs.size() + 1);
 				if (0 != vertex_index[index])
 				{
 					new_face.a[3 * i] = vertex_index[index];
@@ -565,6 +588,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 			for (int i = 0; i < 3; ++i)  // 法向量索引
 			{
 				int index = new_face.a[3 * i + 2];
+				if (index < 0)
+					index += (normals.size() + 1);
 				if (0 != normal_index[index])
 				{
 					new_face.a[3 * i + 2] = normal_index[index];
@@ -578,6 +603,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 			for (int i = 0; i < 3; ++i)  // 纹理坐标索引
 			{
 				int index = new_face.a[3 * i + 1];
+				if (index < 0)
+					index += (texCoords.size() + 1);
 				if (0 != texcoord_index[index])
 				{
 					new_face.a[3 * i + 1] = texcoord_index[index];
@@ -617,14 +644,16 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 		MObj->addChildModel(child);
 		ModelMeshFolder->AddFile_添加文件(child->GetMesh());
 	}
-	for (auto& Mat : mtl_材质->m_Materials)
-	{
-		ModelMaterialFolder->AddFile_添加文件(Mat.second);
-	}
-	for (auto& picture : mtl_材质->m_Picture)
-	{
-		ModelMaterialFolder->AddFile_添加文件(picture.second);
-	}
+	if (mtl_材质)
+		for (auto& Mat : mtl_材质->m_Materials)
+		{
+			ModelMaterialFolder->AddFile_添加文件(Mat.second);
+		}
+	if (mtl_材质)
+		for (auto& picture : mtl_材质->m_Picture)
+		{
+			ModelMaterialFolder->AddFile_添加文件(picture.second);
+		}
 	fclose(file);
 	if (mtl_材质)
 	{
@@ -752,4 +781,8 @@ void Controller::SetFoucusObjcet(Object* aim)
 			m_FocusFolder = &m_RootFolder;
 		DETAWND->SetView(aim);
 	}
+}
+std::unordered_map<int, int>& Controller::GetImageListIndex()
+{
+	return m_ImageIndex;
 }

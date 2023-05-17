@@ -86,31 +86,15 @@ void DetaileWind::SetView(Object* obj)
     m_target = obj;
     if (!obj)return;
     int y = m_ControlPos;
-    y += CreateContrle(CT_NAME, 0, y, m_rect.right);
-    switch (obj->GetType())
+    _ControlType ct = obj->SetDetaileView();
+    int type = 0;
+    for (int i = 0; i < sizeof(int) * 8; i++)
     {
-    case OT_FOLDER:
-    {
-        y += CreateContrle(CT_FILEVIEW, 0, y, m_rect.right, obj);
-        break;
+        type = getBit(ct, i) << i;
+        if (type != 0)
+            y += CreateContrle(type, 0, y, m_rect.right, obj);
     }
-    case OT_MODEL:
-    {
-        y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
-        break;
-    }
-    case OT_CAMERA:
-    {
-        y += CreateContrle(CT_TRANSFORM, 0, y, m_rect.right);
-        break;
-    }
-    case OT_PICTURE:
-    {
-        y += CreateContrle(CT_PICTURE, 0, y, m_rect.right, obj);
-        break;
-    }
-    }
-
+    UpDate();
 }
 void DetaileWind::SetTree(HTREEITEM htree)
 {
@@ -124,6 +108,7 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
         m_ChildControl[type] = nullptr;
         m_ChildControl.erase(type);
     }
+
     if (!m_ChildControl[type])
         switch (type)
         {
@@ -143,10 +128,10 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
             m_ChildControl[type] = new PictureControl(m_hInstance, m_hWnd, x, y, w, dynamic_cast<Picture*>(obj));
             break;
         }
-
     ShowWindow(m_ChildControl[type]->GethWnd(), SW_SHOW);
-    UpDate();
-    return m_ChildControl[type]->GetHeight();
+    int h = m_ChildControl[type]->GetHeight();
+    MoveWindow(m_ChildControl[type]->GethWnd(), 0, y, w, h, true);
+    return h;
 }
 HWND DetaileWind::CreateDialogToWind(LRESULT(CALLBACK* aWNDPROC)(HWND, UINT, WPARAM, LPARAM), LPCWSTR lpTemplate)
 {
@@ -159,12 +144,12 @@ void DetaileWind::UpDate(int type)
     {
         for (const auto& i : m_ChildControl)
         {
-            if (i.second)
+            if (i.second && i.second->IsVisible())
                 PostMessage(i.second->GethWnd(), WM_UPDATE, 0, 0);
         }
     }
     else
-        if (m_ChildControl[type])
+        if (m_ChildControl[type] && m_ChildControl[type]->IsVisible())
             PostMessage(m_ChildControl[type]->GethWnd(), WM_UPDATE, 0, 0);
 }
 

@@ -26,8 +26,13 @@ class Controller
 	BottomWindow* m_BottomWind;
 	InputOutput* m_IOWind;
 
+	HIMAGELIST m_ImageList;//贴图列表
+	std::unordered_map<int, int>m_ImageIndex;//贴图索引
+
+	void LoadPngFromResources(int);
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
+	
 public:
 	//窗口信息
 	HWND m_hWnd;
@@ -50,7 +55,12 @@ public:
 	InputOutput* GetIOWind()const;
 	BottomWindow* GetBottom()const;
 	void Size(int w, int h);
-	
+	//获取贴图列表
+	HIMAGELIST GetImageList()const;
+	//获取贴图列表的贴图索引
+	int GetImageListIndex(int);
+	std::unordered_map<int, int>& GetImageListIndex();
+
 	//上传消息
 	void OutMessage(const std::string&, const char& mode = _Message);
 	//上传消息

@@ -1,10 +1,11 @@
 #include "DetaileControl.h"
-FileContentView::FileContentView(HINSTANCE hIns,HWND parent, int x, int y, int w,Folder* f)
+FileContentView::FileContentView(HINSTANCE hInst,HWND parent, int x, int y, int w,Folder* f)
 {
     m_folder = f;
-	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_FILE_VIEW), parent, Dlgproc);
+	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_FILE_VIEW), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
+
 int DetaileControl_细节菜单控件组合::GetHeight()
 {
 	RECT m_rect = {};
