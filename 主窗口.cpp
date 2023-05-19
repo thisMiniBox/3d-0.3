@@ -2,7 +2,7 @@
 #include "机器学习win.h"
 
 HINSTANCE hInstance;
-Controller* current_project = new Controller;
+Controller* Central_control = new Controller;
 HBRUSH g_hBrush = NULL; // 全局变量，用于存储画刷
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -24,18 +24,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
     hInstance = hInstance;
-    current_project->SETWND.className = L"EDIT";
+    Central_control->SETWND.className = L"EDIT";
     InitCommonControls();
     MSG msg;
-    current_project->CreateWind(hInstance);
+    Central_control->CreateWind(hInstance);
 
     HMENU hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDC_WIN));
-    SetMenu(current_project->m_hWnd, hMenu);
+    SetMenu(Central_control->m_hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
-    SendMessage(current_project->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+    SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
 
-
+    Central_control->Command(L"loadfile D:\\3d模型\\nanosuit.obj");
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -47,7 +47,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         
     }
-    delete current_project;
+    delete Central_control;
     // 释放 GDI+ 资源
     Gdiplus::GdiplusShutdown(gdiplusToken);
 #ifdef _DEBUG
@@ -58,8 +58,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     FreeConsole();
     PostQuitMessage(0);
 #endif // DEBUG
-
-
     return (int) msg.wParam;
 }
 
@@ -70,7 +68,7 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     {
     case WM_COMMAND:
     {
-        if (HIWORD(wParam) == 0)return Menu(current_project->GethInstance(), hWnd, message, wParam, lParam, current_project);
+        if (HIWORD(wParam) == 0)return Menu(Central_control->GethInstance(), hWnd, message, wParam, lParam, Central_control);
         return DefWindowProc(hWnd, message, wParam, lParam);
         
         break;
@@ -91,7 +89,7 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
     {
         int cxClient = LOWORD(lParam);
         int cyClient = HIWORD(lParam);
-        current_project->Size(cxClient, cyClient);
+        Central_control->Size(cxClient, cyClient);
         break;
     }
     case WM_GETMINMAXINFO:
@@ -112,31 +110,31 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 //文件管理窗口消息循环
 LRESULT CALLBACK FileWind::FileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    return cFileWndProc(hWnd, message, wParam, lParam, current_project);
+    return cFileWndProc(hWnd, message, wParam, lParam, Central_control);
 }
 //画面循环**********************始
 LRESULT CALLBACK GDIWND::WndProcGDI(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    return cMainWndProc(hWnd, message, wParam, lParam, current_project);
+    return cMainWndProc(hWnd, message, wParam, lParam, Central_control);
 }
 LRESULT CALLBACK D3DWND11::WndProcD3D11(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    return cD3D11WndProc(hWnd, message, wParam, lParam, current_project);
+    return cD3D11WndProc(hWnd, message, wParam, lParam, Central_control);
 }
 LRESULT CALLBACK OpenGLWnd::WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    return cMainWndProc(hWnd, uMsg, wParam, lParam, current_project);
+    return cMainWndProc(hWnd, uMsg, wParam, lParam, Central_control);
 }
 //画面循环**********************终
 //属性窗口循环
 LRESULT CALLBACK DetaileWind::DetaileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    return cDetaileWndProc(hWnd, message, wParam, lParam, current_project);
+    return cDetaileWndProc(hWnd, message, wParam, lParam, Central_control);
 }
 //文本循环
 LRESULT CALLBACK TextOutWind::TextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    return cTextWndProc(hWnd, message, wParam, lParam, current_project);
+    return cTextWndProc(hWnd, message, wParam, lParam, Central_control);
 }
 //内容控件消息循环
 INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -146,7 +144,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     case WM_UPDATE:
     {
         HWND hWndList = GetDlgItem(hDlg, IDC_FILE_VIEW);
-        return current_project->GetFocusObject()->ListControlView(hWndList,current_project->GetImageList(),current_project->GetImageListIndex());
+        return Central_control->GetFocusObject()->ListControlView(hWndList,Central_control->GetImageList(),Central_control->GetImageListIndex());
     }
     case WM_SIZE:
     {
@@ -171,7 +169,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                 GetWindowText(hWndEdit, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.x = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().x;
+                    VEC.x = std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().x;
                     hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
                     SetWindowText(hWndEdit, L"");
                 }
@@ -188,7 +186,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                 GetWindowText(hWndEdit, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.y = (std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().y);
+                    VEC.y = (std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().y);
                     hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
                     SetWindowText(hWndEdit, L"");
                 }
@@ -205,7 +203,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                 GetWindowText(hWndEdit, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    VEC.z = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().z;
+                    VEC.z = std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().z;
                     hWndEdit = GetDlgItem(hDlg, IDC_P_ERROR);
                     SetWindowText(hWndEdit, L"");
                 }
@@ -217,8 +215,8 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                 break;
             }
             }
-            current_project->DETAWND->GetTarget()->Move(VEC);
-            InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
+            Central_control->DETAWND->GetTarget()->Move(VEC);
+            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
         }
         
         break;
@@ -272,12 +270,12 @@ INT_PTR Name_对象名称控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
     {
         wchar_t wname[128] = {};
         HWND hWndEdit = GetDlgItem(hDlg, IDC_N_NAME);
-        std::string name = current_project->DETAWND->GetTarget()->GetName();
+        std::string name = Central_control->DETAWND->GetTarget()->GetName();
         MultiByteToWideChar(CP_ACP, 0, name.c_str(), name.size(), wname, 128);
         SetWindowText(hWndEdit, wname);
         hWndEdit = GetDlgItem(hDlg, IDC_N_TYPE);
         std::wstring ws;
-        switch (current_project->DETAWND->GetTarget()->GetType())
+        switch (Central_control->DETAWND->GetTarget()->GetType())
         {
         case OT_FOLDER:
             ws = L"文件夹";
@@ -316,7 +314,7 @@ INT_PTR Name_对象名称控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
             {
                 hWndEdit = GetDlgItem(hDlg, IDC_N_NAME);
                 GetWindowText(hWndEdit, szText, _countof(szText));
-                current_project->SetFileName(current_project->DETAWND->GetTarget(), szText);
+                Central_control->SetFileName(Central_control->DETAWND->GetTarget(), szText);
                 break;
             }
             }
@@ -361,7 +359,7 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
     }
     case WM_UPDATE:
     {
-        Rotation v = current_project->DETAWND->GetTarget()->GetRotate();
+        Rotation v = Central_control->DETAWND->GetTarget()->GetRotate();
         HWND hWndControl = GetDlgItem(hDlg, IDC_RO_XEDIT);
         std::wstring wstr = NumberToWString(v.axis.x);
         SetWindowText(hWndControl, wstr.c_str());
@@ -445,7 +443,7 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         if (HIWORD(wParam) == EN_CHANGE)
         {
             HWND hWndEdit = nullptr;
-            Rotation Qua = current_project->DETAWND->GetTarget()->GetRotate();
+            Rotation Qua = Central_control->DETAWND->GetTarget()->GetRotate();
             Vector Aixs = Qua.axis;
             wchar_t szText[64];
             switch (GetDlgCtrlID(GetFocus()))
@@ -524,8 +522,8 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
             }
             if (Aixs != Vector(0, 0, 0))
                 Qua.axis = Aixs;
-            current_project->DETAWND->GetTarget()->SetRotate(Qua);
-            InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
+            Central_control->DETAWND->GetTarget()->SetRotate(Qua);
+            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
         }
 
         break;
@@ -543,9 +541,9 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
             HWND hWndControl = GetDlgItem(hDlg, IDC_RO_WEDIT);
             std::wstring wstr = std::to_wstring(nPos);
             SetWindowText(hWndControl, wstr.c_str());
-            Rotation OldQuat = current_project->DETAWND->GetTarget()->GetRotate();
+            Rotation OldQuat = Central_control->DETAWND->GetTarget()->GetRotate();
             OldQuat.angle = DegToRad(nPos);
-            current_project->DETAWND->GetTarget()->SetRotate(OldQuat);
+            Central_control->DETAWND->GetTarget()->SetRotate(OldQuat);
             break;
         }
         default:
@@ -610,7 +608,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
     }
     case WM_UPDATE:
     {
-        Vector v = current_project->GetFocusObject()->GetPosition();
+        Vector v = Central_control->GetFocusObject()->GetPosition();
         HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_X);
         std::wstring wstr = NumberToWString(v.x);
         SetWindowText(hWndControl, wstr.c_str());
@@ -620,7 +618,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_Z);
         wstr = NumberToWString(v.z);
         SetWindowText(hWndControl, wstr.c_str());
-        v = current_project->GetFocusObject()->GetScale();
+        v = Central_control->GetFocusObject()->GetScale();
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_X);
         wstr = NumberToWString(v.x);
         SetWindowText(hWndControl, wstr.c_str());
@@ -630,7 +628,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_Z);
         wstr = NumberToWString(v.z);
         SetWindowText(hWndControl, wstr.c_str());
-        Rotation rot = current_project->GetFocusObject()->GetRotate();
+        Rotation rot = Central_control->GetFocusObject()->GetRotate();
         v = rot.axis;
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_X);
         wstr = NumberToWString(v.x);
@@ -680,8 +678,8 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         {
             HWND hWndControl = (HWND)lParam;
             Vector Position;
-            Vector Scale = current_project->GetFocusObject()->GetScale();
-            Rotation rotation = current_project->GetFocusObject()->GetRotate();
+            Vector Scale = Central_control->GetFocusObject()->GetScale();
+            Rotation rotation = Central_control->GetFocusObject()->GetRotate();
             wchar_t szText[64];
             switch (GetDlgCtrlID(GetFocus()))
             {
@@ -690,7 +688,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
                 GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    Position.x = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().x;
+                    Position.x = std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().x;
                 }
                 break;
             }
@@ -699,7 +697,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
                 GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    Position.y = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().y;
+                    Position.y = std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().y;
                 }
                 break;
             }
@@ -708,7 +706,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
                 GetWindowText(hWndControl, szText, _countof(szText));
                 if (IsNumeric(szText))
                 {
-                    Position.z = std::wcstod(szText, nullptr) - current_project->DETAWND->GetTarget()->GetPosition().z;
+                    Position.z = std::wcstod(szText, nullptr) - Central_control->DETAWND->GetTarget()->GetPosition().z;
                 }
                 break;
             }
@@ -783,10 +781,10 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
                 break;
             }
             }
-            current_project->DETAWND->GetTarget()->Move(Position);
-            current_project->GetFocusObject()->SetScale(Scale);
-            current_project->GetFocusObject()->SetRotate(rotation);
-            InvalidateRect(current_project->MAINWND->GethWnd(), NULL, false);
+            Central_control->DETAWND->GetTarget()->Move(Position);
+            Central_control->GetFocusObject()->SetScale(Scale);
+            Central_control->GetFocusObject()->SetRotate(rotation);
+            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
         }
 
         break;
@@ -804,9 +802,9 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
             HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_ANG);
             std::wstring wstr = std::to_wstring(nPos);
             SetWindowText(hWndControl, wstr.c_str());
-            Rotation OldQuat = current_project->DETAWND->GetTarget()->GetRotate();
+            Rotation OldQuat = Central_control->DETAWND->GetTarget()->GetRotate();
             OldQuat.angle = DegToRad(nPos);
-            current_project->DETAWND->GetTarget()->SetRotate(OldQuat);
+            Central_control->DETAWND->GetTarget()->SetRotate(OldQuat);
             break;
         }
         default:
@@ -845,15 +843,15 @@ LRESULT CALLBACK BottomWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, L
     case WM_COMMAND:
     {
         if ((HWND)lParam)
-            current_project->GetBottom()->Select((HWND)lParam);
+            Central_control->GetBottom()->Select((HWND)lParam);
     }
     case WM_SIZE:
     {
-        if (current_project->GetBottom())
+        if (Central_control->GetBottom())
         {
             RECT rect;
             GetClientRect(hWnd, &rect);
-            current_project->GetBottom()->Size(rect.right, rect.bottom);
+            Central_control->GetBottom()->Size(rect.right, rect.bottom);
         }
         break;
     }
@@ -882,7 +880,7 @@ LRESULT CALLBACK InputOutput::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             wchar_t szText[128];
             HWND hWndControl = GetDlgItem(hWnd, IDC_IO_IN);
             GetWindowText(hWndControl, szText, _countof(szText));
-            current_project->Command(szText);
+            Central_control->Command(szText);
             SetFocus(hWndControl);
             break;
         }
@@ -891,7 +889,7 @@ LRESULT CALLBACK InputOutput::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
     }
     case WM_SIZE:
     {
-        current_project->GetIOWind()->Size();
+        Central_control->GetIOWind()->Size();
         break;
     }
     default:

@@ -203,6 +203,7 @@ public:
 	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
 	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
 	const std::vector<Vertex>& GetVertexData();
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
 };
@@ -274,16 +275,30 @@ public:
 	Picture* getMapKs() const;
 	void setMapKs(Picture* mapKs);
 	void CleanUpOpenglImageCache();
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
-	void DeleteReferenceP(Object* obj)
+	void DeleteReferenceP(Object* obj)override
 	{
+		if (!obj)return;
 		if (obj == m_MapKa)
+		{
+			m_MapKa->Dereference(this);
 			m_MapKa = nullptr;
+			return;
+		}
 		if (obj == m_MapKd)
+		{
+			m_MapKd->Dereference(this);
 			m_MapKd = nullptr;
+			return;
+		}
 		if (obj == m_MapKs)
+		{
+			m_MapKs->Dereference(this);
 			m_MapKs = nullptr;
+			return;
+		}
 	}
 private:
 	// 私有成员变量
@@ -356,7 +371,7 @@ public:
 	void SetModelParent(Model* model);
 	Model* GetModelParent() const{ return m_Parent; }
 	//材质
-	void SetMaterial(Material* material) { m_Material = material; }
+	void SetMaterial(Material* material);
 	Material* GetMaterial() const{ return m_Material; }
 	//网格
 	Mesh* GetMesh()const;
@@ -365,7 +380,20 @@ public:
 	virtual ObjectType GetType() const override { return OT_MODEL; }
 
 	glm::mat4 GetGLTransform()const;
-
+	void DeleteReferenceP(Object* obj)override
+	{
+		if (!obj)return;
+		if (obj == m_ModelMesh)
+		{
+			m_ModelMesh->Dereference(this);
+			m_ModelMesh = nullptr;
+		}
+		else if (obj == m_Material)
+		{
+			m_Material->Dereference(this);
+			m_Material = nullptr;
+		}
+	}
 	virtual void Move(const Vector3&)override;
 	// 获取物体位置，返回默认值
 	virtual Vector GetPosition() const override;

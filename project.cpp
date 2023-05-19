@@ -297,7 +297,7 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 		Model* mod = dynamic_cast<Model*>(obj);
 		glwind->DeleteModelBuffer(mod);
 	}
-	m_RootFolder.DeleteFile_删除文件(obj);
+	m_FocusFolder->DeleteFile_删除文件(obj);
 	UpdateModels();
 	if (hTree)
 		FILEWND->DeleteItem(hTree);
@@ -473,7 +473,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 					{
 						NewModel->GetMesh()->m_FaceIndices.push_back(faceData(vertexIncludeInLine[0] + ' ' + vertexIncludeInLine[i - 1] + ' ' + vertexIncludeInLine[i]));
 					}
-				}				else if (w == "g" || w == "o" || w == "mg")
+				}				
+				else if (w == "g" || w == "o" || w == "mg")
 				{
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
 					FileData = FileData.substr(charLocate);

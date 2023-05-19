@@ -597,6 +597,8 @@ Picture* Material::getMapKa() const {
 }
 
 inline void Material::setMapKa(Picture* mapKa) {
+	if (m_MapKa)
+		m_MapKa->Dereference(this);
 	m_MapKa = mapKa;
 	if (m_MapKa)
 		m_MapKa->Reference(this);
@@ -607,6 +609,8 @@ Picture* Material::getMapKd() const {
 }
 
 inline void Material::setMapKd(Picture* mapKd) {
+	if (m_MapKd)
+		m_MapKd->Dereference(this);
 	m_MapKd = mapKd;
 	if (m_MapKd)
 		m_MapKd->Reference(this);
@@ -617,6 +621,8 @@ Picture* Material::getMapKs() const {
 }
 
 inline void Material::setMapKs(Picture* mapKs) {
+	if (m_MapKs)
+		m_MapKs->Dereference(this);
 	m_MapKs = mapKs;
 	if (m_MapKs)
 		m_MapKs->Reference(this);
@@ -639,7 +645,8 @@ void Object::DeleteReferenceP(Object*)
 {}
 Material::~Material()
 {
-	for (auto& re : m_Reference)
+	auto ls = m_Reference;
+	for (auto& re : ls)
 	{
 		re->DeleteReferenceP(this);
 	}
@@ -942,7 +949,11 @@ const std::vector<Vertex>& Mesh::GetVertexData()
 }
 void Model::SetMesh(Mesh* mesh)
 {
+	if (m_ModelMesh)
+		m_ModelMesh->Dereference(this);
 	m_ModelMesh = mesh;
+	if (m_ModelMesh)
+		m_ModelMesh->Reference(this);
 }
 glm::mat4 Model::GetGLTransform()const
 {
@@ -969,7 +980,8 @@ Picture::~Picture()
 {
 	if (m_Data)
 		stbi_image_free(m_Data);
-	for (auto& re : m_Reference)
+	auto ls = m_Reference;
+	for (auto& re : ls)
 	{
 		re->DeleteReferenceP(this);
 	}
@@ -1032,7 +1044,8 @@ Mesh::Mesh(std::string& Name)
 }
 Mesh::~Mesh()
 {
-	for (auto& re : m_Reference)
+	auto ls = m_Reference;
+	for (auto& re : ls)
 	{
 		re->DeleteReferenceP(this);
 	}
@@ -1275,59 +1288,32 @@ ObjectType Keyframe::GetType()const
 }
 INT_PTR Folder::ListControlView(const HWND hWndList,HIMAGELIST hImageList, std::unordered_map<int, int>& index)
 {
-	ListView_SetView(hWndList, LV_VIEW_ICON);
-	ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
-	int item = 0;
+	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
-	// 添加项
-	LV_ITEM lvItem = { 0 };
-	lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+	int item = 0;
 
-	lvItem.iSubItem = 0;
+	LVCOLUMN lvColumn = { 0 };
+	lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvColumn.cx = 100;
+	lvColumn.pszText = (LPWSTR)L"文件名";
+	ListView_InsertColumn(hWndList, 0, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"文件类型";
+	ListView_InsertColumn(hWndList, 1, &lvColumn);
+	LVITEM lvItem = { 0 };
+	lvItem.mask = LVIF_TEXT | LVIF_PARAM;
 	std::wstring name;
 	for (auto& c : m_Child)
 	{
-		lvItem.iItem = item;
-		item++;
 		name = strwstr(c.second->GetName());
-		lvItem.pszText = (wchar_t*)name.c_str();
-		switch (c.second->GetType())
-		{
-		case OT_FOLDER:
-		{
-			lvItem.iImage = index[IDB_FOLDER64];
-			break;
-		}
-		case OT_MODEL:
-		{
-			lvItem.iImage = index[IDB_MODEL64];
-			break;
-		}
-		case OT_CAMERA:
-		{
-			lvItem.iImage = index[IDB_CAMERA64];
-			break;
-		}
-		case OT_MESH:
-		{
-			lvItem.iImage = index[IDB_MESH64];
-			break;
-		}
-		case OT_PICTURE:
-		{
-			lvItem.iImage = index[IDB_PICTURE64];
-			break;
-		}
-		case OT_MATERIAL:
-		{
-			lvItem.iImage = index[IDB_MATERIAL64];
-			break;
-		}
-		default:
-			lvItem.iImage = index[IDB_UNKNOWN64];
-			break;
-		}
+		lvItem.lParam = (LPARAM)c.second;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
 		ListView_InsertItem(hWndList, &lvItem);
+
+		name = ObjectTypeToWstr(c.second->GetType());
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		item++;
 	}
 	return TRUE;
 }
@@ -1398,35 +1384,255 @@ bool Object::IsReference(Object* obj)const
 }
 INT_PTR Model::ListControlView(const HWND hWndList, HIMAGELIST hImageList, std::unordered_map<int, int>& index)
 {
-	ListView_SetView(hWndList, LV_VIEW_ICON);
-	ListView_SetImageList(hWndList, hImageList, LVSIL_NORMAL);
-	int item = 0;
+	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
-	// 添加项
-	LV_ITEM lvItem = { 0 };
-	lvItem.mask = LVIF_TEXT | LVIF_IMAGE;
+	int item = 0;
 
-	lvItem.iSubItem = 0;
+	LVCOLUMN lvColumn = { 0 };
+	lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvColumn.cx = 100;
+	lvColumn.pszText = (LPWSTR)L"名称";
+	ListView_InsertColumn(hWndList, 0, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"类型";
+	ListView_InsertColumn(hWndList, 1, &lvColumn);
+	LVITEM lvItem = { 0 };
+	lvItem.mask = LVIF_TEXT | LVIF_PARAM;
 	std::wstring name;
-	lvItem.iItem = item;
-	item++;
-	if(m_ModelMesh)
-	{
-		name = strwstr(m_ModelMesh->GetName());
-		lvItem.pszText = (wchar_t*)name.c_str();
-		lvItem.iImage = index[IDB_MESH64];
-		ListView_InsertItem(hWndList, &lvItem);
-	}
-	if(m_Material)
+	if (m_Material)
 	{
 		name = strwstr(m_Material->GetName());
-		lvItem.pszText = (wchar_t*)name.c_str();
-		lvItem.iImage = index[IDB_MATERIAL64];
+		lvItem.lParam = (LPARAM)(Object*)m_Material;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
 		ListView_InsertItem(hWndList, &lvItem);
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)L"材质");
+		item++;
+	}
+	if (m_ModelMesh)
+	{
+		name = strwstr(m_ModelMesh->GetName());
+		lvItem.lParam = (LPARAM)(Object*)m_ModelMesh;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)L"网格");
+		item++;
+	}
+	for (auto& c : m_ChildModel)
+	{
+		name = strwstr(c->GetName());
+		lvItem.lParam = (LPARAM)(Object*)c;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)L"子模型");
+		item++;
 	}
 	return TRUE;
 }
 _ControlType Object::SetDetaileView()const
 {
 	return CT_NAME;
+}
+void Model::SetMaterial(Material * material)
+{ 
+	if (m_Material)
+		m_Material->Dereference(this);
+	m_Material = material;
+	if (m_Material)
+		m_Material->Reference(this);
+}
+INT_PTR Mesh::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)
+{
+	while (ListView_DeleteColumn(hWndList, 0));
+	ListView_DeleteAllItems(hWndList);
+	ListView_SetView(hWndList, LV_VIEW_TILE);
+	int item = 0;
+
+	LVCOLUMN lvColumn = { 0 };
+	lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvColumn.cx = 70;
+	lvColumn.pszText = (LPWSTR)L"顶点位置x";
+	ListView_InsertColumn(hWndList, 0, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"顶点位置y";
+	ListView_InsertColumn(hWndList, 1, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"顶点位置z";
+	ListView_InsertColumn(hWndList, 2, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"法向量x";
+	ListView_InsertColumn(hWndList, 3, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"法向量y";
+	ListView_InsertColumn(hWndList, 4, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"法向量z";
+	ListView_InsertColumn(hWndList, 5, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"贴图x";
+	ListView_InsertColumn(hWndList, 6, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"贴图y";
+	ListView_InsertColumn(hWndList, 7, &lvColumn);
+	LVITEM lvItem = { 0 };
+	std::wstring name;
+	for (auto& c : m_Data)
+	{
+		if (item > 100)break;
+		name = std::to_wstring(c.position.x);
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = std::to_wstring(c.position.y);
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.position.z);
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.normal.x);
+		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.normal.y);
+		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.normal.z);
+		ListView_SetItemText(hWndList, item, 5, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.texCoord.x);
+		ListView_SetItemText(hWndList, item, 6, (LPWSTR)name.c_str());
+		name = std::to_wstring(c.texCoord.y);
+		ListView_SetItemText(hWndList, item, 7, (LPWSTR)name.c_str());
+		item++;
+	}
+	return 0;
+}
+inline void uplistToListControl(int& list,int x, HWND hList, Object* content, std::wstring& name)
+{
+	if (content)
+	{
+		LVITEM lvItem = { 0 };
+		name = strwstr(content->GetName());
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = list;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hList, &lvItem);
+		ListView_SetItemText(hList, list, x, (LPWSTR)L"材质");
+		list++;
+	}
+}
+INT_PTR Material::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)
+{
+	while (ListView_DeleteColumn(hWndList, 0));
+	ListView_DeleteAllItems(hWndList);
+	int item = 0;
+
+	LVCOLUMN lvColumn = { 0 };
+	lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
+	lvColumn.cx = 100;
+	lvColumn.pszText = (LPWSTR)L"名称";
+	ListView_InsertColumn(hWndList, 0, &lvColumn);
+	lvColumn.cx = 70;
+	lvColumn.pszText = (LPWSTR)L"类型";
+	ListView_InsertColumn(hWndList, 1, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"R";
+	ListView_InsertColumn(hWndList, 2, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"G";
+	ListView_InsertColumn(hWndList, 3, &lvColumn);
+	lvColumn.pszText = (LPWSTR)L"B";
+	ListView_InsertColumn(hWndList, 4, &lvColumn);
+	LVITEM lvItem = { 0 };
+	std::wstring name;
+	lvItem.mask = LVIF_TEXT | LVIF_PARAM;
+	if (m_MapKa)
+	{
+		name = strwstr(m_MapKa->GetName());
+		lvItem.lParam = (LPARAM)(Object*)m_MapKa;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = ObjectTypeToWstr(m_MapKa->GetType());
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = L"环境光";
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		item++;
+	}
+	if (m_MapKd)
+	{
+		name = strwstr(m_MapKd->GetName());
+		lvItem.lParam = (LPARAM)(Object*)m_MapKd;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = ObjectTypeToWstr(m_MapKd->GetType());
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = L"漫反射";
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		item++;
+	}
+	if (m_MapKs)
+	{
+		name = strwstr(m_MapKs->GetName());
+		lvItem.lParam = (LPARAM)(Object*)m_MapKs;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = ObjectTypeToWstr(m_MapKs->GetType());
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = L"镜面反射";
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		item++;
+	}
+	if (m_Ka)
+	{
+		name = L"环境光";
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = L"颜色";
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ka[0]);
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ka[1]);
+		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ka[2]);
+		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+		item++;
+	}
+	if (m_Kd)
+	{
+		name = L"漫反射";
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = L"颜色";
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Kd[0]);
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Kd[1]);
+		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Kd[2]);
+		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+		item++;
+	}
+	if (m_Ks)
+	{
+		name = L"镜面反射";
+		lvItem.mask = LVIF_TEXT;
+		lvItem.iItem = item;
+		lvItem.iSubItem = 0;
+		lvItem.pszText = (LPWSTR)name.c_str();
+		ListView_InsertItem(hWndList, &lvItem);
+		name = L"颜色";
+		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ks[0]);
+		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ks[1]);
+		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+		name = std::to_wstring(m_Ks[2]);
+		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+		item++;
+	}
+	return 0;
 }

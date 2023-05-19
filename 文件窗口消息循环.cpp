@@ -1,21 +1,21 @@
  #include"消息循环声明.h"
-LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* current_project)
+LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* Central_control)
 {
     switch (message)
     {
     case WM_NOTIFY:
     {
         LPNMHDR lphr = (LPNMHDR)lParam;
-        if (lphr->hwndFrom == current_project->FILEWND->GetTree())//判断是否是树形控件发来的消息
+        if (lphr->hwndFrom == Central_control->FILEWND->GetTree())//判断是否是树形控件发来的消息
         {
             switch (lphr->code)
             {
             case NM_CLICK://鼠标单击
             {
-                Object* o = current_project->FILEWND->GetMousePositionItemData();
+                Object* o = Central_control->FILEWND->GetMousePositionItemData();
                 if (!o)break;
-                current_project->SetFoucusObjcet(o);
-                current_project->DETAWND->SetTree(current_project->FILEWND->GetMousePositionItem());
+                Central_control->SetFoucusObjcet(o);
+                Central_control->DETAWND->SetTree(Central_control->FILEWND->GetMousePositionItem());
             }
             break;
             }
@@ -38,26 +38,26 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         {
         case ID_FM_DELETE:
         {
-            if (current_project->m_FileLoad)
+            if (Central_control->m_FileLoad)
             {
-                current_project->OutMessage("正在加载文件，无法进行删除操作", _Warning);
+                Central_control->OutMessage("正在加载文件，无法进行删除操作", _Warning);
                 break;
             }
-            Object* ta = current_project->FILEWND->GetSelectedItemData();
+            Object* ta = Central_control->FILEWND->GetSelectedItemData();
             switch (ta->GetType())
             {
             case OT_CAMERA:
             {
                 Camera* v = dynamic_cast<Camera*>(ta);
-                if (v == current_project->view)
+                if (v == Central_control->view)
                 {
-                    current_project->OutMessage("不能删除当前视角摄像机", _Error);
+                    Central_control->OutMessage("不能删除当前视角摄像机", _Error);
                     break;
                 }
             }
             default:
             {
-                current_project->DeleteObject(ta, current_project->FILEWND->GetSelectedItem());
+                Central_control->DeleteObject(ta, Central_control->FILEWND->GetSelectedItem());
             }
             break;
             }
@@ -65,34 +65,34 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         }
         case ID_FM_CREATECAMERA:
         {
-            Object* par = current_project->GetFocusObject();
+            Object* par = Central_control->GetFocusObject();
             if (par->GetType() == OT_FOLDER)
-                current_project->CreateObject(dynamic_cast<Folder*>(par), "新建摄像机", OT_CAMERA);
+                Central_control->CreateObject(dynamic_cast<Folder*>(par), "新建摄像机", OT_CAMERA);
             else
-                current_project->CreateObject(par->GetParent(), "新建摄像机", OT_CAMERA);
+                Central_control->CreateObject(par->GetParent(), "新建摄像机", OT_CAMERA);
             break;
         }
         case ID_FM_CREATEMODEL:
         {
-            Object* par = current_project->GetFocusObject();
+            Object* par = Central_control->GetFocusObject();
             if (par->GetType() == OT_FOLDER)
-                current_project->CreateObject(dynamic_cast<Folder*>(par), "新建模型", OT_MODEL);
+                Central_control->CreateObject(dynamic_cast<Folder*>(par), "新建模型", OT_MODEL);
             else
-                current_project->CreateObject(par->GetParent(), "新建模型", OT_MODEL);
+                Central_control->CreateObject(par->GetParent(), "新建模型", OT_MODEL);
             break;
         }
         case ID_FM_CREATEFOLDER:
         {
-            Object* par = current_project->DETAWND->GetTarget();
+            Object* par = Central_control->DETAWND->GetTarget();
             if (par && par->GetType() == OT_FOLDER)
-                current_project->CreateObject(dynamic_cast<Folder*>(par));
+                Central_control->CreateObject(dynamic_cast<Folder*>(par));
             else
-                current_project->CreateObject();
+                Central_control->CreateObject();
             break;
         }
         case ID_FM_UPDATE:
         {
-            current_project->UpdateFileView();
+            Central_control->UpdateFileView();
         }
         default:
             break;
@@ -105,7 +105,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
         int cxClient = LOWORD(lParam);  // 获得客户区宽度
         int cyClient = HIWORD(lParam);
-        current_project->FILEWND->MoveTree(0, 0, cxClient, cyClient);
+        Central_control->FILEWND->MoveTree(0, 0, cxClient, cyClient);
         break;
     }
     case WM_CREATE:
