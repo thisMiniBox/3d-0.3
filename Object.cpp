@@ -906,7 +906,27 @@ void Model::Move(const Vector3& m)
 {
 	move(m);
 }
-
+// 切换选中状态
+void Model::ToggleSelection()
+{
+	m_Selected = !m_Selected;
+	for (auto c : m_ChildModel)
+		c->ToggleSelection();
+}
+// 物体被选中时调用
+void Model::Selected()
+{
+	m_Selected = true;
+	for (auto c : m_ChildModel)
+		c->Selected();
+}
+// 物体取消选中时调用
+void Model::Unselected()
+{
+	m_Selected = false;
+	for (auto c : m_ChildModel)
+		c->Unselected();
+}
 void Model::addChildModel(Model* model) {
 	if (!model) {
 		return;

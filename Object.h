@@ -55,9 +55,9 @@ public:
 	// 设置物体名称
 	void SetName(std::string NewName);
 	//切换选中状态
-	void ToggleSelection();
-	void Selected();
-	void Unselected();
+	virtual void ToggleSelection();
+	virtual void Selected();
+	virtual void Unselected();
 	//获取选中状态
 	bool IsSelected();
 	
@@ -394,27 +394,38 @@ public:
 			m_Material = nullptr;
 		}
 	}
-	virtual void Move(const Vector3&)override;
+	// 切换选中状态
+	void ToggleSelection() override;
+	// 物体被选中时调用
+	void Selected() override;
+	// 物体取消选中时调用
+	void Unselected() override;
+	// 移动物体并更新变换矩阵
+	void Move(const Vector3&) override;
 	// 获取物体位置，返回默认值
-	virtual Vector GetPosition() const override;
+	// 如果子类未重写该函数，则返回默认值
+	Vector GetPosition() const override;
 	// 获取物体世界坐标，返回默认值
-	virtual Vector GetWorldPosition() const override;
-	// 获取旋转
-	virtual Rotation GetRotate()const override;
-	// 设定旋转
-	virtual void SetRotate(const Rotation&)override;
-	//旋转
-	virtual void Rotate(const Rotation&)override;
-	// 设置物体位置
-	virtual void SetPosition(const vec::Vector&)override;
-	//删除关联物体
-	virtual void DeleteChildObject()override;
-	// 获取缩放
-	virtual Vector3 GetScale()const override;
-	//设置缩放
-	virtual void SetScale(const Vector3&)override;
-	//缩放
-	virtual void Scale(const Vector3&)override;
+	// 如果子类未重写该函数，则返回默认值
+	Vector GetWorldPosition() const override;
+	// 获取物体旋转角度
+	// 如果子类未重写该函数，则返回默认值
+	Rotation GetRotate() const override;
+	// 设定物体的旋转角度
+	void SetRotate(const Rotation&) override;
+	// 对物体进行旋转操作并更新变换矩阵
+	void Rotate(const Rotation&) override;
+	// 设置物体的位置并更新变换矩阵
+	void SetPosition(const Vector&) override;
+	// 删除子物体
+	void DeleteChildObject() override;
+	// 获取物体缩放比例，返回默认值
+	// 如果子类未重写该函数，则返回默认值
+	Vector3 GetScale() const override;
+	// 设置物体缩放比例并更新变换矩阵
+	void SetScale(const Vector3&) override;
+	// 对物体进行缩放操作并更新变换矩阵
+	void Scale(const Vector3&) override;
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }

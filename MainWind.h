@@ -72,7 +72,7 @@ public:
 	virtual void Draw(const std::vector<Model*>& model, const Camera& camera)override;
 	int GetType() { return MGDIWND; }
 	static LRESULT CALLBACK WndProcGDI(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-	std::vector<Outface> ProjectTriangles(const std::vector<FACE>&, const Camera&);
+	std::vector<Outface> ProjectTriangles(const std::vector<FACE>&, const Camera&, COLORREF color = 0);
 };
 #include<glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -80,80 +80,15 @@ public:
 
 #include"Shader.h"
 #pragma comment (lib,"opengl32.lib")
+unsigned int loadCubemap(std::vector<std::string> faces);
 unsigned int loadTexture(char const* path);
 class OldModelBuffer {
 public:
-	OldModelBuffer(Model* model, OpenGLShader* shader = nullptr)
-		: m_Model(model), m_Shader(shader),m_ModelMatrix(glm::mat4(1.0))
-	{
-		// 创建VAO
-		glGenVertexArrays(1, &m_VAO);
-		glBindVertexArray(m_VAO);
+	OldModelBuffer(Model* model, OpenGLShader* shader = nullptr);
 
-		// 创建VBO并存储顶点数据
-		glGenBuffers(1, &m_VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->GetVertexData().size(),
-			m_Model->GetMesh()->GetVertexData().data(), GL_STATIC_DRAW);
+	~OldModelBuffer();
 
-		// 指定顶点属性指针
-		glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(2, 2, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-		glEnableVertexAttribArray(2);
-
-		// 解绑VAO和VBO
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		m_DiffuseMap = 0;
-		m_MirrorMap = 0;
-		if (m_Model->GetMaterial())
-		{
-			if (m_Model->GetMaterial()->getMapKd())
-			{
-				m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->loadTexture();
-				if (m_DiffuseMap == 0)
-					std::cout << m_Model->GetName() << "漫反射材质加载失败" << std::endl;
-			}
-			if (m_Model->GetMaterial()->getMapKs())
-			{
-				m_MirrorMap = m_Model->GetMaterial()->getMapKs()->loadTexture();
-				if (m_MirrorMap == 0)
-					std::cout << m_Model->GetName() << "镜面反射材质加载失败" << std::endl;
-			}
-		}
-
-		m_Shader->use();
-		m_Shader->setInt("material.diffuse", m_DiffuseMap);
-		m_Shader->setInt("material.specular", m_MirrorMap);
-	}
-
-	~OldModelBuffer()
-	{
-		glDeleteVertexArrays(1, &m_VAO);
-		glDeleteBuffers(1, &m_VBO);
-		glDeleteTextures(1, &m_DiffuseMap);
-		glDeleteTextures(1, &m_MirrorMap);
-	}
-
-	void Draw()
-	{
-		if (m_Shader != nullptr)
-		{
-			m_Shader->use();
-			m_Shader->setMat4("model", m_ModelMatrix);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_2D, m_MirrorMap);
-
-			glBindVertexArray(m_VAO);
-			glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->GetVertexData().size());
-			glBindVertexArray(0);
-		}
-	}
+	void Draw();
 
 	void SetModelMatrix(glm::mat4 model)
 	{
@@ -187,13 +122,14 @@ public:
 	virtual void SetRect(RECT rect)override;
 	bool AddModelToBuffer(Model*);
 	void DeleteModelBuffer(Model*);
-	void SetModelShader(const char* vertexPath, const char* fragmentPath);
-	void SetLightShader(const char* vertexPath, const char* fragmentPath);
+
+	int CreateShader(const char* vertexPath, const char* fragmentPath, int id);
+	OpenGLShader* GetShader(int id) const;
 	static LRESULT CALLBACK WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void ResetOpenGLViewport();
 private:
 	HGLRC m_hglrc;
 	std::unordered_map<Model*, OldModelBuffer*>m_models;
-	OpenGLShader* m_ModelShader;
-	OpenGLShader* m_LightShader;
+	std::unordered_map<int, OpenGLShader*>m_Shader;
+	UINT skyboxVAO, skyboxVBO, skyCubemapTexture;
 };

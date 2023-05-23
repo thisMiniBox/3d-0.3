@@ -100,6 +100,15 @@ typedef struct WndMsg
 	RECT m_rect;
 	WndMsg() :hWnd(nullptr) { m_rect = { 0 }; }
 }WndMsg;
+enum ShaderID
+{
+	SI_Empty,
+	SI_ModelShader,
+	SI_LightShader,
+	SI_StrokeShader,
+	SI_SkyBoxShader,
+	SI_User,
+};
 ATOM MyRegisterClass(HINSTANCE   hInstance,
 	LPCWSTR     lpszClassName,
 	LRESULT(*wnd_proc)(HWND, UINT, WPARAM, LPARAM),

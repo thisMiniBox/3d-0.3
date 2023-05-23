@@ -307,7 +307,7 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 
 ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 {
-	OutMessage(L"开始加载文件");
+	OutMessage(L"开始加载文件" + path);
 	std::wstring extension = path.substr(path.find_last_of('.') + 1);
 	ReturnedOfLoadFile error = ReturnedOfLoadFile::_Fail;
 	if (extension == L"obj")
@@ -776,11 +776,15 @@ void Controller::SetFoucusObjcet(Object* aim)
 {
 	if (aim)
 	{
+		Object* olda = GetFocusObject();
+		if (olda)
+			olda->Unselected();
 		if (aim->GetParent())
 			m_FocusFolder = aim->GetParent();
 		else
 			m_FocusFolder = &m_RootFolder;
 		DETAWND->SetView(aim);
+		aim->Selected();
 	}
 }
 std::unordered_map<int, int>& Controller::GetImageListIndex()

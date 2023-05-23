@@ -91,15 +91,17 @@ void GDIWND::Draw(const std::vector<Model*>& Models, const Camera& camera)
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP memBitmap = CreateCompatibleBitmap(hdc, m_width, m_height);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, memBitmap);
-
+    COLORREF color = RGB(200, 200, 100);
     // 准备绘制三角形
     std::vector<Outface> faces;
     for (const auto& m : model)
     {
-        // 计算模型投影后的所有三角形面
         std::vector<FACE> triFaces = m->GetTriFace();
-        std::vector<Outface> outfaces = ProjectTriangles(triFaces, camera);
-
+        std::vector<Outface> outfaces;
+        if (m->IsSelected())
+            outfaces = ProjectTriangles(triFaces, camera, color);
+        else
+            outfaces = ProjectTriangles(triFaces, camera);
         // 将三角形面添加到待绘制列表中
         faces.insert(faces.end(), outfaces.begin(), outfaces.end());
     }
@@ -130,7 +132,7 @@ void GDIWND::Draw(const std::vector<Model*>& Models, const Camera& camera)
 }
 
 
-std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, const Camera& camera)
+std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, const Camera& camera,COLORREF color)
 {
     // 计算视图矩阵和投影矩阵
     Matrix4 viewMat = camera.GetView();
@@ -164,7 +166,10 @@ std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, co
         di = dir.Length();
         outface.point[2].x = (dir * CRight) / CRight.Length() * fov / di + (float)m_width / 2;
         outface.point[2].y = -(dir * CUp) / CUp.Length() * fov / di + (float)m_height / 2;
-        outface.color = face.color;
+        if (color == 0)
+            outface.color = face.color;
+        else
+            outface.color = color;
 
         // 将投影后的面添加到输出列表中
         outfaces.push_back(outface);
@@ -347,7 +352,7 @@ D3DWND11::~D3DWND11()
     ReleaseResources();
 }
 OpenGLWnd::OpenGLWnd()
-    : m_hglrc(nullptr), m_ModelShader(nullptr), m_LightShader(nullptr)
+    : m_hglrc(nullptr)
 {
     WndClassName = L"OpenGL_WindowClass";
     WNDCLASSEX wcex;
@@ -367,8 +372,6 @@ OpenGLWnd::~OpenGLWnd()
     ReleaseDC(m_hWnd, m_hdc);
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(m_hglrc);
-    if (m_ModelShader)delete m_ModelShader;
-    if (m_LightShader)delete m_LightShader;
     for (const auto p : m_models)
     {
         if (p.first && p.first->GetMaterial())
@@ -420,19 +423,120 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
         std::cout << "Failed to initialize GLAD" << std::endl;
         return NULL;
     }
-
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     // 设置视口大小
     glViewport(0, 0, w, h); // w和h分别是窗口的宽度和高度
-    m_ModelShader = new OpenGLShader("Shader/ModelShader.vs", "Shader/ModelShader.fs");
-    m_LightShader = new OpenGLShader("Shader/LightShader.vs", "Shader/LightShader.fs");
+    CreateShader("Shader/ModelShader.vs", "Shader/ModelShader.fs", SI_ModelShader);
+    CreateShader("Shader/LightShader.vs", "Shader/LightShader.fs", SI_LightShader);
+    CreateShader("Shader/ModelShader.vs", "Shader/Stroke.fs", SI_StrokeShader);
+    CreateShader("Shader/SkyBox.vs", "Shader/SkyBox.fs", SI_SkyBoxShader);
+    std::vector<std::string> faces
+    {
+        "skybox/right.jpg",
+        "skybox/left.jpg",
+        "skybox/top.jpg",
+        "skybox/bottom.jpg",
+        "skybox/front.jpg",
+        "skybox/back.jpg"
+    };
+    skyCubemapTexture = loadCubemap(faces);
+    if (skyCubemapTexture)
+        std::cout << "天空球加载成功" << std::endl;
+    float skyboxVertices[] = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+    glGenVertexArrays(1, &skyboxVAO);
+    glGenBuffers(1, &skyboxVBO);
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    OpenGLShader* skyboxShader = GetShader(SI_SkyBoxShader);
+    skyboxShader->use();
+    skyboxShader->setInt("skybox", 0);
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
     return m_hWnd;
 
 }
+int OpenGLWnd::CreateShader(const char* vertexPath, const char* fragmentPath,int id)
+{
+    OpenGLShader* Shader = new OpenGLShader(vertexPath, fragmentPath);
+    if (!Shader)
+        return SI_Empty;
+    if (id == SI_Empty || m_Shader.count(id) != 0)
+    {
+        id += SI_User;
+        while (true)
+        {
+            if (m_Shader.count(id) == 0)
+                break;
+            id++;
+        }
+    }
+    m_Shader.insert(std::make_pair(id, Shader));
+    return id;
+}
+OpenGLShader* OpenGLWnd::GetShader(int id) const 
+{
+    auto it = m_Shader.find(id);
+    if (it != m_Shader.end()) 
+        return it->second;
+    else 
+        return nullptr;
+}
+
 bool OpenGLWnd::AddModelToBuffer(Model* model)
 {
-    m_models[model] = new OldModelBuffer(model, m_ModelShader);
+    m_models[model] = new OldModelBuffer(model, GetShader(SI_ModelShader));
     if (m_models[model])
         return true;
     return false;
@@ -474,53 +578,65 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     PAINTSTRUCT ps;
     m_hdc = BeginPaint(m_hWnd, &ps);
     wglMakeCurrent(m_hdc, m_hglrc);
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    // view/projection transformations
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    OpenGLShader* CurrentShader = nullptr;
     glm::mat4 projection = glm::perspective(glm::radians(camera.GetFieldOfView()),camera.GetAspectRatio(), camera.GetNear(), camera.GetFar());
     glm::mat4 view = camera.GetGLMView();
-    m_ModelShader->setMat4("projection", projection);
-    m_ModelShader->setMat4("view", view);
-    
-    // world transformation
-    glm::mat4 model = glm::mat4(1.0f);
-    m_ModelShader->setMat4("model", model);
 
-    glm::mat4 modelP = glm::mat4(1.0f);
+    glDepthMask(GL_FALSE);
+    CurrentShader = GetShader(SI_SkyBoxShader);
+    CurrentShader->use();
+    CurrentShader->setMat4("projection", projection);
+    CurrentShader->setMat4("view", glm::mat4(glm::mat3(view)));
+    glBindVertexArray(skyboxVAO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubemapTexture);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthMask(GL_TRUE);
+
+    CurrentShader = GetShader(SI_ModelShader);
+    CurrentShader->use();
+    CurrentShader->setMat4("projection", projection);
+    CurrentShader->setMat4("view", view);
+    glm::mat4 modelTransform = glm::mat4(1.0f);
     for (const auto& model : models)
     {
-        if (!model->GetMesh())continue;
+        if (!model->GetMesh())
+            continue;
         if (m_models[model] == nullptr)
-            m_models[model] = new OldModelBuffer(model, m_ModelShader);
-        modelP = model->GetGLTransform();
-        m_models[model]->SetModelMatrix(modelP);
+            m_models[model] = new OldModelBuffer(model, CurrentShader);
+        modelTransform = model->GetGLTransform();
+        m_models[model]->SetShader(CurrentShader);
+        m_models[model]->SetModelMatrix(modelTransform);
         m_models[model]->Draw();
     }
+    CurrentShader = GetShader(SI_StrokeShader);
+    CurrentShader->use();
+    CurrentShader->setMat4("projection", projection);
+    CurrentShader->setMat4("view", view);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    for (const auto& model : models)
+    {
+        if (!model->GetMesh() || !model->IsSelected())
+            continue;
+        modelTransform = model->GetGLTransform();
+        m_models[model]->SetShader(CurrentShader);
+        m_models[model]->SetModelMatrix(modelTransform);
+        m_models[model]->Draw();
+    }
+    glStencilMask(0xFF);
+    glStencilFunc(GL_ALWAYS, 0, 0xFF);
+    glEnable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     SwapBuffers(GetDC(m_hWnd));
     EndPaint(m_hWnd, &ps);
 }
 
-
-void OpenGLWnd::SetModelShader(const char* vertexPath, const char* fragmentPath)
-{
-    if (m_ModelShader)
-    {
-        delete m_ModelShader;
-        m_ModelShader = nullptr;
-    }
-    m_ModelShader = new OpenGLShader(vertexPath, fragmentPath);
-}
-void OpenGLWnd::SetLightShader(const char* vertexPath, const char* fragmentPath)
-{
-    if (m_LightShader)
-    {
-        delete m_LightShader;
-        m_LightShader = nullptr;
-    }
-    m_LightShader = new OpenGLShader(vertexPath, fragmentPath);
-}
 void OpenGLWnd::ResetOpenGLViewport()
 {
     glViewport(0, 0, m_width, m_height);
@@ -560,4 +676,104 @@ unsigned int loadTexture(char const* path)
     }
 
     return textureID;
+}
+unsigned int loadCubemap(std::vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+OldModelBuffer::OldModelBuffer(Model* model, OpenGLShader* shader)
+    : m_Model(model), m_Shader(shader), m_ModelMatrix(glm::mat4(1.0))
+{
+    // 创建VAO
+    glGenVertexArrays(1, &m_VAO);
+    glBindVertexArray(m_VAO);
+
+    // 创建VBO并存储顶点数据
+    glGenBuffers(1, &m_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->GetVertexData().size(),
+        m_Model->GetMesh()->GetVertexData().data(), GL_STATIC_DRAW);
+
+    // 指定顶点属性指针
+    glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glEnableVertexAttribArray(2);
+
+    // 解绑VAO和VBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    m_DiffuseMap = 0;
+    m_MirrorMap = 0;
+    if (m_Model->GetMaterial())
+    {
+        if (m_Model->GetMaterial()->getMapKd())
+        {
+            m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->loadTexture();
+            if (m_DiffuseMap == 0)
+                std::cout << m_Model->GetName() << "漫反射材质加载失败" << std::endl;
+        }
+        if (m_Model->GetMaterial()->getMapKs())
+        {
+            m_MirrorMap = m_Model->GetMaterial()->getMapKs()->loadTexture();
+            if (m_MirrorMap == 0)
+                std::cout << m_Model->GetName() << "镜面反射材质加载失败" << std::endl;
+        }
+    }
+
+    m_Shader->use();
+    m_Shader->setInt("material.diffuse", m_DiffuseMap);
+    m_Shader->setInt("material.specular", m_MirrorMap);
+}
+OldModelBuffer::~OldModelBuffer()
+{
+    glDeleteVertexArrays(1, &m_VAO);
+    glDeleteBuffers(1, &m_VBO);
+    glDeleteTextures(1, &m_DiffuseMap);
+    glDeleteTextures(1, &m_MirrorMap);
+}
+void OldModelBuffer::Draw()
+{
+    if (m_Shader != nullptr)
+    {
+        m_Shader->use();
+        m_Shader->setMat4("model", m_ModelMatrix);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_MirrorMap);
+
+        glBindVertexArray(m_VAO);
+        glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->GetVertexData().size());
+        glBindVertexArray(0);
+    }
 }

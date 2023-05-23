@@ -261,5 +261,14 @@
       <Filter>窗口类\着色器文件</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="Shader\Stroke.fs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\SkyBox.fs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\SkyBox.vs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

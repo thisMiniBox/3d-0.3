@@ -35,7 +35,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
 
-    Central_control->Command(L"loadfile D:\\3d模型\\nanosuit.obj");
+    Central_control->Command(L"loadfile D:\\3d模型\\树\\Tree 02\\Tree.obj");
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
