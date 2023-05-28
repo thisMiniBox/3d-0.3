@@ -1,5 +1,192 @@
 #include"project.h"
 
+bool Controller::Command(const CommandData& commad, bool ignoreOutput)
+{
+	ComData com = commad;
+	switch (com.Act)
+	{
+	case CommandAct::OPEN_DIRECTORY:
+	{
+		Folder* searchP = dynamic_cast<Folder*>(SearchObject(com.Parameter));
+		if (!searchP)
+		{
+			if (!ignoreOutput) Print(L"未找到文件夹");
+			return false;
+		}
+		m_FocusFolder = searchP;
+
+		break;
+	}
+	break;
+	case CommandAct::LOAD_FILE:
+	{
+		loadModelThread(nullptr, this, com.Parameter);
+		break;
+	}
+	break;
+	case CommandAct::LIST_FOLDER:
+	{
+		for (auto cf : m_FocusFolder->GetFileContent())
+		{
+			std::wstring OutPut = strwstr(cf->GetName());
+			OutPut += L"    ";
+			OutPut += ObjectTypeToWstr(cf->GetType());
+			if (!ignoreOutput) Print(OutPut);
+		}
+	}
+	break;
+	case CommandAct::CREATE_FOLDER:
+	{
+		if (!CreateObject(m_FocusFolder, wstrstr(com.Parameter).c_str()))
+		{
+			if (!ignoreOutput) Print(L"创建失败");
+			return false;
+		}
+	}
+	break;
+	case CommandAct::CREATE_FILE:
+	{
+		if (!CreateObject(m_FocusFolder, wstrstr(com.Parameter.substr(com.Parameter.find_first_of(L' ') + 1)).c_str(), WStrToObjectType(com.Parameter.substr(0, com.Parameter.find_first_of(L' ')))))
+		{
+			if (!ignoreOutput) Print(L"创建失败");
+			return false;
+		}
+	}
+	break;
+	case CommandAct::DELETE_FILE:
+	{
+		Object* file = SearchObject(com.Parameter);
+		if (!file)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		DeleteObject(file);
+		UpdateFileView();
+	}
+	break;
+	case CommandAct::OPEN_FILE:
+	{
+		Object* file = SearchObject(com.Parameter);
+		if (!file)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		SetFoucusObjcet(file);
+	}
+	break;
+	case CommandAct::MOVE_FILE:
+	{
+		Object* aim = SearchObject(com.Parameter.substr(0, com.Parameter.find_first_of(L' ')));
+		if (!aim)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		aim->GetParent()->DeleteIndex(aim);
+		com.Parameter = com.Parameter.substr(com.Parameter.find_first_of(L' ') + 1);
+		if (com.Parameter.find_first_of(L'/') == -1)
+		{
+			aim->SetName(wstrstr(com.Parameter));
+			m_FocusFolder->AddFile_添加文件(aim);
+			UpdateFileView();
+			break;
+		}
+		std::string NewName = wstrstr(com.Parameter.substr(com.Parameter.find_first_of(L'/') + 1));
+		Folder* NewFolder = nullptr;
+		NewFolder = dynamic_cast<Folder*>(SearchObject(com.Parameter.substr(0, com.Parameter.find_first_of(L'/'))));
+		if (!NewFolder)
+		{
+			if (!ignoreOutput) Print(L"未找到文件");
+			return false;
+		}
+		aim->SetName(NewName);
+		NewFolder->AddFile_添加文件(aim);
+		UpdateFileView();
+	}
+	break;
+	case CommandAct::LIST_SUPPORTED_FILE_TYPES:
+	{
+		for (int i = 1; i <= ObjectType::OT_KEYFRAME; i++)
+		{
+			if (!ignoreOutput) Print(ObjectTypeToWstr((ObjectType)i));
+		}
+	}
+	break;
+	case CommandAct::MOVE:
+	{
+		GetFocusObject()->Move(vec::str_vector(com.Parameter));
+	}
+	break;
+	case CommandAct::SCALE:
+	{
+		GetFocusObject()->SetScale(vec::str_vector(com.Parameter));
+	}
+	break;
+	case CommandAct::ROTATE:
+	{
+		Rotation rot;
+		int pos = com.Parameter.find_first_of(' ');
+		if (!pos)
+		{
+			if (!ignoreOutput) Print(L"格式不正确");
+			return false;
+		}
+		rot.angle = std::stod((com.Parameter.substr(0, pos)).c_str());
+		rot.axis = str_vector(com.Parameter.substr(pos + 1));
+		GetFocusObject()->Rotate(rot);
+	}
+	break;
+	case CommandAct::MOVETO:
+	{
+		GetFocusObject()->SetPosition(vec::str_vector(com.Parameter));
+	}
+	break;
+	case CommandAct::SCALETO:
+	{
+		GetFocusObject()->SetScale(vec::str_vector(com.Parameter));
+	}
+	break;
+	case CommandAct::ROTATIONTO:
+	{
+		Rotation rot;
+		int pos = com.Parameter.find_first_of(' ');
+		if (!pos)
+		{
+			if (!ignoreOutput) Print(L"格式不正确");
+			return false;
+		}
+		rot.angle = std::stod((com.Parameter.substr(0, pos)).c_str());
+		rot.axis = str_vector(com.Parameter.substr(pos + 1));
+		GetFocusObject()->SetRotate(rot);
+	}
+	break;
+	case CommandAct::OUTCONTROL:
+	{
+
+		break;
+	}
+	case CommandAct::UPDATE:
+	{
+
+		break;
+	}
+	case CommandAct::SLEEP:
+	{
+		LONG64 time = std::stoll(com.Parameter);
+		if (time > 0)
+			Sleep(time);
+		break;
+	}
+	default:
+		if (!ignoreOutput) Print(L"未知指令");
+		return false;
+		break;
+	}
+	Command(L"", ignoreOutput);
+	return true;
+}
 bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 {
 	if (!m_FocusFolder)return false;

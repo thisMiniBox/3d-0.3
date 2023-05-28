@@ -8,14 +8,17 @@ Controller::Controller()
 	FILEWND = nullptr;
 	TEXTWND = nullptr;
 	m_BottomWind = nullptr;
-	MAINWND = new GDIWND;
+	m_MainWind = new GDIWND;
 	DETAWND = new DetaileWind;
 	m_hWnd = nullptr;
 	m_IOWind = nullptr;
 	m_hInst = nullptr;
 	view = nullptr;
-	
+	m_ActualMaxFPS = 0;
+	m_SetFPS = 60;
 	Model_att = 0;
+	m_hDll = nullptr;
+	MainWindUserCode = nullptr;
 }
 HWND Controller::GetBottomWindhWnd()const
 {
@@ -26,10 +29,14 @@ void Controller::Size(int cxClient, int cyClient)
 	MoveWindow(m_BottomWind->GethWnd(), 0, cyClient - 150, cxClient / 5 * 4, 150, true);
 	MoveWindow(FILEWND->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
 	MoveWindow(DETAWND->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
-	MoveWindow(MAINWND->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
+	MoveWindow(m_MainWind->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
 	MoveWindow(SETWND.hWnd, 0, 0, cxClient, 50, true);
 }
-BottomWindow* Controller::GetBottom()const
+void Controller::AddShader(int ID, std::string vsPath, std::string fsPath)
+{
+	m_ShaderIDPath.insert(std::make_pair(ID, ShaderPath(vsPath,fsPath)));
+}
+BottomWindow* Controller::GetBottom()
 {
 	return m_BottomWind;
 }
@@ -81,7 +88,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		"新建摄像机", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
 	AddObject(a);
 	AddObject(view);
-	MAINWND->CreateWind(m_hWnd);
+	m_MainWind->CreateWind(m_hWnd);
 	DETAWND->CreateWind(m_hWnd);
 	RECT m_rect;
 	GetClientRect(m_hWnd, &m_rect);
@@ -125,11 +132,12 @@ int Controller::GetImageListIndex(int id)
 }
 Controller::~Controller()
 {
-	if (MAINWND)delete MAINWND;
+	if (m_MainWind)delete m_MainWind;
 	if (DETAWND)delete DETAWND;
 	if (FILEWND)delete FILEWND;
 	if (TEXTWND)delete TEXTWND;
 	if (m_BottomWind)delete m_BottomWind;
+	if (m_hDll)FreeLibrary(m_hDll);
 	m_RootFolder.ClearFolder_清空文件夹();
 }
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
@@ -291,9 +299,9 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 {
 	if (DETAWND->GetTarget() == obj)
 		DETAWND->SetView(nullptr);
-	if (MAINWND->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
+	if (m_MainWind->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
 	{
-		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(MAINWND);
+		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(m_MainWind);
 		Model* mod = dynamic_cast<Model*>(obj);
 		glwind->DeleteModelBuffer(mod);
 	}
@@ -302,7 +310,7 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 	if (hTree)
 		FILEWND->DeleteItem(hTree);
 	m_Models.clear();
-	InvalidateRect(MAINWND->GethWnd(), NULL, true);
+	InvalidateRect(m_MainWind->GethWnd(), NULL, true);
 }
 
 ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
@@ -323,6 +331,14 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 	else if (extension == L"xzcom")
 	{
 		error |= LoadCommand(path);
+	}
+	else if (extension == L"dll")
+	{
+		if (MessageBox(m_hWnd, L"是否链接消息处理程序？", L"", MB_OKCANCEL))
+		{
+			error |= LoadDLL(path);
+		}
+		return _Succese;
 	}
 	else
 		return ReturnedOfLoadFile::_UnknownFormat;
@@ -672,7 +688,7 @@ void Controller::UpdateDetaileViev()const
 {
 	DETAWND->UpDate();
 }
-InputOutput* Controller::GetIOWind()const
+InputOutput* Controller::GetIOWind()
 {
 	return m_IOWind;
 }
@@ -787,7 +803,50 @@ void Controller::SetFoucusObjcet(Object* aim)
 		aim->Selected();
 	}
 }
-std::unordered_map<int, int>& Controller::GetImageListIndex()
+std::map<int, int>& Controller::GetImageListIndex()
 {
 	return m_ImageIndex;
+}
+//设置帧数
+void Controller::SetFPS(float fps)
+{
+	m_SetFPS = fps;
+	SendMessage(m_MainWind->GethWnd(), UM_CREATE_TIMER, fps, 0);
+}
+float FPSNumber = 0;
+void Controller::__UpdateFPS(float fps)
+{
+	m_ActualMaxFPS = fps;
+	FPSNumber++;
+}
+//获取当前帧数
+float Controller::GetMaxFPS()const
+{
+	return m_ActualMaxFPS;
+}
+float Controller::GetSetFPS()const
+{
+	return m_SetFPS;
+}
+MainWind* Controller::GetMainWind()
+{
+	return m_MainWind;
+}
+ReturnedOfLoadFile Controller::LoadDLL(const std::wstring& filePath)
+{
+	if (m_hDll)FreeLibrary(m_hDll);
+	m_hDll = LoadLibrary(filePath.c_str());
+	if (m_hDll != NULL)
+	{
+		MainWindUserCode = (UserCode)GetProcAddress(m_hDll, "UserMessage");
+		if (MainWindUserCode != NULL)
+		{
+			OutMessage("链接成功");
+		}
+		else
+			OutMessage("函数导出失败", _Error);
+	}
+	else
+		OutMessage("DLL加载失败", _Error);
+	return _Succese;
 }

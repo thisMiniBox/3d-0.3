@@ -7,7 +7,6 @@
 #include<unordered_map>
 #include<commctrl.h>
 #include"WndData.h"
-#define WM_UPDATE WM_USER+1
 class DetaileWind
 {
 	HINSTANCE m_hInstance;

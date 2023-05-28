@@ -24,7 +24,7 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     static bool is_space_pressed = false;
     static ULONGLONG time_start, time_end;
     static float timec = 0;
-    UINT_PTR frameRateController = 0;
+    static UINT_PTR frameRateController = 33;
     time_start = GetTickCount64();
     timec = (float)(time_start - time_end) / 1000*V;
     if (is_w_pressed) {
@@ -48,22 +48,48 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         current_project->view->Move(current_project->view->GetUp() * timec);
     }
     time_end = time_start;
+    if (current_project->MainWindUserCode)
+    {
+
+        ComUserCode com = current_project->MainWindUserCode(hWnd, message, wParam, lParam);
+        if (com.Act != CommandAct::UNKNOWN)
+        {
+            CommandData commad;
+            commad.Act = com.Act;
+            commad.Parameter = com.Parameter;
+            current_project->Command(commad);
+            return 0;
+        }
+    }
     switch (message)
     {
     case WM_PAINT:
     {
+        LARGE_INTEGER freq, start, end;
+        double elapsed_time;
 
-        current_project->MAINWND->Draw(current_project->GetModels(), *current_project->view);
+        QueryPerformanceFrequency(&freq); // 获取高分辨率计时器的频率，单位是每秒多少个计数
+        QueryPerformanceCounter(&start); // 获取函数开始执行时的计数值
+
+        current_project->GetMainWind()->Draw(current_project->GetModels(), *current_project->view);
+
+        QueryPerformanceCounter(&end); // 获取函数结束执行时的计数值
+        elapsed_time = static_cast<double>(end.QuadPart - start.QuadPart) * 1000.0 / freq.QuadPart; // 计算函数执行时间，单位是毫秒
+        current_project->__UpdateFPS(1000.0f / elapsed_time);
         break;
     }
     case WM_TIMER:
     {
-        MSG msg;
-        while (PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
-        {
-        }
         if ((UINT_PTR)wParam == frameRateController)
         {
+            MSG msg;
+            while (PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE))
+            {
+                if (msg.hwnd == hWnd && msg.message == WM_TIMER && (UINT_PTR)msg.wParam == frameRateController)
+                    continue;
+                else
+                    break;
+            }
             InvalidateRect(hWnd, NULL, false);
         }
         break;
@@ -72,7 +98,7 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
         if (Mouse_是否鼠标控制)
         {
-            POINT pt = { current_project->MAINWND->GetWidth() / 2, current_project->MAINWND->GetHeight() / 2 };
+            POINT pt = { current_project->GetMainWind()->GetWidth() / 2, current_project->GetMainWind()->GetHeight() / 2 };
             fx_方向角 -= (pt.x - LOWORD(lParam)) / 5.0f;
             fy_方向角 += (pt.y - HIWORD(lParam)) / 5.0f;
             if (fx_方向角 > 360)fx_方向角 -= 360;
@@ -162,10 +188,9 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         Mouse_是否鼠标控制 = !Mouse_是否鼠标控制;
         if (Mouse_是否鼠标控制)
         {
-            POINT pt = { current_project->MAINWND->GetRect().right / 2, current_project->MAINWND->GetRect().bottom / 2 };
+            POINT pt = { current_project->m_MainWind->GetRect().right / 2, current_project->m_MainWind->GetRect().bottom / 2 };
             ClientToScreen(hWnd, &pt);
             SetCursorPos(pt.x, pt.y);
-            InvalidateRect(hWnd, NULL, false);
         }
         break;
     }
@@ -178,13 +203,15 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
         RECT m_rect = {};
         GetClientRect(hWnd, &m_rect);
-        current_project->MAINWND->SetRect(m_rect);
+        current_project->GetMainWind()->SetRect(m_rect);
         current_project->view->SetAspectRatio((float)LOWORD(lParam)/HIWORD(lParam));
         break;
     }
-    case WM_CREATE:
+    case UM_CREATE_TIMER:
     {
-        frameRateController = SetTimer(hWnd, 0, 1000 / 60, NULL);
+        KillTimer(hWnd, frameRateController);
+        float zs = wParam;
+        SetTimer(hWnd, frameRateController, 1000 / zs, NULL);
         break;
     }
     case WM_CLOSE:

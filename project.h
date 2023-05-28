@@ -14,29 +14,41 @@
 #include"FileWind.h"
 #include"Object.h"
 #include"xzdll.hpp"
+#include<map>
+
+typedef ComUserCode(*UserCode)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 class Controller
 {
-	HINSTANCE m_hInst;
-	Folder m_RootFolder;
-	Folder* m_FocusFolder;
-	std::wstring m_CurrentPath;
+	HINSTANCE m_hInst;				//实例
+	Folder m_RootFolder;			//资源文件夹
+	Folder* m_FocusFolder;			//操作文件夹
+	std::wstring m_CurrentPath;		//操作文件夹地址字符串
 
-	std::vector<Model*>m_Models;
-	BottomWindow* m_BottomWind;
-	InputOutput* m_IOWind;
+	std::vector<Model*>m_Models;	//临时存储模型索引
 
-	HIMAGELIST m_ImageList;//贴图列表
-	std::unordered_map<int, int>m_ImageIndex;//贴图索引
+	BottomWindow* m_BottomWind;		//底部窗口
+	InputOutput* m_IOWind;			//控制台窗口
+
+	HIMAGELIST m_ImageList;						//贴图列表
+	std::map<int, int>m_ImageIndex;	//贴图索引
+
+	float m_ActualMaxFPS;			//最大帧数
+	float m_SetFPS;					//设定帧数
+
+	HMODULE m_hDll;					//dll函数指针
+
+	std::map<int, ShaderPath>m_ShaderIDPath;
 
 	void LoadPngFromResources(int);
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
-	
+	ReturnedOfLoadFile LoadDLL(const std::wstring& filePath);
 public:
 	//窗口信息
 	HWND m_hWnd;
-	MainWind* MAINWND;
+
+	MainWind* m_MainWind;
 	TextOutWind* TEXTWND;
 	WndMsg SETWND;
 	FileWind* FILEWND;
@@ -47,20 +59,28 @@ public:
 	char Model_att;//显示模式
 	//摄像机（当前视角）
 	Camera* view;
-
+	UserCode MainWindUserCode;
 	Controller();
 	~Controller();
 	HWND CreateWind(HINSTANCE hInst);
 	HWND GetBottomWindhWnd()const;
-	InputOutput* GetIOWind()const;
-	BottomWindow* GetBottom()const;
+	MainWind* GetMainWind();
+	InputOutput* GetIOWind();
+	BottomWindow* GetBottom();
 	void Size(int w, int h);
+	//着色器
+	void AddShader(int ID, std::string vsPath, std::string fsPath);
 	//获取贴图列表
 	HIMAGELIST GetImageList()const;
 	//获取贴图列表的贴图索引
 	int GetImageListIndex(int);
-	std::unordered_map<int, int>& GetImageListIndex();
-
+	std::map<int, int>& GetImageListIndex();
+	//设置帧数
+	void SetFPS(float);
+	void __UpdateFPS(float);
+	//获取当前帧数
+	float GetMaxFPS()const;
+	float GetSetFPS()const;
 	//上传消息
 	void OutMessage(const std::string&, const char& mode = _Message);
 	//上传消息
@@ -75,6 +95,7 @@ public:
 	//控制器窗口输出
 	void Print(const std::wstring&);
 	bool Command(const std::wstring&, bool ignoreOutput = false);
+	bool Command(const CommandData&, bool ignoreOutput = false);
 	CommandData ParseCommand(const wchar_t* command);
 	//加载文件
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);

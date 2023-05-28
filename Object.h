@@ -7,7 +7,7 @@
 #include <set>
 #include<d3d11.h>
 #include<sstream>
-#include <unordered_map>
+#include <map>
 #include"vector_向量.h"
 #include"字符转换.h"
 #include"WndData.h"
@@ -24,7 +24,7 @@ class PointLight;
 class Room;
 class Button;
 class FixedUI;
-
+template<typename OBJ>
 class Keyframe;
 
 
@@ -63,7 +63,7 @@ public:
 	
 	//资源文件的引用状态切换
 	virtual void Reference(Object*);
-	virtual const std::set<Object*>& GetAllReference()const;
+	virtual const std::set<Object*>* GetAllReference()const;
 	virtual void Dereference(Object*);
 	virtual bool IsReference(Object*)const;
 	virtual void DeleteReferenceP(Object*);
@@ -94,10 +94,21 @@ public:
 	//删除关联物体
 	virtual void DeleteChildObject();
 	//list控件内容展示
-	virtual INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index);
+	virtual INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index);
 
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
+};
+template<typename OBJ>
+class Keyframe :public Object
+{
+	std::vector<std::pair<ULONG64, OBJ>>m_keyframe;
+public:
+	Keyframe();
+	void SetKeyframe(ULONG64 time, OBJ key);
+	void DeleteKeyframe(ULONG64 time);
+	OBJ* GetKeyframe(ULONG64 time);
+	virtual ObjectType GetType()const override;
 };
 //材质信息结构体
 typedef struct _Material {
@@ -127,7 +138,7 @@ public:
 	}
 
 private:
-	std::unordered_map<std::string, TMaterial> materials;
+	std::map<std::string, TMaterial> materials;
 };
 //GDI输出面数据
 typedef struct _OutPoint3
@@ -194,7 +205,7 @@ public:
 	Mesh(std::string&);
 	~Mesh();
 	void Reference(Object*);
-	const std::set<Object*>& GetAllReference()const;
+	const std::set<Object*>* GetAllReference()const override;
 	void Dereference(Object*);
 	bool IsReference(Object*)const;
 
@@ -203,7 +214,7 @@ public:
 	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
 	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
 	const std::vector<Vertex>& GetVertexData();
-	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
 };
@@ -232,7 +243,7 @@ public:
 	unsigned int GetID() { return m_ID; }
 
 	void Reference(Object*);
-	const std::set<Object*>& GetAllReference()const;
+	const std::set<Object*>* GetAllReference()const;
 	void Dereference(Object*);
 	bool IsReference(Object*)const;
 	int GetHeight() { return m_Height; }
@@ -240,7 +251,7 @@ public:
 	//释放图片
 	void FreePictureData();
 	void FreeOpenGL();
-	_ControlType SetDetaileView()const override { return CT_NAME|CT_PICTURE; }
+	_ControlType SetDetaileView()const override { return CT_NAME | CT_PICTURE; }
 	virtual ObjectType GetType() const override { return OT_PICTURE; }
 };
 class Material :public Object
@@ -252,7 +263,7 @@ public:
 	// 析构函数
 	~Material();
 	void Reference(Object*);
-	const std::set<Object*>& GetAllReference()const;
+	const std::set<Object*>* GetAllReference()const override;
 	void Dereference(Object*);
 	bool IsReference(Object*)const;
 	// 访问器方法，用于设置或读取私有成员变量的值
@@ -274,8 +285,7 @@ public:
 	void setMapKd(Picture* mapKd);
 	Picture* getMapKs() const;
 	void setMapKs(Picture* mapKs);
-	void CleanUpOpenglImageCache();
-	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
 	void DeleteReferenceP(Object* obj)override
@@ -327,8 +337,8 @@ public:
 	//获取材质
 	Material* getMaterial(const std::string& name) const;
 
-	std::unordered_map<std::string, Material*> m_Materials;
-	std::unordered_map<std::string, Picture*> m_Picture;
+	std::map<std::string, Material*> m_Materials;
+	std::map<std::string, Picture*> m_Picture;
 };
 
 class Model : public Object {
@@ -394,6 +404,8 @@ public:
 			m_Material = nullptr;
 		}
 	}
+
+	inline void updateTransform();
 	// 切换选中状态
 	void ToggleSelection() override;
 	// 物体被选中时调用
@@ -429,7 +441,9 @@ public:
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
-	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index);
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index);
+
+	Model* GetKeyframe(Model* next,float shifting);
 private:
 	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
 	Model* m_Parent;
@@ -439,6 +453,8 @@ private:
 	Vector3 m_Position;
 	Vector3 m_Scale;
 	Rotation m_Rotate;
+	Keyframe<Model> m_keyframe;
+	int m_ShaderID;
 	glm::mat4 m_Transform;
 	std::vector<FACE> m_GDI_TriFaceData;
 };
@@ -480,7 +496,7 @@ public:
 	void DeleteIndex(Object*);
 	std::vector<Model*> GetAllModleFile_找到所有模型()const;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
-	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)override;
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
  	virtual ObjectType GetType()const override;
 	virtual Vector GetPosition()const override { return Vector(0, 0, 0); }
 	virtual void DeleteChildObject()override;
@@ -571,10 +587,4 @@ public:
 private:
 	Folder m_RoomContent;
 
-};
-class Keyframe :public Object
-{
-public:
-	
-	virtual ObjectType GetType()const override;
 };

@@ -1,11 +1,20 @@
 #pragma once
 #include "glad.h"
 #include <glm/glm.hpp>
-
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+typedef struct _ShaderPath
+{
+    std::string vsPath;
+    std::string fsPath;
+    bool used;
+    _ShaderPath() :used(false) {}
+    _ShaderPath(const std::string& vs, const std::string& fs) :used(false), vsPath(vs), fsPath(fs) {}
+}ShaderPath;
+
 class OpenGLShader
 {
 public:

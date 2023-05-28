@@ -240,7 +240,7 @@ void Folder::SetFileName(Object* obj, const std::string& NewName)
 		}
 	}
 }
-INT_PTR Object::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int,int>& index)
+INT_PTR Object::ListControlView(const HWND hWndList, HIMAGELIST, std::map<int,int>& index)
 {
 	return false;
 }
@@ -989,11 +989,13 @@ void Model::removeChildModel(Model* model)
 		m_ChildModel.erase(it);
 	}
 }
-Picture::Picture() :m_Data(nullptr), m_ID(0), m_Width(0), m_Height(0), m_NrComponents(0)
+Picture::Picture() :m_Data(nullptr), m_Width(0), m_Height(0), m_NrComponents(0)
 {
+	m_ID = 0;
 }
-Picture::Picture(std::string& name) :m_Data(nullptr), m_ID(0), m_Width(0), m_Height(0), m_NrComponents(0)
+Picture::Picture(std::string& name) :m_Data(nullptr), m_Width(0), m_Height(0), m_NrComponents(0)
 {
+	m_ID = 0;
 	m_Name = name;
 }
 Picture::~Picture()
@@ -1031,32 +1033,6 @@ PictureData Picture::LoadPicture(const std::string& path)
 		stbi_image_free(m_Data);
 	}
 	return{ m_Data,m_Width,m_Height,m_NrComponents };
-}
-unsigned int Picture::loadTexture()
-{
-	if (m_ID != 0)return m_ID;
-	glGenTextures(1, &m_ID);
-	if (m_Data)
-	{
-		GLenum format = GL_RGB;
-		if (m_NrComponents == 1)
-			format = GL_RED;
-		else if (m_NrComponents == 3)
-			format = GL_RGB;
-		else if (m_NrComponents == 4)
-			format = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, m_ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, m_Data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		return m_ID;
-	}
-	return 0;
 }
 Mesh::Mesh(std::string& Name)
 {
@@ -1208,21 +1184,6 @@ Folder::~Folder()
 	}
 	m_Child.clear();
 }
-void Material::CleanUpOpenglImageCache()
-{
-	if (m_MapKa)
-		m_MapKa->FreeOpenGL();
-	if (m_MapKd)
-		m_MapKd->FreeOpenGL();
-	if (m_MapKs)
-		m_MapKs->FreeOpenGL();
-}
-void Picture::FreeOpenGL()
-{
-	if (m_ID)
-		glDeleteTextures(1, &m_ID);
-	m_ID = 0;
-}
 ObjectType PointLight::GetType()const
 {
 	return OT_POINTLIGHT;
@@ -1302,11 +1263,8 @@ ObjectType Room::GetType()const
 {
 	return ObjectType::OT_ROOM;
 }
-ObjectType Keyframe::GetType()const
-{
-	return ObjectType::OT_KEYFRAME;
-}
-INT_PTR Folder::ListControlView(const HWND hWndList,HIMAGELIST hImageList, std::unordered_map<int, int>& index)
+
+INT_PTR Folder::ListControlView(const HWND hWndList,HIMAGELIST hImageList, std::map<int, int>& index)
 {
 	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
@@ -1341,9 +1299,9 @@ void Mesh::Reference(Object* obj)
 {
 	m_Reference.emplace(obj);
 }
-const std::set<Object*>& Mesh::GetAllReference()const
+const std::set<Object*>* Mesh::GetAllReference()const
 {
-	return m_Reference;
+	return &m_Reference;
 }
 void Mesh::Dereference(Object* obj)
 {
@@ -1359,9 +1317,9 @@ void Picture::Reference(Object* obj)
 {
 	m_Reference.emplace(obj);
 }
-const std::set<Object*>& Picture::GetAllReference()const
+const std::set<Object*>* Picture::GetAllReference()const
 {
-	return m_Reference;
+	return &m_Reference;
 }
 void Picture::Dereference(Object* obj)
 {
@@ -1377,9 +1335,9 @@ void Material::Reference(Object* obj)
 {
 	m_Reference.emplace(obj);
 }
-const std::set<Object*>& Material::GetAllReference()const
+const std::set<Object*>* Material::GetAllReference()const
 {
-	return m_Reference;
+	return &m_Reference;
 }
 void Material::Dereference(Object* obj)
 {
@@ -1392,17 +1350,16 @@ bool Material::IsReference(Object* obj)const
 	return true;
 }
 void Object::Reference(Object* obj){}
-const std::set<Object*>& Object::GetAllReference()const
+const std::set<Object*>* Object::GetAllReference()const
 {
-	std::set<Object*>a;
-	return a;
+	return nullptr;
 }
 void Object::Dereference(Object* obj){}
 bool Object::IsReference(Object* obj)const
 {
 	return true;
 }
-INT_PTR Model::ListControlView(const HWND hWndList, HIMAGELIST hImageList, std::unordered_map<int, int>& index)
+INT_PTR Model::ListControlView(const HWND hWndList, HIMAGELIST hImageList, std::map<int, int>& index)
 {
 	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
@@ -1465,7 +1422,7 @@ void Model::SetMaterial(Material * material)
 	if (m_Material)
 		m_Material->Reference(this);
 }
-INT_PTR Mesh::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)
+INT_PTR Mesh::ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)
 {
 	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
@@ -1535,7 +1492,7 @@ inline void uplistToListControl(int& list,int x, HWND hList, Object* content, st
 		list++;
 	}
 }
-INT_PTR Material::ListControlView(const HWND hWndList, HIMAGELIST, std::unordered_map<int, int>& index)
+INT_PTR Material::ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)
 {
 	while (ListView_DeleteColumn(hWndList, 0));
 	ListView_DeleteAllItems(hWndList);
@@ -1655,4 +1612,139 @@ INT_PTR Material::ListControlView(const HWND hWndList, HIMAGELIST, std::unordere
 		item++;
 	}
 	return 0;
+}
+unsigned int Picture::loadTexture()
+{
+	if (m_ID != 0)return m_ID;
+	glGenTextures(1, &m_ID);
+	if (m_Data)
+	{
+		GLenum format = GL_RGB;
+		if (m_NrComponents == 1)
+			format = GL_RED;
+		else if (m_NrComponents == 3)
+			format = GL_RGB;
+		else if (m_NrComponents == 4)
+			format = GL_RGBA;
+
+		glBindTexture(GL_TEXTURE_2D, m_ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, m_Data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		return m_ID;
+	}
+	return 0;
+}
+void Picture::FreeOpenGL()
+{
+	if (m_ID)
+		glDeleteTextures(1, &m_ID);
+	m_ID = 0;
+}
+template<typename OBJ>
+Keyframe<OBJ>::Keyframe()
+{
+	// 构造函数
+}
+
+template<typename OBJ>
+void Keyframe<OBJ>::SetKeyframe(ULONG64 time, OBJ key)
+{
+	// 将时间和关键帧添加到 m_keyframe 中，如果该时间点已经存在，则更新对应关键帧
+	for (auto& kf : m_keyframe)
+	{
+		if (kf.first == time)
+		{
+			kf.second = key;
+			return;
+		}
+	}
+	m_keyframe.push_back(std::make_pair(time, key));
+}
+
+template<typename OBJ>
+void Keyframe<OBJ>::DeleteKeyframe(ULONG64 time)
+{
+	// 根据时间删除对应的关键帧
+	for (auto iter = m_keyframe.begin(); iter != m_keyframe.end(); ++iter)
+	{
+		if (iter->first == time)
+		{
+			m_keyframe.erase(iter);
+			return;
+		}
+	}
+}
+
+template<typename OBJ>
+OBJ* Keyframe<OBJ>::GetKeyframe(ULONG64 time)
+{
+	// 如果关键帧序列为空，则返回空指针
+	if (m_keyframe.empty())
+	{
+		return nullptr;
+	}
+
+	ULONG64 lastTime = m_keyframe.back().first;
+	// 如果指定的时间点比最后一个关键帧的时间还大，则返回最后一个关键帧
+	if (time >= lastTime)
+	{
+		return &m_keyframe.back().second;
+	}
+
+	for (size_t i = 0; i < m_keyframe.size(); ++i)
+	{
+		ULONG64 currentTime = m_keyframe[i].first;
+		OBJ* currentKeyframe = &m_keyframe[i].second;
+
+		// 如果当前关键帧刚好是指定时间，则返回该关键帧
+		if (currentTime == time)
+		{
+			return currentKeyframe;
+		}
+		// 如果当前关键帧的时间晚于指定时间，则需要查找前一帧和后一帧并计算中间帧
+		else if (currentTime > time)
+		{
+			// 如果当前关键帧是第一帧，则返回空指针
+			if (i == 0)
+			{
+				return nullptr;
+			}
+
+			ULONG64 prevTime = m_keyframe[i - 1].first;
+			OBJ* prevKeyframe = &m_keyframe[i - 1].second;
+
+			// 计算插值因子 t，使得 time = prevTime + t * (currentTime - prevTime)
+			double t = static_cast<double>(time - prevTime) / static_cast<double>(currentTime - prevTime);
+			// 根据插值因子 t 计算中间帧
+			return prevKeyframe->GetKeyframe(currentKeyframe, t);
+		}
+	}
+	// 如果关键帧序列不为空且指定时间点在第一帧和最后一帧之间，则返回空指针
+	return nullptr;
+}
+
+template<typename OBJ>
+ObjectType Keyframe<OBJ>::GetType()const
+{
+	return ObjectType::OT_KEYFRAME;
+}
+void Model::updateTransform()
+{
+	m_Transform = glm::mat4(1.0f);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
+	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+}
+Model* Model::GetKeyframe(Model* next, float shifting)
+{
+	m_Position += (next->getPosition() - m_Position) * shifting;
+	m_Scale += (next->getScale() - m_Scale) * shifting;
+	m_Rotate = m_Rotate.getRotationTo(next->GetRotate(), shifting);
+	updateTransform();
+	return this;
 }

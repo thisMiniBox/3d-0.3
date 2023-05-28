@@ -374,12 +374,24 @@ OpenGLWnd::~OpenGLWnd()
     wglDeleteContext(m_hglrc);
     for (const auto p : m_models)
     {
-        if (p.first && p.first->GetMaterial())
-            p.first->GetMaterial()->CleanUpOpenglImageCache();
         if (p.second)
             delete p.second;
     }
-    m_models.clear();
+    for (const auto p : m_Meshs)
+    {
+        if (p.second)
+            delete p.second;
+    }
+    for (const auto p : m_Shaders)
+    {
+        if (p.second)
+            delete p.second;
+    }
+    for (const auto p : m_Textures)
+    {
+        if (p.second)
+            delete p.second;
+    }
 }
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
@@ -502,6 +514,9 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     OpenGLShader* skyboxShader = GetShader(SI_SkyBoxShader);
     skyboxShader->use();
     skyboxShader->setInt("skybox", 0);
+    skyboxShader = GetShader(SI_StrokeShader);
+    skyboxShader->use();
+    skyboxShader->setVec3("color", glm::vec3(0.7, 0.7, 0.4));
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
     return m_hWnd;
@@ -512,23 +527,23 @@ int OpenGLWnd::CreateShader(const char* vertexPath, const char* fragmentPath,int
     OpenGLShader* Shader = new OpenGLShader(vertexPath, fragmentPath);
     if (!Shader)
         return SI_Empty;
-    if (id == SI_Empty || m_Shader.count(id) != 0)
+    if (id == SI_Empty || m_Shaders.count(id) != 0)
     {
         id += SI_User;
         while (true)
         {
-            if (m_Shader.count(id) == 0)
+            if (m_Shaders.count(id) == 0)
                 break;
             id++;
         }
     }
-    m_Shader.insert(std::make_pair(id, Shader));
+    m_Shaders.insert(std::make_pair(id, Shader));
     return id;
 }
 OpenGLShader* OpenGLWnd::GetShader(int id) const 
 {
-    auto it = m_Shader.find(id);
-    if (it != m_Shader.end()) 
+    auto it = m_Shaders.find(id);
+    if (it != m_Shaders.end()) 
         return it->second;
     else 
         return nullptr;
@@ -536,10 +551,31 @@ OpenGLShader* OpenGLWnd::GetShader(int id) const
 
 bool OpenGLWnd::AddModelToBuffer(Model* model)
 {
-    m_models[model] = new OldModelBuffer(model, GetShader(SI_ModelShader));
-    if (m_models[model])
-        return true;
-    return false;
+    Mesh* mesh = model->GetMesh();
+    if (mesh)
+    {
+        if (!m_Meshs[mesh])
+            m_Meshs[mesh] = new Mesh_OpenGL(mesh->GetVertexData());
+    }
+    else
+        return false;
+    Material* material = model->GetMaterial();
+    if(material)
+    {
+        Picture* picture = material->getMapKa();
+        if (picture)
+            if (!m_Textures[picture])
+                m_Textures[picture] = new Picture_OpenGL(*picture);
+        picture = material->getMapKd();
+        if (picture)
+            if (!m_Textures[picture])
+                m_Textures[picture] = new Picture_OpenGL(*picture);
+        picture = material->getMapKs();
+        if (picture)
+            if (!m_Textures[picture])
+                m_Textures[picture] = new Picture_OpenGL(*picture);
+    }
+    return true;
 }
 void OpenGLWnd::SetRect(RECT NewRect)
 {
@@ -551,13 +587,31 @@ void OpenGLWnd::SetRect(RECT NewRect)
 }
 void OpenGLWnd::DeleteModelBuffer(Model* model)
 {
-    auto it = m_models.find(model);
-    if (it != m_models.end())
+    Material* material = model->GetMaterial();
+    auto om = m_Meshs.find(model->GetMesh());
+    if (om != m_Meshs.end())
     {
-        delete it->second;
-        m_models.erase(it);
+        delete (*om).second;
+        m_Meshs.erase(om);
     }
-
+    auto op = m_Textures.find(material->getMapKa());
+    if (op != m_Textures.end())
+    {
+        delete (*op).second;
+        m_Textures.erase(op);
+    }
+    op = m_Textures.find(material->getMapKd());
+    if (op != m_Textures.end())
+    {
+        delete (*op).second;
+        m_Textures.erase(op);
+    }
+    op = m_Textures.find(material->getMapKs());
+    if (op != m_Textures.end())
+    {
+        delete (*op).second;
+        m_Textures.erase(op);
+    }
     if (!model->GetChildModel().empty())
         for (auto& cMod : model->GetChildModel())
             DeleteModelBuffer(cMod);
@@ -571,10 +625,16 @@ void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out)
         GetChildModel(i->GetChildModel(), out);
     }
 }
+void OpenGLWnd::DrawModel(Model* model, const glm::mat4& view)
+{
+
+}
 void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
 {
     std::vector<Model*> models;
     GetChildModel(Models, models);
+    for (auto model : models)
+        AddModelToBuffer(model);
     PAINTSTRUCT ps;
     m_hdc = BeginPaint(m_hWnd, &ps);
     wglMakeCurrent(m_hdc, m_hglrc);
@@ -592,7 +652,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glBindVertexArray(skyboxVAO);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubemapTexture);
     glDrawArrays(GL_TRIANGLES, 0, 36);
-    glDepthMask(GL_TRUE);
+    glDepthMask(GL_TRUE);  
 
     CurrentShader = GetShader(SI_ModelShader);
     CurrentShader->use();
@@ -618,7 +678,8 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glStencilMask(0x00);
     glDisable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     for (const auto& model : models)
     {
         if (!model->GetMesh() || !model->IsSelected())
@@ -628,6 +689,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
         m_models[model]->SetModelMatrix(modelTransform);
         m_models[model]->Draw();
     }
+    glDisable(GL_CULL_FACE);
     glStencilMask(0xFF);
     glStencilFunc(GL_ALWAYS, 0, 0xFF);
     glEnable(GL_DEPTH_TEST);
@@ -641,75 +703,9 @@ void OpenGLWnd::ResetOpenGLViewport()
 {
     glViewport(0, 0, m_width, m_height);
 }
-unsigned int loadTexture(char const* path)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
 
-    int width, height, nrComponents;
-    unsigned char* data = stbi_load(path, &width, &height, &nrComponents, 0);
-    if (data)
-    {
-        GLenum format = GL_RGB;
-        if (nrComponents == 1)
-            format = GL_RED;
-        else if (nrComponents == 3)
-            format = GL_RGB;
-        else if (nrComponents == 4)
-            format = GL_RGBA;
-
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
-    }
-    else
-    {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
-    }
-
-    return textureID;
-}
-unsigned int loadCubemap(std::vector<std::string> faces)
-{
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    int width, height, nrChannels;
-    for (unsigned int i = 0; i < faces.size(); i++)
-    {
-        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-            );
-            stbi_image_free(data);
-        }
-        else
-        {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
-            stbi_image_free(data);
-        }
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-    return textureID;
-}
 OldModelBuffer::OldModelBuffer(Model* model, OpenGLShader* shader)
-    : m_Model(model), m_Shader(shader), m_ModelMatrix(glm::mat4(1.0))
+    : m_Model(model), m_Shaders(shader), m_ModelMatrix(glm::mat4(1.0))
 {
     // 创建VAO
     glGenVertexArrays(1, &m_VAO);
@@ -722,11 +718,11 @@ OldModelBuffer::OldModelBuffer(Model* model, OpenGLShader* shader)
         m_Model->GetMesh()->GetVertexData().data(), GL_STATIC_DRAW);
 
     // 指定顶点属性指针
-    glVertexAttribPointer(0, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_DOUBLE, GL_DOUBLE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
     glEnableVertexAttribArray(2);
 
     // 解绑VAO和VBO
@@ -750,9 +746,7 @@ OldModelBuffer::OldModelBuffer(Model* model, OpenGLShader* shader)
         }
     }
 
-    m_Shader->use();
-    m_Shader->setInt("material.diffuse", m_DiffuseMap);
-    m_Shader->setInt("material.specular", m_MirrorMap);
+    m_Shaders->use();
 }
 OldModelBuffer::~OldModelBuffer()
 {
@@ -763,10 +757,10 @@ OldModelBuffer::~OldModelBuffer()
 }
 void OldModelBuffer::Draw()
 {
-    if (m_Shader != nullptr)
+    if (m_Shaders != nullptr)
     {
-        m_Shader->use();
-        m_Shader->setMat4("model", m_ModelMatrix);
+        m_Shaders->use();
+        m_Shaders->setMat4("model", m_ModelMatrix);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
         glActiveTexture(GL_TEXTURE1);

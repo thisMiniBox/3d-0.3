@@ -31,6 +31,12 @@ enum class ChildWindSign
 	TopSeekBar,
 };
 
+//自定义窗口消息
+enum UserWinMessage
+{
+	UM_CREATE_TIMER = WM_USER + 1,//创建定时器，定时器间隔时间
+	UM_UPDATE,
+};
 enum MSGMode
 {
 	_ALL,

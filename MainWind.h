@@ -6,6 +6,7 @@
 #include <d3d11.h>
 #include<d3dcompiler.h>
 #include"WndData.h"
+#include"OpenGLData.h"
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
@@ -80,8 +81,7 @@ public:
 
 #include"Shader.h"
 #pragma comment (lib,"opengl32.lib")
-unsigned int loadCubemap(std::vector<std::string> faces);
-unsigned int loadTexture(char const* path);
+
 class OldModelBuffer {
 public:
 	OldModelBuffer(Model* model, OpenGLShader* shader = nullptr);
@@ -97,13 +97,13 @@ public:
 
 	void SetShader(OpenGLShader* shader)
 	{
-		m_Shader = shader;
+		m_Shaders = shader;
 	}
 
 private:
 	GLuint m_VAO, m_VBO;
 	Model* m_Model;
-	OpenGLShader* m_Shader;
+	OpenGLShader* m_Shaders;
 	glm::mat4 m_ModelMatrix;
 	unsigned int m_DiffuseMap;
 	unsigned int m_MirrorMap;
@@ -114,12 +114,12 @@ class OpenGLWnd : public MainWind
 public:
 	OpenGLWnd();
 	~OpenGLWnd();
-	virtual HWND CreateWind(HWND Parent, int x = 0, int y = 0, int w = 600, int h = 400) override;
-	virtual void Draw(const std::vector<Model*>& models, const Camera& camera) override;
-	virtual int GetType() override {
+	HWND CreateWind(HWND Parent, int x = 0, int y = 0, int w = 600, int h = 400) override;
+	void Draw(const std::vector<Model*>& models, const Camera& camera) override;
+	int GetType() override {
 		return MOPENGL;
 	}
-	virtual void SetRect(RECT rect)override;
+	void SetRect(RECT rect)override;
 	bool AddModelToBuffer(Model*);
 	void DeleteModelBuffer(Model*);
 
@@ -128,8 +128,11 @@ public:
 	static LRESULT CALLBACK WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void ResetOpenGLViewport();
 private:
+	void DrawModel(Model* model, const glm::mat4& view);
 	HGLRC m_hglrc;
 	std::unordered_map<Model*, OldModelBuffer*>m_models;
-	std::unordered_map<int, OpenGLShader*>m_Shader;
+	std::unordered_map<Mesh*, Mesh_OpenGL*>m_Meshs;
+	std::unordered_map<Picture*, Picture_OpenGL*>m_Textures;
+	std::unordered_map<int, OpenGLShader*>m_Shaders;
 	UINT skyboxVAO, skyboxVBO, skyCubemapTexture;
 };

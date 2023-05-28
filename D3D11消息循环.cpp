@@ -8,12 +8,12 @@ LRESULT CALLBACK cD3D11WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lP
     {
         RECT rect;
         GetClientRect(hWnd, &rect);
-        current_project->MAINWND->SetRect(rect);
+        current_project->GetMainWind()->SetRect(rect);
         break;
     }
     case WM_PAINT:
     {
-        current_project->MAINWND->Draw(current_project->GetModels(), *current_project->view);
+        current_project->GetMainWind()->Draw(current_project->GetModels(), *current_project->view);
         break;
     }
     case WM_DESTROY:

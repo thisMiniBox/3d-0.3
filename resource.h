@@ -45,7 +45,6 @@
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
 #define IDC_IO_IN                       1008
-#define IDCANCEL                        1022
 #define IDC_CANCEL                      1022
 #define IDC_FileTree                    1023
 #define IDC_TRAN_ROT_Y                  1023

@@ -102,6 +102,9 @@
     <ClInclude Include="FileWind.h">
       <Filter>窗口类</Filter>
     </ClInclude>
+    <ClInclude Include="OpenGLData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="主窗口.cpp">
@@ -174,6 +177,9 @@
       <Filter>窗口类</Filter>
     </ClCompile>
     <ClCompile Include="Command.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

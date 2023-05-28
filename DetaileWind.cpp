@@ -145,11 +145,11 @@ void DetaileWind::UpDate(int type)
         for (const auto& i : m_ChildControl)
         {
             if (i.second && i.second->IsVisible())
-                PostMessage(i.second->GethWnd(), WM_UPDATE, 0, 0);
+                PostMessage(i.second->GethWnd(), UM_UPDATE, 0, 0);
         }
     }
     else
         if (m_ChildControl[type] && m_ChildControl[type]->IsVisible())
-            PostMessage(m_ChildControl[type]->GethWnd(), WM_UPDATE, 0, 0);
+            PostMessage(m_ChildControl[type]->GethWnd(), UM_UPDATE, 0, 0);
 }
 

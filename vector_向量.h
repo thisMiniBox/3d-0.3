@@ -12,60 +12,60 @@
 namespace vec {
     class Vector {
     public:
-        double x;
-        double y;
-        double z;
+        float x;
+        float y;
+        float z;
         // 默认构造函数，初始化为零向量
         Vector();
-        Vector(double a);
+        Vector(float a);
         // 带参数的构造函数，根据给定的分量初始化向量
-        Vector(double x, double y, double z);
+        Vector(float x, float y, float z);
         // 析构函数，释放内存
         ~Vector() {}
         // 定义一个静态函数，计算两个向量点乘（内积），返回一个标量值
-        static double dot(const Vector& v1, const Vector& v2) {
+        static float dot(const Vector& v1, const Vector& v2) {
             return (v1.x * v2.x + v1.y * v2.y + v1.z * v2.z);
         }
         // 获取x分量的值
-        double GetX() const {
+        float GetX() const {
             return x;
         }
         // 获取y分量的值
-        double GetY() const {
+        float GetY() const {
             return y;
         }
         // 获取z分量的值
-        double GetZ() const {
+        float GetZ() const {
             return z;
         }
         // 设置x分量的值
-        void SetX(double x) {
+        void SetX(float x) {
             this->x = x;
         }
         // 设置y分量的值
-        void SetY(double y) {
+        void SetY(float y) {
             this->y = y;
         }
         // 设置z分量的值
-        void SetZ(double z) {
+        void SetZ(float z) {
             this->z = z;
         }
         // 计算向量的模长（长度）
-        double Length() const {
+        float Length() const {
             return sqrt(x * x + y * y + z * z);
         }
         // 计算两个向量之间的夹角（弧度制）
-        static double Angle(const Vector& v1, const Vector& v2) {
+        static float Angle(const Vector& v1, const Vector& v2) {
             return acos(dot(v1, v2) / (v1.Length() * v2.Length()));
         }
         // 计算两个向量之间的距离（欧氏距离）
-        static double Distance(const Vector& v1, const Vector& v2) {
+        static float Distance(const Vector& v1, const Vector& v2) {
             return (v1 - v2).Length();
         }
         Vector Normalize()const;
-        Vector Rotate(const Vector& v, const Vector& axis, double angle);
+        Vector Rotate(const Vector& v, const Vector& axis, float angle);
         // 重载运算符，实现加减，点乘叉乘，倍数伸缩，单位向量换算等操作
-        Vector Rotate(const Vector& axis, double angle);
+        Vector Rotate(const Vector& axis, float angle);
         // 重载+运算符，实现两个向量相加，返回一个新的向量对象
         friend Vector operator+(const Vector& v1, const Vector& v2) {
             return Vector(v1.x + v2.x,
@@ -93,23 +93,23 @@ namespace vec {
         }
 
         // 重载*运算符，实现一个向量乘以一个标量，返回一个新的向量对象
-        friend double operator*(const Vector& v1, const Vector& v2) {
+        friend float operator*(const Vector& v1, const Vector& v2) {
             return dot(v1, v2);
         }
         // 重载*运算符，实现一个向量乘以一个标量，返回一个新的向量对象
-        friend Vector operator*(const Vector& v, double k) {
+        friend Vector operator*(const Vector& v, float k) {
             return Vector(v.x * k,
                 v.y * k,
                 v.z * k);
         }
 
         // 重载*运算符，实现一个标量乘以一个向量，返回一个新的向量对象
-        friend Vector operator*(double k, const Vector& v) {
+        friend Vector operator*(float k, const Vector& v) {
             return (v * k);
         }
 
         // 重载/运算符，实现一个向量除以一个标量，返回一个新的向量对象
-        friend Vector operator/(const Vector& v, double k) {
+        friend Vector operator/(const Vector& v, float k) {
             if (k == 0) {
                 throw "division by zero";
             }
@@ -120,7 +120,7 @@ namespace vec {
 
 
         // 向量点乘
-        double dot(const Vector& v) const {
+        float dot(const Vector& v) const {
             return x * v.x + y * v.y + z * v.z;
         }
         // 重载^运算符，实现两个向量叉乘（外积），返回一个新的向量对象
@@ -147,7 +147,7 @@ namespace vec {
 
         // 重载~运算符，实现向量单位化，返回一个新的向量对象
         friend Vector operator~(const Vector& v) {
-            double len = v.Length();
+            float len = v.Length();
             if (len == 0) {
                 throw "zero vector";
             }
@@ -192,7 +192,7 @@ namespace vec {
         }
         DirectX::XMFLOAT3 ToXMFLOAT3() const
         {
-            return DirectX::XMFLOAT3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z));
+            return DirectX::XMFLOAT3(x, y, z);
         }
         operator glm::vec3()const
         {
@@ -206,39 +206,39 @@ namespace vec {
     class Vector2 {
         // 私有成员变量
     public:
-        double x; // x分量
-        double y; // y分量
+        float x; // x分量
+        float y; // y分量
         // 公有成员函数
 
         // 构造函数，初始化x和y
-        Vector2(double x = 0, double y = 0) {
+        Vector2(float x = 0.f, float y = 0.f) {
             this->x = x;
             this->y = y;
         }
         // 获取x分量的函数
-        double getX() const {
+        float getX() const {
             return x;
         }
         // 获取y分量的函数
-        double getY() const {
+        float getY() const {
             return y;
         }
         // 设置x分量的函数
-        void setX(double x) {
+        void setX(float x) {
             this->x = x;
         }
         // 设置y分量的函数
-        void setY(double y) {
+        void setY(float y) {
             this->y = y;
         }
 
         // 计算向量的模（长度）的函数
-        double magnitude() const {
-            return sqrt(x * x + y * y);
+        float magnitude() const {
+            return sqrtf(x * x + y * y);
         }
         // 计算向量的方向（角度）的函数，返回弧度值
-        double angle() const {
-            return atan2(y, x);
+        float angle() const {
+            return atan2f(y, x);
         }
 
         // 重载+运算符，实现向量相加的功能，返回一个新的Vector2D对象
@@ -252,13 +252,13 @@ namespace vec {
         }
 
         // 重载*运算符，实现向量与标量相乘的功能，返回一个新的Vector2D对象
-        Vector2 operator*(double k) const {
+        Vector2 operator*(float k) const {
             return Vector2(x * k, y * k);
         }
 
         // 重载/运算符，实现向量与标量相除的功能，返回一个新的Vector2D对象 
-        Vector2 operator/(double k) const {
-            if (k != 0) {
+        Vector2 operator/(float k) const {
+            if (k != 0.f) {
                 return Vector2(x / k, y / k);
             }
             else {
@@ -277,7 +277,7 @@ namespace vec {
         }
         DirectX::XMFLOAT2 ToXMFLOAT2() const
         {
-            return DirectX::XMFLOAT2(static_cast<float>(x), static_cast<float>(y));
+            return DirectX::XMFLOAT2(x, y);
         }
     };
     class Vector4 {
@@ -693,6 +693,18 @@ namespace vec {
             mat[2][0] = t * x * z + s * y;
             mat[2][1] = t * y * z - s * x;
             mat[2][2] = t * z * z + c;
+        }
+        Rotation getRotationTo(const Rotation& b, double c) const 
+        {
+            // 计算当前旋转到目标旋转的旋转向量
+            Vector3 axis = axis.cross(this->axis, b.axis).Normalize();   // 旋转轴为两个轴向量的叉积
+            double angle = acos(axis.dot(this->axis, b.axis));           // 旋转角度为两个轴向量的夹角
+            if (angle < 0.0) {
+                angle += 2.0 * PI;
+            }
+            angle *= c;
+
+            return Rotation{ angle, axis };
         }
         // 旋转叠加
         Rotation compose(Rotation r)const {

@@ -35,7 +35,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
 
-    Central_control->Command(L"loadfile D:\\3d模型\\树\\Tree 02\\Tree.obj");
+    Central_control->Command(L"Tree\\Tree.obj");
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -64,6 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //主窗口消息循环
 LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    static UINT_PTR timer = 10;
     switch (message)
     {
     case WM_COMMAND:
@@ -80,6 +81,15 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         EndPaint(hWnd, &ps);
         break; 
     }
+    case WM_TIMER:
+    {
+        if ((UINT_PTR)wParam == timer)
+        {
+            std::wstring text = L"最大帧数：" + std::to_wstring(Central_control->GetMaxFPS());
+            SetWindowText(Central_control->SETWND.hWnd, text.c_str());
+        }
+        break;
+    }
     case WM_DESTROY:
     {
         PostQuitMessage(0);
@@ -92,15 +102,15 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         Central_control->Size(cxClient, cyClient);
         break;
     }
-    case WM_GETMINMAXINFO:
+    case WM_CREATE:
     {
-        LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
-        lpmmi->ptMinTrackSize.x = 640;
-        lpmmi->ptMinTrackSize.y = 480;
-        lpmmi->ptMaxTrackSize.x = GetSystemMetrics(SM_CXSCREEN);
-        lpmmi->ptMaxTrackSize.y = GetSystemMetrics(SM_CYSCREEN);
-
-        return 0;
+        SetTimer(hWnd, timer, 500, NULL);
+        break;
+    }
+    case WM_CLOSE:
+    {
+        KillTimer(hWnd, timer);
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -141,7 +151,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 {
     switch (uMsg)
     {
-    case WM_UPDATE:
+    case UM_UPDATE:
     {
         HWND hWndList = GetDlgItem(hDlg, IDC_FILE_VIEW);
         return Central_control->GetFocusObject()->ListControlView(hWndList,Central_control->GetImageList(),Central_control->GetImageListIndex());
@@ -216,7 +226,7 @@ INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             }
             }
             Central_control->DETAWND->GetTarget()->Move(VEC);
-            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
+            InvalidateRect(Central_control->GetMainWind()->GethWnd(), NULL, false);
         }
         
         break;
@@ -265,7 +275,7 @@ INT_PTR Name_对象名称控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
 {
     switch (uMsg)
     {
-    case WM_UPDATE:
+    case UM_UPDATE:
     case WM_INITDIALOG:
     {
         wchar_t wname[128] = {};
@@ -357,7 +367,7 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
         SendMessage(hWndControl, TBM_SETRANGEMIN, TRUE, -180);
         SendMessage(hWndControl, TBM_SETRANGEMAX, TRUE, 180);
     }
-    case WM_UPDATE:
+    case UM_UPDATE:
     {
         Rotation v = Central_control->DETAWND->GetTarget()->GetRotate();
         HWND hWndControl = GetDlgItem(hDlg, IDC_RO_XEDIT);
@@ -523,7 +533,7 @@ INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPAR
             if (Aixs != Vector(0, 0, 0))
                 Qua.axis = Aixs;
             Central_control->DETAWND->GetTarget()->SetRotate(Qua);
-            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
+            InvalidateRect(Central_control->GetMainWind()->GethWnd(), NULL, false);
         }
 
         break;
@@ -606,7 +616,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         SendMessage(hWndControl, TBM_SETRANGEMIN, TRUE, -180);
         SendMessage(hWndControl, TBM_SETRANGEMAX, TRUE, 180);
     }
-    case WM_UPDATE:
+    case UM_UPDATE:
     {
         Vector v = Central_control->GetFocusObject()->GetPosition();
         HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_X);
@@ -784,7 +794,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
             Central_control->DETAWND->GetTarget()->Move(Position);
             Central_control->GetFocusObject()->SetScale(Scale);
             Central_control->GetFocusObject()->SetRotate(rotation);
-            InvalidateRect(Central_control->MAINWND->GethWnd(), NULL, false);
+            InvalidateRect(Central_control->GetMainWind()->GethWnd(), NULL, false);
         }
 
         break;

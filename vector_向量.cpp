@@ -4,30 +4,30 @@ vec::Vector::Vector() {
     y = 0.0;
     z = 0.0;
 }
-vec::Vector::Vector(double a) {
+vec::Vector::Vector(float a) {
     x = a;
     y = a;
     z = a;
 }
-vec::Vector::Vector(double x, double y, double z) {
+vec::Vector::Vector(float x, float y, float z) {
     this->x = x;
     this->y = y;
     this->z = z;
 }
 //定义一个旋转函数
-vec::Vector vec::Vector::Rotate(const Vector& v, const Vector& axis, double angle) {
+vec::Vector vec::Vector::Rotate(const Vector& v, const Vector& axis, float angle) {
     //计算旋转公式中的三角函数值
-    double cos_theta = cos(angle);
-    double sin_theta = sin(angle);
+    float cos_theta = cos(angle);
+    float sin_theta = sin(angle);
     //计算旋转后的向量
     Vector rotated = v * cos_theta + (axis ^ v) * sin_theta + axis * (axis * v) * (1 - cos_theta);
     //返回旋转后的向量
     return rotated;
 }
-vec::Vector vec::Vector::Rotate(const Vector& axis, double angle) {
+vec::Vector vec::Vector::Rotate(const Vector& axis, float angle) {
     //计算旋转公式中的三角函数值
-    double cos_theta = cos(angle);
-    double sin_theta = sin(angle);
+    float cos_theta = cos(angle);
+    float sin_theta = sin(angle);
     //计算旋转后的向量
     *this = *this * cos_theta + (axis ^ *this) * sin_theta + axis * (axis * *this) * (1 - cos_theta);
     //返回旋转后的向量
@@ -35,7 +35,7 @@ vec::Vector vec::Vector::Rotate(const Vector& axis, double angle) {
 }
 vec::Vector vec::Vector::Normalize()const
 {
-    double l = Length();
+    float l = Length();
     if (l != 0)
     return *this / l;
     return *this;

@@ -197,8 +197,8 @@ void TextOutWind::MoveText(const vec::Vector2& move)
 		m_DisplayPosition.y += move.y;
 	if (m_DisplayPosition.x < 0)
 		m_DisplayPosition.x = 0;
-	if (m_DisplayPosition.y < -(long long)(m_TextTypeFace.lfHeight * (m_MessageData.size() - 2)))
-		m_DisplayPosition.y = -(long long)(m_TextTypeFace.lfHeight * (m_MessageData.size() - 2));
+	if (m_DisplayPosition.y < -(double)(m_TextTypeFace.lfHeight * (m_MessageData.size() - 2)))
+		m_DisplayPosition.y = -(double)(m_TextTypeFace.lfHeight * (m_MessageData.size() - 2));
 	else if (m_DisplayPosition.y > 0)
 		m_DisplayPosition.y = 0;
 }
