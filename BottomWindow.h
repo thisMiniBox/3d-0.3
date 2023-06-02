@@ -5,6 +5,7 @@
 #include<unordered_map>
 #include"WndData.h"
 #include"vector_ÏòÁ¿.h"
+#include"Object.h"
 #include"×Ö·û×ª»».h"
 #define buttonH 20
 class BottomWindow
@@ -82,9 +83,34 @@ public:
 	~InputOutput();
 	HWND GethWnd()const;
 	void Size();
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK IOWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	std::wstring InputString();
 	void DeleteLineText(int line);
 	void OutputString(const std::wstring&);
 	void Clear();
+};
+class KeyframeEdit
+{
+	HWND m_hWnd;
+	HWND m_hTime;
+	HWND m_hCanvas;
+	HWND m_hBotten;
+	HWND m_hFile;
+
+	std::wstring m_ClassName;
+	std::wstring m_TimeClassName;
+	std::wstring m_FileClassName;
+	std::wstring m_CanvasClassName;
+	std::wstring m_BottenClassName;
+	HINSTANCE m_hInst;
+public:
+	KeyframeEdit(HINSTANCE hInst, HWND parent);
+	~KeyframeEdit();
+	HWND GethWnd()const;
+	void MoveSize(int w, int h);
+	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeFileProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeBottenProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeCanvasProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

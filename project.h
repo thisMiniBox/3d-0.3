@@ -29,6 +29,7 @@ class Controller
 
 	BottomWindow* m_BottomWind;		//底部窗口
 	InputOutput* m_IOWind;			//控制台窗口
+	KeyframeEdit* m_KeyframeWind;	//关键帧编辑窗口
 
 	HIMAGELIST m_ImageList;						//贴图列表
 	std::map<int, int>m_ImageIndex;	//贴图索引
@@ -49,10 +50,10 @@ public:
 	HWND m_hWnd;
 
 	MainWind* m_MainWind;
-	TextOutWind* TEXTWND;
-	WndMsg SETWND;
-	FileWind* FILEWND;
-	DetaileWind* DETAWND;
+	TextOutWind* m_TextWind;
+	WndMsg m_MenuWind;
+	FileWind* m_FileWind;
+	DetaileWind* m_EditWind;
 	//文件读取状态
 	bool m_FileLoad;
 	//模型数据
@@ -67,6 +68,7 @@ public:
 	MainWind* GetMainWind();
 	InputOutput* GetIOWind();
 	BottomWindow* GetBottom();
+	KeyframeEdit* GetKeyframeWind()const;
 	void Size(int w, int h);
 	//着色器
 	void AddShader(int ID, std::string vsPath, std::string fsPath);
@@ -120,7 +122,7 @@ public:
 	//更新窗口
 	void UpdateFileView()const;
 	void UpdateDetaileViev()const;
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
 void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path);

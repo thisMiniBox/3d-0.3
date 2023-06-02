@@ -244,6 +244,10 @@ INT_PTR Object::ListControlView(const HWND hWndList, HIMAGELIST, std::map<int,in
 {
 	return false;
 }
+bool Object::IsStatic()const
+{
+	return true;
+}
 std::vector<Object*> Folder::GetTheCurrentDirectoryFile()const
 {
 	std::vector<Object*> out;
@@ -864,7 +868,7 @@ const std::vector<FACE>& Model::GetTriFace()
 			outf.normalA = m_ModelMesh->m_Normal[fi.a[2] - 1];
 			outf.normalB = m_ModelMesh->m_Normal[fi.a[5] - 1];
 			outf.normalC = m_ModelMesh->m_Normal[fi.a[8] - 1];
-			if (m_Material->getKd())
+			if (m_Material && m_Material->getKd())
 				outf.color = RGB(m_Material->getKd()[0] * 255, m_Material->getKd()[1] * 255, m_Material->getKd()[2] * 255);
 			else
 				outf.color = RGB(200, 200, 200);
@@ -1747,4 +1751,29 @@ Model* Model::GetKeyframe(Model* next, float shifting)
 	m_Rotate = m_Rotate.getRotationTo(next->GetRotate(), shifting);
 	updateTransform();
 	return this;
+}
+bool Model::SetKeyframe(ULONG64 time)
+{
+	if (!m_keyframe)
+		return false;
+	m_keyframe->SetKeyframe(time,*this);
+	return true;
+}
+bool Model::CreateKryframe()
+{
+	if (m_keyframe)
+		delete m_keyframe;
+	m_keyframe = new Keyframe<Model>;
+	if (m_keyframe)
+		return true;
+	return false;
+}
+
+void Model::SetMode(ModelMode Mode)
+{
+	m_Mode = Mode;
+}
+bool Model::IsStatic()const
+{
+	return false;
 }

@@ -8,7 +8,7 @@ LRESULT CALLBACK  cDetaileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 	{
 		RECT m_rect;
 		GetClientRect(hWnd, &m_rect);
-		current_project->DETAWND->SetRect(m_rect);
+		current_project->m_EditWind->SetRect(m_rect);
 		break;
 	}
 	case WM_MOUSEWHEEL:
@@ -16,8 +16,8 @@ LRESULT CALLBACK  cDetaileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 		int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 		if (zDelta != 0)
 		{
-			if (current_project->DETAWND->GetControlPos() < 0 || zDelta < 0)
-			current_project->DETAWND->ControlPosMove(zDelta/10);
+			if (current_project->m_EditWind->GetControlPos() < 0 || zDelta < 0)
+			current_project->m_EditWind->ControlPosMove(zDelta/10);
 		}
 		break;
 	}

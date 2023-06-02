@@ -5,11 +5,11 @@ Controller::Controller()
 	m_FocusFolder = &m_RootFolder;
 	m_FileLoad = false;
 	m_ImageList = nullptr;
-	FILEWND = nullptr;
-	TEXTWND = nullptr;
+	m_FileWind = nullptr;
+	m_TextWind = nullptr;
 	m_BottomWind = nullptr;
 	m_MainWind = new GDIWND;
-	DETAWND = new DetaileWind;
+	m_EditWind = new DetaileWind;
 	m_hWnd = nullptr;
 	m_IOWind = nullptr;
 	m_hInst = nullptr;
@@ -19,6 +19,7 @@ Controller::Controller()
 	Model_att = 0;
 	m_hDll = nullptr;
 	MainWindUserCode = nullptr;
+	m_KeyframeWind = nullptr;
 }
 HWND Controller::GetBottomWindhWnd()const
 {
@@ -27,10 +28,10 @@ HWND Controller::GetBottomWindhWnd()const
 void Controller::Size(int cxClient, int cyClient)
 {
 	MoveWindow(m_BottomWind->GethWnd(), 0, cyClient - 150, cxClient / 5 * 4, 150, true);
-	MoveWindow(FILEWND->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
-	MoveWindow(DETAWND->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
+	MoveWindow(m_FileWind->GethWnd(), 0, 50, cxClient / 5, cyClient - 200, true);
+	MoveWindow(m_EditWind->GethWnd(), cxClient / 5 * 4, 50, cxClient / 5, cyClient - 5, true);
 	MoveWindow(m_MainWind->GethWnd(), cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200, true);
-	MoveWindow(SETWND.hWnd, 0, 0, cxClient, 50, true);
+	MoveWindow(m_MenuWind.hWnd, 0, 0, cxClient, 50, true);
 }
 void Controller::AddShader(int ID, std::string vsPath, std::string fsPath)
 {
@@ -42,12 +43,12 @@ BottomWindow* Controller::GetBottom()
 }
 HWND Controller::CreateWind(HINSTANCE hInst)
 {
-	TEXTWND = new TextOutWind(hInst);
-	FILEWND = new FileWind(hInst);
+	m_TextWind = new TextOutWind(hInst);
+	m_FileWind = new FileWind(hInst);
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
+	wcex.lpfnWndProc = KeyframeWndProc;
 	wcex.hInstance = hInst;
 	wcex.hIcon = LoadIcon(hInst, IDI_APPLICATION);
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -76,26 +77,36 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		nullptr);
 	m_hInst = hInst;
 
+	//创建底部折叠窗口
 	m_BottomWind = new BottomWindow(hInst, m_hWnd);
-	TEXTWND->CreateWind(m_BottomWind->GethWnd());
-	m_BottomWind->AddWind(TEXTWND->GethWnd(), L"消息窗口");
+	//创建文本提示输出窗口
+	m_TextWind->CreateWind(m_BottomWind->GethWnd());
+	//创建控制台窗口
 	m_IOWind = new InputOutput(hInst, m_BottomWind->GethWnd());
-	m_BottomWind->AddWind(m_IOWind->GethWnd(), L"控制台");
+	//创建关键帧编辑窗口
+	m_KeyframeWind = new KeyframeEdit(m_hInst, m_BottomWind->GethWnd());
 
-	FILEWND->CreateWind(m_hWnd);
+	//添加控制台窗口到底部折叠窗口显示
+	m_BottomWind->AddWind(m_IOWind->GethWnd(), L"控制台");
+	//添加消息文本窗口到底部折叠窗口显示
+	m_BottomWind->AddWind(m_TextWind->GethWnd(), L"消息窗口");
+	//添加关键帧编辑窗口到底部折叠窗口显示
+	m_BottomWind->AddWind(m_KeyframeWind->GethWnd(), L"关键帧");
+
+	m_FileWind->CreateWind(m_hWnd);
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
 		"新建摄像机", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
 	AddObject(a);
 	AddObject(view);
 	m_MainWind->CreateWind(m_hWnd);
-	DETAWND->CreateWind(m_hWnd);
+	m_EditWind->CreateWind(m_hWnd);
 	RECT m_rect;
 	GetClientRect(m_hWnd, &m_rect);
 	int cxClient = m_rect.right - m_rect.left;  // 获得客户区宽度
 	int cyClient = m_rect.bottom - m_rect.top;
-	SETWND.hWnd = CreateWindowW( //创建编辑框
-		SETWND.className.c_str(),
+	m_MenuWind.hWnd = CreateWindowW( //创建编辑框
+		m_MenuWind.className.c_str(),
 		0,
 		WS_CHILD | WS_BORDER | WS_VISIBLE | ES_MULTILINE,
 		0, 0, cxClient, 50,
@@ -106,7 +117,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	ShowWindow(m_hWnd, SW_SHOW);
 	UpdateWindow(m_hWnd);
 	Command(L"");
-	DETAWND->SetView(&m_RootFolder);
+	m_EditWind->SetView(&m_RootFolder);
 
 	m_ImageList = ImageList_Create(64, 64, ILC_COLOR32, 7, 0);
 	LoadPngFromResources(IDB_UNKNOWN64);
@@ -133,17 +144,18 @@ int Controller::GetImageListIndex(int id)
 Controller::~Controller()
 {
 	if (m_MainWind)delete m_MainWind;
-	if (DETAWND)delete DETAWND;
-	if (FILEWND)delete FILEWND;
-	if (TEXTWND)delete TEXTWND;
+	if (m_EditWind)delete m_EditWind;
+	if (m_FileWind)delete m_FileWind;
+	if (m_TextWind)delete m_TextWind;
 	if (m_BottomWind)delete m_BottomWind;
 	if (m_hDll)FreeLibrary(m_hDll);
+	if (m_KeyframeWind)delete m_KeyframeWind;
 	m_RootFolder.ClearFolder_清空文件夹();
 }
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
 	m_FocusFolder->SetFileName(obj, wstr_str(NewName));
-	FILEWND->FixItemName(DETAWND->GetTree(), NewName.c_str());
+	m_FileWind->FixItemName(m_EditWind->GetTree(), NewName.c_str());
 }
 HINSTANCE Controller::GethInstance()const
 {
@@ -151,31 +163,31 @@ HINSTANCE Controller::GethInstance()const
 }
 Object* Controller::GetFocusObject()const
 {
-	return DETAWND->GetTarget();
+	return m_EditWind->GetTarget();
 }
 void Controller::OutMessage(const std::string&str, const char& type)
 {
-	TEXTWND->OutMessage(str, type);
+	m_TextWind->OutMessage(str, type);
 }
 void Controller::OutMessage(const std::wstring& str, const char& type)
 {
-	TEXTWND->OutMessage(str, type);
+	m_TextWind->OutMessage(str, type);
 }
 void Controller::updateMsg(const HDC& hdc)
 {
-	TEXTWND->DrawWind(hdc);
+	m_TextWind->DrawWind(hdc);
 }
 HTREEITEM Controller::AddObject(Object* a, std::string address)
 {
 	m_Models.clear();
 	m_RootFolder.AddFile_添加文件(a);
-	return FILEWND->AddItem(*a, address);
+	return m_FileWind->AddItem(*a, address);
 }
 HTREEITEM Controller::AddObject(Object* a, HTREEITEM parent)
 {
 	m_Models.clear();
 	m_RootFolder.AddFile_添加文件(a);
-	return FILEWND->AddItem(*a, parent);
+	return m_FileWind->AddItem(*a, parent);
 }
 Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType type)
 {
@@ -268,10 +280,8 @@ Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType ty
 	}
 	if (out != nullptr)
 	{
-		HTREEITEM New = FILEWND->AddItem(*out, (DETAWND->GetTree()));
-		DETAWND->SetView(out);
-		DETAWND->SetTree(New);
-		FILEWND->ExploreFolder(New);
+		HTREEITEM New = m_FileWind->AddItem(*out, (m_EditWind->GetTree()));
+		m_FileWind->ExploreFolder(New);
 	}
 
 	return out;
@@ -297,8 +307,8 @@ std::vector<Model*>& Controller::UpdateModels()
 
 void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 {
-	if (DETAWND->GetTarget() == obj)
-		DETAWND->SetView(nullptr);
+	if (m_EditWind->GetTarget() == obj)
+		m_EditWind->SetView(nullptr);
 	if (m_MainWind->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
 	{
 		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(m_MainWind);
@@ -308,7 +318,7 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 	m_FocusFolder->DeleteFile_删除文件(obj);
 	UpdateModels();
 	if (hTree)
-		FILEWND->DeleteItem(hTree);
+		m_FileWind->DeleteItem(hTree);
 	m_Models.clear();
 	InvalidateRect(m_MainWind->GethWnd(), NULL, true);
 }
@@ -345,7 +355,7 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)
 	{
 		m_Models.clear();
-		FILEWND->ShowFolder(m_RootFolder,GetFocusObject());
+		m_FileWind->ShowFolder(m_RootFolder,GetFocusObject());
 	}
 	return error;
 	
@@ -682,11 +692,11 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 }
 void Controller::UpdateFileView()const
 {
-	FILEWND->ShowFolder(m_RootFolder, GetFocusObject());
+	m_FileWind->ShowFolder(m_RootFolder, GetFocusObject());
 }
 void Controller::UpdateDetaileViev()const
 {
-	DETAWND->UpDate();
+	m_EditWind->UpDate();
 }
 InputOutput* Controller::GetIOWind()
 {
@@ -799,7 +809,7 @@ void Controller::SetFoucusObjcet(Object* aim)
 			m_FocusFolder = aim->GetParent();
 		else
 			m_FocusFolder = &m_RootFolder;
-		DETAWND->SetView(aim);
+		m_EditWind->SetView(aim);
 		aim->Selected();
 	}
 }
@@ -849,4 +859,8 @@ ReturnedOfLoadFile Controller::LoadDLL(const std::wstring& filePath)
 	else
 		OutMessage("DLL加载失败", _Error);
 	return _Succese;
+}
+KeyframeEdit* Controller::GetKeyframeWind()const
+{
+	return m_KeyframeWind;
 }

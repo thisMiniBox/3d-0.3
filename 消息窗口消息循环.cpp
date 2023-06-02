@@ -6,27 +6,27 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
     case WM_COMMAND:
     {
-        current_project->TEXTWND->SetTextPosition(Vector2(0, 0));
+        current_project->m_TextWind->SetTextPosition(Vector2(0, 0));
         switch (LOWORD(wParam))
         {
         case 10:
         {
-            current_project->TEXTWND->SetOutMode(MSGMode::_ALL);
+            current_project->m_TextWind->SetOutMode(MSGMode::_ALL);
             break;
         }
         case 11:
         {
-            current_project->TEXTWND->SetOutMode(MSGMode::_ERROR);
+            current_project->m_TextWind->SetOutMode(MSGMode::_ERROR);
             break;
         }
         case 12:
         {
-            current_project->TEXTWND->SetOutMode(MSGMode::_WARNING);
+            current_project->m_TextWind->SetOutMode(MSGMode::_WARNING);
             break;
         }
         case 13:
         {
-            current_project->TEXTWND->SetOutMode(MSGMode::_REMIND);
+            current_project->m_TextWind->SetOutMode(MSGMode::_REMIND);
             break;
         }
         }
@@ -51,13 +51,13 @@ LRESULT CALLBACK cTextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     case WM_MOUSEWHEEL:
     {
         int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-        current_project->TEXTWND->MoveText(Vector2(0, zDelta/15));
-        InvalidateRect(current_project->TEXTWND->GethWnd(), NULL, false);
+        current_project->m_TextWind->MoveText(Vector2(0, zDelta/15));
+        InvalidateRect(current_project->m_TextWind->GethWnd(), NULL, false);
         break;
     }
     case WM_SIZE:
     {
-        current_project->TEXTWND->UpdateWindowSize(LOWORD(lParam), HIWORD(lParam));
+        current_project->m_TextWind->UpdateWindowSize(LOWORD(lParam), HIWORD(lParam));
         break;
     }
     default:

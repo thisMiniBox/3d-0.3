@@ -6,16 +6,16 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     case WM_NOTIFY:
     {
         LPNMHDR lphr = (LPNMHDR)lParam;
-        if (lphr->hwndFrom == Central_control->FILEWND->GetTree())//判断是否是树形控件发来的消息
+        if (lphr->hwndFrom == Central_control->m_FileWind->GetTree())//判断是否是树形控件发来的消息
         {
             switch (lphr->code)
             {
             case NM_CLICK://鼠标单击
             {
-                Object* o = Central_control->FILEWND->GetMousePositionItemData();
+                Object* o = Central_control->m_FileWind->GetMousePositionItemData();
                 if (!o)break;
                 Central_control->SetFoucusObjcet(o);
-                Central_control->DETAWND->SetTree(Central_control->FILEWND->GetMousePositionItem());
+                Central_control->m_EditWind->SetTree(Central_control->m_FileWind->GetMousePositionItem());
             }
             break;
             }
@@ -43,7 +43,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 Central_control->OutMessage("正在加载文件，无法进行删除操作", _Warning);
                 break;
             }
-            Object* ta = Central_control->FILEWND->GetSelectedItemData();
+            Object* ta = Central_control->m_FileWind->GetSelectedItemData();
             switch (ta->GetType())
             {
             case OT_CAMERA:
@@ -57,7 +57,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
             }
             default:
             {
-                Central_control->DeleteObject(ta, Central_control->FILEWND->GetSelectedItem());
+                Central_control->DeleteObject(ta, Central_control->m_FileWind->GetSelectedItem());
             }
             break;
             }
@@ -83,7 +83,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         }
         case ID_FM_CREATEFOLDER:
         {
-            Object* par = Central_control->DETAWND->GetTarget();
+            Object* par = Central_control->m_EditWind->GetTarget();
             if (par && par->GetType() == OT_FOLDER)
                 Central_control->CreateObject(dynamic_cast<Folder*>(par));
             else
@@ -105,7 +105,7 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     {
         int cxClient = LOWORD(lParam);  // 获得客户区宽度
         int cyClient = HIWORD(lParam);
-        Central_control->FILEWND->MoveTree(0, 0, cxClient, cyClient);
+        Central_control->m_FileWind->MoveTree(0, 0, cxClient, cyClient);
         break;
     }
     case WM_CREATE:

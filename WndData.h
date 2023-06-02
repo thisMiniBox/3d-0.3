@@ -2,6 +2,7 @@
 #include<Windows.h>
 #include<vector>
 #include<string>
+#include<sstream>
 #include"resource.h"
 enum class ChildWindSign
 {
@@ -127,3 +128,23 @@ ATOM MyRegisterClass(HINSTANCE   hInstance,
 	int         cbClsExtra = 0,
 	int         cbWndExtra = 0);
 int getBit(int num, int pos);
+enum ModelMode
+{
+	MM_DEFAULT,
+	MM_VISIBLE = 1,
+	MM_STATEIC = 2,
+};
+enum WindowLayout
+{
+	WL_BottenHeight = 20,
+	WL_BottenWidth = 100,
+	WL_KeyframeBotten_Width = 120,
+	WL_KeyframeBotten_Height = 30,
+	WL_KeyframeBotten_BottenSize = 10,
+	WL_KeyframeTime_Height = 30,
+	WL_KeyframeTime_SmallScale = 5,
+	WL_KeyframeTime_BigScale = 10,
+	WL_KeyframeTime_TimeLine = 3,
+	WL_WindowMaxHeigt = 480,
+	WL_WindowMaxWidth = 640,
+};

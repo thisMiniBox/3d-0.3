@@ -14,7 +14,7 @@ DetaileWind::DetaileWind() :m_TreeTarget(nullptr)
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = WindClassName.c_str();
     RegisterClassEx(&wcex);
-    wcex.lpfnWndProc = PictureProc;
+    wcex.lpfnWndProc = WndProc;
     wcex.lpszClassName = L"pictureproc";
     RegisterClassEx(&wcex);
 }

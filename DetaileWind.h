@@ -37,5 +37,5 @@ public:
 	Object* GetTarget() { return m_target; }
 	HWND CreateDialogToWind(LRESULT(CALLBACK* aWNDPROC)(HWND, UINT, WPARAM, LPARAM), LPCWSTR lpTemplate);
 	static LRESULT CALLBACK DetaileWndProc(HWND, UINT, WPARAM, LPARAM);
-	static LRESULT CALLBACK PictureProc(HWND, UINT, WPARAM, LPARAM);
+	static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 };

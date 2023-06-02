@@ -96,6 +96,7 @@ public:
 	//list控件内容展示
 	virtual INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index);
 
+	virtual bool IsStatic()const;
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
 };
@@ -347,6 +348,10 @@ public:
 	Model(std::string& name);
 	~Model();
 
+	bool SetKeyframe(ULONG64 time);
+	bool CreateKryframe();
+
+	void SetMode(ModelMode);
 	// 针对当前模型进行变换
 	void move(const Vector3& offset, bool add = true);
 	void scale(const Vector3& scaling, bool multiply = true);
@@ -441,11 +446,15 @@ public:
 	//GDI渲染
 	const std::vector<FACE>& GetTriFace();
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
-	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index);
+
+	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
+
+	bool IsStatic()const override;
 
 	Model* GetKeyframe(Model* next,float shifting);
 private:
 	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
+	ModelMode m_Mode;
 	Model* m_Parent;
 	std::vector<Model*> m_ChildModel;
 	Mesh* m_ModelMesh;
@@ -453,7 +462,7 @@ private:
 	Vector3 m_Position;
 	Vector3 m_Scale;
 	Rotation m_Rotate;
-	Keyframe<Model> m_keyframe;
+	Keyframe<Model>* m_keyframe;
 	int m_ShaderID;
 	glm::mat4 m_Transform;
 	std::vector<FACE> m_GDI_TriFaceData;

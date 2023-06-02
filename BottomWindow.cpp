@@ -85,7 +85,6 @@ HWND BottomWindow::Select(HWND hWnd)
 
 		// 隐藏子窗口
 		ShowWindow(c.second, SW_HIDE);
-		ShowWindow(c.second, SW_HIDE);
 	}
 	ShowWindow(m_Index[hWnd], SW_SHOW);
 	//MoveWindow(m_Index[hWnd], 0, 0, m_w, m_h - buttonH, false);
@@ -365,7 +364,7 @@ void TextOutWind::UpdateWindowSize(int w, int h)
 InputOutput::InputOutput(HINSTANCE hInst, HWND parent) :m_CurrentText(0), m_MaxText(128)
 {
 	m_hInst = hInst;
-	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_IOWND), parent, WndProc);
+	m_hWnd = CreateDialog(hInst, MAKEINTRESOURCE(IDD_IOWND), parent, IOWndProc);
 	m_Input = GetDlgItem(m_hWnd, IDC_IO_IN);
 	m_Output = GetDlgItem(m_hWnd, IDC_IO_OUT);
 	m_Enter = GetDlgItem(m_hWnd, IDC_IO_OK);
@@ -463,4 +462,103 @@ void InputOutput::Size()
 void InputOutput::Clear()
 {
 	SetWindowText(m_Input, NULL);
+}
+HWND KeyframeEdit::GethWnd()const
+{
+	return m_hWnd;
+}
+KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
+{
+	m_hInst = hInst;
+	m_ClassName = L"KeyframeWind";
+	m_TimeClassName = L"KeyframeWind_Time";
+	m_BottenClassName = L"KeyframeWind_Botten";
+	m_CanvasClassName = L"KeyframeWind_Canvas";
+	m_FileClassName = L"KeyframeWind_File";
+	WNDCLASSEX wcex = { 0 };
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = KeyframeWndProc;
+	wcex.hInstance = hInst;
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszClassName = m_ClassName.c_str();
+	// 注册窗口类
+	RegisterClassEx(&wcex);
+	wcex.lpszClassName = m_CanvasClassName.c_str();
+	wcex.lpfnWndProc = KeyframeCanvasProc;
+	RegisterClassEx(&wcex);
+	wcex.lpszClassName = m_TimeClassName.c_str();
+	wcex.lpfnWndProc = KeyframeTimeProc;
+	RegisterClassEx(&wcex);
+	wcex.lpszClassName = m_FileClassName.c_str();
+	wcex.lpfnWndProc = KeyframeFileProc;
+	RegisterClassEx(&wcex);
+	wcex.lpszClassName = m_BottenClassName.c_str();
+	wcex.lpfnWndProc = KeyframeBottenProc;
+	RegisterClassEx(&wcex);
+	m_hWnd = CreateWindowExW(
+		WS_EX_WINDOWEDGE,
+		m_ClassName.c_str(),
+		L"KeyframeWindows",
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 200, 100,
+		parent, 0, hInst, nullptr);
+	m_hFile = CreateWindowExW(
+		0,
+		m_FileClassName.c_str(),
+		nullptr,
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 200, 100,
+		m_hWnd, 0, hInst, nullptr);
+	m_hTime = CreateWindowExW(
+		0,
+		m_TimeClassName.c_str(),
+		L"KeyframeWindows",
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 200, 100,
+		m_hWnd, 0, hInst, nullptr);
+	m_hCanvas = CreateWindowExW(
+		0,
+		m_CanvasClassName.c_str(),
+		L"KeyframeWindows",
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 200, 100,
+		m_hWnd, 0, hInst, nullptr);
+	m_hBotten = CreateWindowExW(
+		0,
+		m_BottenClassName.c_str(),
+		L"KeyframeWindows",
+		WS_CHILD | WS_VISIBLE,
+		0, 0, 200, 100,
+		m_hWnd, 0, hInst, nullptr);
+	if (!m_hWnd)
+	{
+		std::cout << L"关键帧编辑窗口创建失败！" << std::endl;
+		return;
+	}
+}
+KeyframeEdit::~KeyframeEdit()
+{
+	// 销毁窗口
+	DestroyWindow(m_hWnd);
+	// 注销窗口类
+	UnregisterClass(m_ClassName.c_str(), m_hInst);
+	UnregisterClass(m_CanvasClassName.c_str(), m_hInst);
+	UnregisterClass(m_FileClassName.c_str(), m_hInst);
+	UnregisterClass(m_TimeClassName.c_str(), m_hInst);
+	UnregisterClass(m_BottenClassName.c_str(), m_hInst);
+}
+void KeyframeEdit::MoveSize(int w, int h)
+{
+	float width = w;
+	float height = h;
+	if (m_hBotten)
+		MoveWindow(m_hBotten, 0, 0, WL_KeyframeBotten_Width, WL_KeyframeBotten_Height, true);
+	if (m_hFile)
+		MoveWindow(m_hFile, 0, WL_KeyframeBotten_Height, WL_KeyframeBotten_Width, (int)(height - WL_KeyframeBotten_Height), true);
+	if (m_hTime)
+		MoveWindow(m_hTime, WL_KeyframeBotten_Width, 0, (int)(width - WL_KeyframeBotten_Width), WL_KeyframeTime_Height, true);
+	if (m_hCanvas)
+		MoveWindow(m_hCanvas, WL_KeyframeBotten_Width, WL_KeyframeTime_Height, (int)(width - WL_KeyframeBotten_Width), (int)(height - WL_KeyframeTime_Height), true);
+
 }

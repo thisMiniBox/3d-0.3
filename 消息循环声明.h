@@ -8,7 +8,7 @@
 #include<d3d11.h>
 #pragma comment(lib, "d3d11.lib")
 
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    KeyframeWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    cMainWndProc(HWND, UINT, WPARAM, LPARAM,Controller*);
 LRESULT CALLBACK    cFileWndProc(HWND, UINT, WPARAM, LPARAM,Controller*);
 LRESULT CALLBACK    cTextWndProc(HWND, UINT, WPARAM, LPARAM,Controller*);
