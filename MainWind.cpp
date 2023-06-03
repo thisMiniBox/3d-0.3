@@ -1,5 +1,6 @@
 #include "MainWind.h"
 using namespace DirectX;
+MainWind::MainWind() :m_hWnd(nullptr), m_rect({ 0,0,600,400 }), m_width(600), m_height(400), m_hdc(nullptr), m_hInstance(GetModuleHandle(NULL)) {}
 MainWind::~MainWind()
 {
     // Ïú»Ù´°¿Ú
@@ -665,7 +666,10 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
             continue;
         if (m_models[model] == nullptr)
             m_models[model] = new OldModelBuffer(model, CurrentShader);
-        modelTransform = model->GetGLTransform();
+        if (GetRunMode() == RM_EDIT)
+            modelTransform = model->GetGLTransform();
+        else
+            modelTransform = model->GetTransform(GetTime());
         m_models[model]->SetShader(CurrentShader);
         m_models[model]->SetModelMatrix(modelTransform);
         m_models[model]->Draw();
@@ -684,7 +688,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     {
         if (!model->GetMesh() || !model->IsSelected())
             continue;
-        modelTransform = model->GetGLTransform();
+        modelTransform = model->GetTransform(GetTime());
         m_models[model]->SetShader(CurrentShader);
         m_models[model]->SetModelMatrix(modelTransform);
         m_models[model]->Draw();

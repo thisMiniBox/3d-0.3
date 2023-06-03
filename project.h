@@ -31,13 +31,17 @@ class Controller
 	InputOutput* m_IOWind;			//控制台窗口
 	KeyframeEdit* m_KeyframeWind;	//关键帧编辑窗口
 
-	HIMAGELIST m_ImageList;						//贴图列表
+	HIMAGELIST m_ImageList;			//贴图列表
 	std::map<int, int>m_ImageIndex;	//贴图索引
 
 	float m_ActualMaxFPS;			//最大帧数
 	float m_SetFPS;					//设定帧数
 
 	HMODULE m_hDll;					//dll函数指针
+
+	RUNMODE m_Mode;					//运行状态
+	ULONG64 m_StartTime;			//游戏运行时间
+	ULONG64 m_RunTime;
 
 	std::map<int, ShaderPath>m_ShaderIDPath;
 
@@ -72,6 +76,9 @@ public:
 	void Size(int w, int h);
 	//着色器
 	void AddShader(int ID, std::string vsPath, std::string fsPath);
+	//运行状态
+	void SetRunMode(RUNMODE);
+	RUNMODE GetRunMode()const;
 	//获取贴图列表
 	HIMAGELIST GetImageList()const;
 	//获取贴图列表的贴图索引
@@ -122,7 +129,23 @@ public:
 	//更新窗口
 	void UpdateFileView()const;
 	void UpdateDetaileViev()const;
-	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	void UpdateKeyframeView()const;
+	/*void UpdateBottomView()const;*/
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+	//关键帧窗口相关函数
+
+	void Run();
+	void Suspend();
+	void Stop();
+	void SetTime(ULONG64 time);
+	void Reset();
+	ULONG64 GetTime();
+	ULONG64 GetStartTime()const;
+	void GetTime(ULONG64* left, ULONG64* right)const;
+	int GetKeyframeEditY()const;
+	void MoveKeyframeEditY(int y);
+	void MoveKeyframeEditTime(int x);
 };
 
 void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path);

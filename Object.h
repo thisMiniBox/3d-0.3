@@ -8,6 +8,7 @@
 #include<d3d11.h>
 #include<sstream>
 #include <map>
+#include<algorithm>
 #include"vector_向量.h"
 #include"字符转换.h"
 #include"WndData.h"
@@ -97,18 +98,22 @@ public:
 	virtual INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index);
 
 	virtual bool IsStatic()const;
+
+	
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
 };
 template<typename OBJ>
 class Keyframe :public Object
 {
+	OBJ m_default;
 	std::vector<std::pair<ULONG64, OBJ>>m_keyframe;
 public:
-	Keyframe();
+	Keyframe(OBJ Default);
+	const std::vector<std::pair<ULONG64, OBJ>>& GetData()const;
 	void SetKeyframe(ULONG64 time, OBJ key);
 	void DeleteKeyframe(ULONG64 time);
-	OBJ* GetKeyframe(ULONG64 time);
+	OBJ GetKeyframe(ULONG64 time);
 	virtual ObjectType GetType()const override;
 };
 //材质信息结构体
@@ -351,7 +356,8 @@ public:
 	bool SetKeyframe(ULONG64 time);
 	bool CreateKryframe();
 
-	void SetMode(ModelMode);
+	//void SetMode(ModelMode);
+	//ModelMode GetMode()const;
 	// 针对当前模型进行变换
 	void move(const Vector3& offset, bool add = true);
 	void scale(const Vector3& scaling, bool multiply = true);
@@ -451,10 +457,12 @@ public:
 
 	bool IsStatic()const override;
 
-	Model* GetKeyframe(Model* next,float shifting);
+	const std::vector<std::pair<ULONG64, TransForm>>* GetKeyframeData()const;
+	glm::mat4 GetTransform(ULONG64 time);
 private:
+	TransForm GetTransForm()const;
 	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
-	ModelMode m_Mode;
+	/*ModelMode m_Mode;*/
 	Model* m_Parent;
 	std::vector<Model*> m_ChildModel;
 	Mesh* m_ModelMesh;
@@ -462,7 +470,7 @@ private:
 	Vector3 m_Position;
 	Vector3 m_Scale;
 	Rotation m_Rotate;
-	Keyframe<Model>* m_keyframe;
+	Keyframe<TransForm>* m_keyframe;
 	int m_ShaderID;
 	glm::mat4 m_Transform;
 	std::vector<FACE> m_GDI_TriFaceData;
@@ -549,7 +557,8 @@ public:
 	float GetFieldOfView() const { return m_Field; }
 	float GetNear() const { return m_Near; }
 	float GetFar() const { return m_Far; }
-	virtual ObjectType GetType()const override { return OT_CAMERA; }
+	ObjectType GetType()const override { return OT_CAMERA; }
+	bool IsStatic()const override;
 
 	Matrix4 GetView()const;
 	Matrix4 GetGLMView()const;

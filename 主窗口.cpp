@@ -33,9 +33,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SetMenu(Central_control->m_hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
-    //SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+    SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
 
-    //Central_control->Command(L"loadfile Tree\\Tree.obj");
+    Central_control->Command(L"loadfile Tree\\Tree.obj");
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -62,7 +62,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 }
 
 //主窗口消息循环
-LRESULT CALLBACK Controller::KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static UINT_PTR timer = 10;
     switch (message)
@@ -843,10 +843,6 @@ LRESULT CALLBACK KeyframeEdit::KeyframeWndProc(HWND hWnd, UINT message, WPARAM w
         Central_control->GetKeyframeWind()->MoveSize(LOWORD(lParam), HIWORD(lParam));
         break;
     }
-    case WM_CREATE:
-    {
-        
-    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
@@ -855,15 +851,16 @@ LRESULT CALLBACK KeyframeEdit::KeyframeWndProc(HWND hWnd, UINT message, WPARAM w
 }
 LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    int leftTime = 1000;
-    int rightTime = 2500;
+
     switch (message)
     {
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-
+        ULONG64 leftTime;
+        ULONG64 rightTime;
+        Central_control->GetTime(&leftTime, &rightTime);
         // 获取窗口大小
         RECT rect;
         GetClientRect(hWnd, &rect);
@@ -887,7 +884,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
 
         // 绘制时间线
         HPEN hPenTimeLine = CreatePen(PS_SOLID, 2, RGB(0, 0, 0));
-        SelectObject(hdc, hPenTimeLine);
+        HGDIOBJ old = SelectObject(hdc, hPenTimeLine);
         MoveToEx(hdc, 10, WL_KeyframeTime_TimeLine, NULL);
         LineTo(hdc, width - 10, WL_KeyframeTime_TimeLine);
 
@@ -940,8 +937,15 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
                 LineTo(hdc, x, startY + 4);
             }
         }
-
+        SelectObject(hdc, old);
         EndPaint(hWnd, &ps);
+        break;
+    }
+    case WM_MOUSEWHEEL:
+    {
+        float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+        Central_control->MoveKeyframeEditTime(zDelta / 6);
+        InvalidateRect(hWnd, nullptr, true);
         break;
     }
     default:
@@ -962,14 +966,16 @@ LRESULT CALLBACK KeyframeEdit::KeyframeFileProc(HWND hWnd, UINT message, WPARAM 
         if (!focus)break;
         RECT rect;
         GetClientRect(hWnd, &rect);
+        rect.top += Central_control->GetKeyframeEditY();
+        rect.bottom += Central_control->GetKeyframeEditY();
         if (!focus->IsStatic())
         {
             switch (focus->GetType())
             {
             case OT_MODEL:
             {
-                Model* model = dynamic_cast<Model*>(focus);
-                int h = (rect.bottom /= 4);
+                int h = WL_BottenHeight;
+                rect.bottom = rect.top + h;
                 DrawTextW(hdc, strwstr(focus->GetName()).c_str(), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
                 rect.top += h;
                 rect.bottom += h;
@@ -980,6 +986,19 @@ LRESULT CALLBACK KeyframeEdit::KeyframeFileProc(HWND hWnd, UINT message, WPARAM 
                 rect.top += h;
                 rect.bottom += h;
                 DrawTextW(hdc, L"缩放", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+                break;
+            }
+            case OT_CAMERA:
+            {
+                int h = WL_BottenHeight;
+                rect.bottom = rect.top + h;
+                DrawTextW(hdc, strwstr(focus->GetName()).c_str(), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+                rect.top += h;
+                rect.bottom += h;
+                DrawTextW(hdc, L"位置", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+                rect.top += h;
+                rect.bottom += h;
+                DrawTextW(hdc, L"旋转", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
                 break;
             }
             default:
@@ -995,13 +1014,20 @@ LRESULT CALLBACK KeyframeEdit::KeyframeFileProc(HWND hWnd, UINT message, WPARAM 
         EndPaint(hWnd, &ps);
         break;
     }
+    case WM_MOUSEWHEEL:
+    {
+        float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+        Central_control->MoveKeyframeEditY(zDelta/60);
+        Central_control->UpdateKeyframeView();
+        break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
     }
     return 0;
 }
-LRESULT CALLBACK KeyframeEdit::KeyframeBottenProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
@@ -1063,7 +1089,21 @@ LRESULT CALLBACK KeyframeEdit::KeyframeBottenProc(HWND hWnd, UINT message, WPARA
         EndPaint(hWnd, &ps);
         break;
     }
-
+    case WM_LBUTTONDOWN:
+    {
+        int xPos = LOWORD(lParam);
+        RECT rect;
+        GetClientRect(hWnd, &rect);
+        if (xPos < rect.right / 3)
+        {
+            Central_control->Run();
+        }
+        else if (xPos < rect.right * 2 / 3)
+        {
+            Central_control->Suspend();
+        }
+        break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
@@ -1078,12 +1118,126 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        HBRUSH brush = CreateSolidBrush(RGB(0, 0, 0));
+        Object* focus = Central_control->GetFocusObject();
         RECT rect;
         GetClientRect(hWnd, &rect);
-        FillRect(hdc, &rect, brush);
-        DeleteObject(brush);
+        if (focus)
+        {
+            ULONG64 leftTime;
+            ULONG64 rightTime;
+            Central_control->GetTime(&leftTime, &rightTime);
+            HBRUSH hBrushA = CreateSolidBrush(RGB(239, 239, 239));
+            HBRUSH hBrushB = CreateSolidBrush(RGB(249, 249, 249));
+            switch (focus->GetType())
+            {
+            case OT_MODEL:
+            {
+                Model* model = dynamic_cast<Model*>(focus);
+                auto keyframe = model->GetKeyframeData();
+                if (!keyframe)
+                {
+                    DrawTextW(hdc, L"未创建关键帧，双击创建", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+                    break;
+                }
+
+                rect.top += Central_control->GetKeyframeEditY();
+                int h = WL_BottenHeight;
+                rect.bottom = rect.top + h;
+                FillRect(hdc, &rect, hBrushA);
+                rect.top += h;
+                rect.bottom += h;
+                FillRect(hdc, &rect, hBrushB);
+                rect.top += h;
+                rect.bottom += h;
+                FillRect(hdc, &rect, hBrushA);
+                rect.top += h;
+                rect.bottom += h;
+                FillRect(hdc, &rect, hBrushB);
+
+                int width = rect.right;
+                rect.top = 0;
+                for (auto k : *keyframe)
+                {
+                    if (k.first < leftTime)
+                        continue;
+                    if (k.first > rightTime)
+                        break;
+                    int x = (int)(((float)k.first - leftTime) / (rightTime - leftTime) * (width - 20)) + 10;
+                    rect.left = x - 2;
+                    rect.right = x + 2;
+                    hBrushA = CreateSolidBrush(RGB(180, 20, 20));
+                    FillRect(hdc, &rect, hBrushA);
+                }
+                break;
+            }
+            case OT_CAMERA:
+            {
+                rect.top += Central_control->GetKeyframeEditY();
+                int h = WL_BottenHeight;
+                rect.bottom = rect.top + h;
+                FillRect(hdc, &rect, hBrushA);
+                rect.top += h;
+                rect.bottom += h;
+                FillRect(hdc, &rect, hBrushB);
+                rect.top += h;
+                rect.bottom += h;
+                FillRect(hdc, &rect, hBrushA);
+                break;
+            }
+            default:
+                DrawTextW(hdc, L"目标不可用", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+                break;
+            }
+            DeleteObject(hBrushA);
+            DeleteObject(hBrushB);
+        }
+        else
+        {
+            DrawTextW(hdc, L"无目标", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+        }
+        ULONG64 leftTime;
+        ULONG64 rightTime;
+        Central_control->GetTime(&leftTime, &rightTime);
+        HPEN hPenTimeLine = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
+        HGDIOBJ old = SelectObject(hdc, hPenTimeLine);
+        GetClientRect(hWnd, &rect);
+        int x = (int)(((float)Central_control->GetTime() - leftTime) / (rightTime - leftTime) * (rect.right - 20)) + 10;
+        MoveToEx(hdc, x, 0, NULL);
+        LineTo(hdc, x, rect.bottom);
         EndPaint(hWnd, &ps);
+        break;
+    }
+    case WM_LBUTTONDOWN:
+    {
+        int xPos = LOWORD(lParam) - 10;
+        if (xPos < 0)
+            xPos = 0;
+        ULONG64 leftTime;
+        ULONG64 rightTime;
+        Central_control->GetTime(&leftTime, &rightTime);
+        int interval = rightTime - leftTime;
+        RECT rect;
+        GetClientRect(hWnd, &rect);
+        Central_control->SetTime(leftTime + ((float)xPos) / (rect.right - 20) * interval);
+        Central_control->UpdateKeyframeView();
+        break;
+    }
+    case WM_LBUTTONDBLCLK:
+    {
+        Object* focus = Central_control->GetFocusObject();
+        if (!focus)
+            break;
+        switch (focus->GetType())
+        {
+        case OT_MODEL:
+        {
+            Model* fModel = dynamic_cast<Model*>(focus);
+            fModel->SetKeyframe(Central_control->GetTime());
+            break;
+        }
+        default:
+            break;
+        }
         break;
     }
     default:
@@ -1091,4 +1245,12 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         break;
     }
     return 0;
+}
+ULONG64 GetTime()
+{
+    return Central_control->GetTime();
+}
+RUNMODE GetRunMode()
+{
+    return Central_control->GetRunMode();
 }

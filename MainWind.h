@@ -11,7 +11,8 @@
 #pragma comment (lib, "d3dcompiler.lib")
 
 void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out);
-
+ULONG64 GetTime();
+RUNMODE GetRunMode();
 enum MainWindType
 {
 	MGDIWND,
@@ -21,7 +22,7 @@ enum MainWindType
 class MainWind
 {
 public:
-	MainWind():m_hWnd(nullptr),m_rect({0,0,600,400}), m_width(600), m_height(400), m_hdc(nullptr), m_hInstance(GetModuleHandle(NULL)) {}
+	MainWind();
 	virtual ~MainWind();
 	
 	RECT GetRect();

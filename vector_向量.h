@@ -697,14 +697,16 @@ namespace vec {
         Rotation getRotationTo(const Rotation& b, double c) const 
         {
             // 计算当前旋转到目标旋转的旋转向量
-            Vector3 axis = axis.cross(this->axis, b.axis).Normalize();   // 旋转轴为两个轴向量的叉积
+            Vector3 Axis = axis.cross(this->axis, b.axis).Normalize();   // 旋转轴为两个轴向量的叉积
+            if (Axis == Vector3(0.0))
+                Axis = this->axis;
             double angle = acos(axis.dot(this->axis, b.axis));           // 旋转角度为两个轴向量的夹角
             if (angle < 0.0) {
                 angle += 2.0 * PI;
             }
             angle *= c;
 
-            return Rotation{ angle, axis };
+            return Rotation{ angle, Axis };
         }
         // 旋转叠加
         Rotation compose(Rotation r)const {

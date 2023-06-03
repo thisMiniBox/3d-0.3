@@ -63,10 +63,17 @@ void BottomWindow::Size(int w, int h)
 		pos++;
 	}
 }
+void KeyframeEdit::UpdateView()const
+{
+	InvalidateRect(m_hButten, nullptr, true);
+	InvalidateRect(m_hFile, nullptr, true);
+	InvalidateRect(m_hCanvas, nullptr, true);
+	InvalidateRect(m_hTime, nullptr, true);
+}
 HWND BottomWindow::Select(HWND hWnd)
 {
 	if (!hWnd)return nullptr;
-
+	m_Foucs = m_Index[hWnd];
 	for (auto& c : m_Index)
 	{
 		// 获取当前位置和大小
@@ -86,11 +93,12 @@ HWND BottomWindow::Select(HWND hWnd)
 		// 隐藏子窗口
 		ShowWindow(c.second, SW_HIDE);
 	}
-	ShowWindow(m_Index[hWnd], SW_SHOW);
+	ShowWindow(m_Foucs, SW_SHOW);
+	
 	//MoveWindow(m_Index[hWnd], 0, 0, m_w, m_h - buttonH, false);
 	//Size(m_w, m_h);
 	//InvalidateRect(m_hWnd, NULL, true);
-	return m_Index[hWnd];
+	return m_Foucs;
 }
 TextOutWind::TextOutWind(HINSTANCE hInst)
 {
@@ -469,15 +477,18 @@ HWND KeyframeEdit::GethWnd()const
 }
 KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 {
+	m_LeftTime = 0;
+	m_RightTime = 3000;
+	m_Y = 0;
 	m_hInst = hInst;
 	m_ClassName = L"KeyframeWind";
 	m_TimeClassName = L"KeyframeWind_Time";
-	m_BottenClassName = L"KeyframeWind_Botten";
+	m_ButtenClassName = L"KeyframeWind_Botten";
 	m_CanvasClassName = L"KeyframeWind_Canvas";
 	m_FileClassName = L"KeyframeWind_File";
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
 	wcex.lpfnWndProc = KeyframeWndProc;
 	wcex.hInstance = hInst;
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
@@ -493,8 +504,8 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 	wcex.lpszClassName = m_FileClassName.c_str();
 	wcex.lpfnWndProc = KeyframeFileProc;
 	RegisterClassEx(&wcex);
-	wcex.lpszClassName = m_BottenClassName.c_str();
-	wcex.lpfnWndProc = KeyframeBottenProc;
+	wcex.lpszClassName = m_ButtenClassName.c_str();
+	wcex.lpfnWndProc = KeyframeButtenProc;
 	RegisterClassEx(&wcex);
 	m_hWnd = CreateWindowExW(
 		WS_EX_WINDOWEDGE,
@@ -521,12 +532,12 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		0,
 		m_CanvasClassName.c_str(),
 		L"KeyframeWindows",
-		WS_CHILD | WS_VISIBLE,
+		WS_CHILD | WS_VISIBLE| CS_DBLCLKS,
 		0, 0, 200, 100,
 		m_hWnd, 0, hInst, nullptr);
-	m_hBotten = CreateWindowExW(
+	m_hButten = CreateWindowExW(
 		0,
-		m_BottenClassName.c_str(),
+		m_ButtenClassName.c_str(),
 		L"KeyframeWindows",
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
@@ -546,14 +557,15 @@ KeyframeEdit::~KeyframeEdit()
 	UnregisterClass(m_CanvasClassName.c_str(), m_hInst);
 	UnregisterClass(m_FileClassName.c_str(), m_hInst);
 	UnregisterClass(m_TimeClassName.c_str(), m_hInst);
-	UnregisterClass(m_BottenClassName.c_str(), m_hInst);
+	UnregisterClass(m_ButtenClassName.c_str(), m_hInst);
 }
 void KeyframeEdit::MoveSize(int w, int h)
 {
+	m_Y = 0;
 	float width = w;
 	float height = h;
-	if (m_hBotten)
-		MoveWindow(m_hBotten, 0, 0, WL_KeyframeBotten_Width, WL_KeyframeBotten_Height, true);
+	if (m_hButten)
+		MoveWindow(m_hButten, 0, 0, WL_KeyframeBotten_Width, WL_KeyframeBotten_Height, true);
 	if (m_hFile)
 		MoveWindow(m_hFile, 0, WL_KeyframeBotten_Height, WL_KeyframeBotten_Width, (int)(height - WL_KeyframeBotten_Height), true);
 	if (m_hTime)
@@ -561,4 +573,32 @@ void KeyframeEdit::MoveSize(int w, int h)
 	if (m_hCanvas)
 		MoveWindow(m_hCanvas, WL_KeyframeBotten_Width, WL_KeyframeTime_Height, (int)(width - WL_KeyframeBotten_Width), (int)(height - WL_KeyframeTime_Height), true);
 
+}
+int KeyframeEdit::GetY()const
+{
+	return m_Y;
+}
+void KeyframeEdit::MoveY(int y)
+{
+	if (m_Y >= 0 && y > 0)
+		return;
+	m_Y += y;
+}
+void KeyframeEdit::MoveTime(int x)
+{
+	LONG64 left = m_LeftTime;
+	if (left+x <= 0)
+	{
+		left = m_RightTime - m_LeftTime;
+		m_LeftTime = 0;
+		m_RightTime = m_LeftTime + left;
+		return;
+	}
+	m_LeftTime += x;
+	m_RightTime += x;
+}
+void KeyframeEdit::GetTime(ULONG64* left, ULONG64* right)const
+{
+	*left = m_LeftTime;
+	*right = m_RightTime;
 }

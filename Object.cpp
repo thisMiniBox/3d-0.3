@@ -500,6 +500,10 @@ Matrix4 Camera::GetView()const
 		m_Right.z, m_Up.z, -m_Direction.z, 0,
 		-Vector::dot(m_Right, m_Position), -Vector::dot(m_Up, m_Position), Vector::dot(m_Direction, m_Position), 1);
 }
+bool Camera::IsStatic()const
+{
+	return false;
+}
 void Camera::Move(const Vector3& v1)
 {
 	m_Position += v1;
@@ -1650,26 +1654,32 @@ void Picture::FreeOpenGL()
 	m_ID = 0;
 }
 template<typename OBJ>
-Keyframe<OBJ>::Keyframe()
+Keyframe<OBJ>::Keyframe(OBJ Default)
 {
-	// 构造函数
+	m_default = Default;
 }
 
 template<typename OBJ>
 void Keyframe<OBJ>::SetKeyframe(ULONG64 time, OBJ key)
 {
-	// 将时间和关键帧添加到 m_keyframe 中，如果该时间点已经存在，则更新对应关键帧
-	for (auto& kf : m_keyframe)
+	// 检查该时间点是否已存在关键帧，如果是则更新关键帧数据，否则添加一个新的关键帧
+	bool found = false;
+	for (auto& pair : m_keyframe)
 	{
-		if (kf.first == time)
+		if (pair.first == time)
 		{
-			kf.second = key;
-			return;
+			pair.second = key;
+			found = true;
+			break;
 		}
 	}
-	m_keyframe.push_back(std::make_pair(time, key));
-}
+	if (!found)
+		m_keyframe.push_back(std::make_pair(time, key));
 
+	// 根据关键帧的时间戳从小到大对 vector 进行排序
+	
+	std::sort(m_keyframe.begin(), m_keyframe.end(), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
+}
 template<typename OBJ>
 void Keyframe<OBJ>::DeleteKeyframe(ULONG64 time)
 {
@@ -1683,54 +1693,56 @@ void Keyframe<OBJ>::DeleteKeyframe(ULONG64 time)
 		}
 	}
 }
-
 template<typename OBJ>
-OBJ* Keyframe<OBJ>::GetKeyframe(ULONG64 time)
+const std::vector<std::pair<ULONG64, OBJ>>& Keyframe<OBJ>::GetData()const
 {
-	// 如果关键帧序列为空，则返回空指针
-	if (m_keyframe.empty())
-	{
-		return nullptr;
-	}
-
-	ULONG64 lastTime = m_keyframe.back().first;
-	// 如果指定的时间点比最后一个关键帧的时间还大，则返回最后一个关键帧
-	if (time >= lastTime)
-	{
-		return &m_keyframe.back().second;
-	}
-
-	for (size_t i = 0; i < m_keyframe.size(); ++i)
-	{
-		ULONG64 currentTime = m_keyframe[i].first;
-		OBJ* currentKeyframe = &m_keyframe[i].second;
-
-		// 如果当前关键帧刚好是指定时间，则返回该关键帧
-		if (currentTime == time)
-		{
-			return currentKeyframe;
-		}
-		// 如果当前关键帧的时间晚于指定时间，则需要查找前一帧和后一帧并计算中间帧
-		else if (currentTime > time)
-		{
-			// 如果当前关键帧是第一帧，则返回空指针
-			if (i == 0)
-			{
-				return nullptr;
-			}
-
-			ULONG64 prevTime = m_keyframe[i - 1].first;
-			OBJ* prevKeyframe = &m_keyframe[i - 1].second;
-
-			// 计算插值因子 t，使得 time = prevTime + t * (currentTime - prevTime)
-			double t = static_cast<double>(time - prevTime) / static_cast<double>(currentTime - prevTime);
-			// 根据插值因子 t 计算中间帧
-			return prevKeyframe->GetKeyframe(currentKeyframe, t);
-		}
-	}
-	// 如果关键帧序列不为空且指定时间点在第一帧和最后一帧之间，则返回空指针
-	return nullptr;
+	return m_keyframe;
 }
+template<typename OBJ>
+OBJ Keyframe<OBJ>::GetKeyframe(ULONG64 time)
+{
+	// 首先检查是否存在关键帧
+	if (m_keyframe.empty() || time < m_keyframe.front().first)
+		return m_default;
+	if (time > m_keyframe.back().first)
+		return m_keyframe.back().second;
+	// 使用二分查找在 vector 中查找关键帧
+	auto iter = std::lower_bound(m_keyframe.begin(), m_keyframe.end(), std::make_pair(time, OBJ()), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
+
+	// 如果找到了匹配的关键帧，则返回其指针；否则进行插值计算
+	if (iter != m_keyframe.end() && iter->first == time)
+		return iter->second;
+	else
+	{
+		OBJ prev, next;
+		ULONG64 prevTime, nextTime;
+
+		// 找到前后两个关键帧
+		auto prevIter = iter - 1;
+		auto nextIter = iter;
+
+		// 如果前一个关键帧不存在，则使用第一个关键帧
+		if (prevIter == m_keyframe.end())
+			prevIter = m_keyframe.begin();
+
+		// 如果下一个关键帧不存在，则使用最后一个关键帧
+		if (nextIter == m_keyframe.end())
+			nextIter = --m_keyframe.end();
+
+		prev = prevIter->second;
+		prevTime = prevIter->first;
+
+		next = nextIter->second;
+		nextTime = nextIter->first;
+
+		// 计算前后两个关键帧之间的时间比值
+		double ratio = static_cast<double>(time - prevTime) / (nextTime - prevTime);
+
+		// 调用 OBJ 类型的 GetKeyframe 函数获取中间状态并返回
+		return prev.GetKeyframe(next, ratio);
+	}
+}
+
 
 template<typename OBJ>
 ObjectType Keyframe<OBJ>::GetType()const
@@ -1744,36 +1756,61 @@ void Model::updateTransform()
 	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
 	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 }
-Model* Model::GetKeyframe(Model* next, float shifting)
-{
-	m_Position += (next->getPosition() - m_Position) * shifting;
-	m_Scale += (next->getScale() - m_Scale) * shifting;
-	m_Rotate = m_Rotate.getRotationTo(next->GetRotate(), shifting);
-	updateTransform();
-	return this;
-}
 bool Model::SetKeyframe(ULONG64 time)
 {
 	if (!m_keyframe)
+	{
+		CreateKryframe();
 		return false;
-	m_keyframe->SetKeyframe(time,*this);
+	}
+	m_keyframe->SetKeyframe(time,GetTransForm());
 	return true;
 }
 bool Model::CreateKryframe()
 {
 	if (m_keyframe)
 		delete m_keyframe;
-	m_keyframe = new Keyframe<Model>;
+	m_keyframe = new Keyframe<TransForm>(GetTransForm());
 	if (m_keyframe)
 		return true;
 	return false;
 }
 
-void Model::SetMode(ModelMode Mode)
-{
-	m_Mode = Mode;
-}
+//void Model::SetMode(ModelMode Mode)
+//{
+//	m_Mode = Mode;
+//}
+//ModelMode Model::GetMode()const
+//{
+//	return m_Mode;
+//}
 bool Model::IsStatic()const
 {
 	return false;
+}
+TransForm Model::GetTransForm()const
+{
+	return TransForm(m_Position, m_Scale, m_Rotate);
+}
+glm::mat4 Model::GetTransform(ULONG64 time)
+{
+	if (m_Parent)
+		if (m_keyframe)
+			return m_Parent->GetTransform(time) * m_keyframe->GetKeyframe(time).GetOpenGLMat();
+		else
+			return m_Parent->GetTransform(time) * m_Transform;
+	else
+		if (!m_keyframe)
+			return m_Transform;
+	return m_keyframe->GetKeyframe(time).GetOpenGLMat();
+	//TransForm tf = m_keyframe->GetKeyframe(time);
+	//if (tf.Scale == TransForm().Scale)
+	//	return m_Transform;
+	//return tf.GetOpenGLMat();
+}
+const std::vector<std::pair<ULONG64, TransForm>>* Model::GetKeyframeData()const
+{
+	if (m_keyframe)
+		return &m_keyframe->GetData();
+	return nullptr;
 }

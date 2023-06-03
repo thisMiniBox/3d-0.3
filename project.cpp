@@ -20,6 +20,8 @@ Controller::Controller()
 	m_hDll = nullptr;
 	MainWindUserCode = nullptr;
 	m_KeyframeWind = nullptr;
+	m_StartTime = 0;
+	m_RunTime = 0;
 }
 HWND Controller::GetBottomWindhWnd()const
 {
@@ -48,7 +50,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = KeyframeWndProc;
+	wcex.lpfnWndProc = WndProc;
 	wcex.hInstance = hInst;
 	wcex.hIcon = LoadIcon(hInst, IDI_APPLICATION);
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -136,6 +138,14 @@ void Controller::LoadPngFromResources(int png)
 HIMAGELIST Controller::GetImageList()const
 {
 	return m_ImageList;
+}
+void Controller::SetRunMode(RUNMODE mode)
+{
+	m_Mode = mode;
+}
+RUNMODE Controller::GetRunMode()const
+{
+	return m_Mode;
 }
 int Controller::GetImageListIndex(int id)
 {
@@ -698,6 +708,14 @@ void Controller::UpdateDetaileViev()const
 {
 	m_EditWind->UpDate();
 }
+void Controller::UpdateKeyframeView()const
+{
+	m_KeyframeWind->UpdateView();
+}
+//void Controller::UpdateBottomView()const
+//{
+//	m_BottomWind->Update();
+//}
 InputOutput* Controller::GetIOWind()
 {
 	return m_IOWind;
@@ -811,6 +829,7 @@ void Controller::SetFoucusObjcet(Object* aim)
 			m_FocusFolder = &m_RootFolder;
 		m_EditWind->SetView(aim);
 		aim->Selected();
+		UpdateKeyframeView();
 	}
 }
 std::map<int, int>& Controller::GetImageListIndex()
@@ -863,4 +882,51 @@ ReturnedOfLoadFile Controller::LoadDLL(const std::wstring& filePath)
 KeyframeEdit* Controller::GetKeyframeWind()const
 {
 	return m_KeyframeWind;
+}
+void Controller::GetTime(ULONG64* left, ULONG64* right)const
+{
+	m_KeyframeWind->GetTime(left, right);
+}
+ULONG64 Controller::GetStartTime()const
+{
+	return m_StartTime;
+}
+void Controller::Run()
+{
+	m_Mode = RM_RUN;
+	m_StartTime = GetTickCount64() - m_RunTime;
+}
+void Controller::Suspend()
+{
+	m_Mode = RM_EDIT;;
+}
+void Controller::Reset()
+{
+	m_Mode = RM_EDIT;
+	m_StartTime = 0;
+	m_RunTime = 0;
+}
+int Controller::GetKeyframeEditY()const
+{
+	return m_KeyframeWind->GetY();
+}
+void Controller::MoveKeyframeEditY(int y)
+{
+	m_KeyframeWind->MoveY(y);
+}
+void Controller::MoveKeyframeEditTime(int x)
+{
+	m_KeyframeWind->MoveTime(x);
+}
+ULONG64 Controller::GetTime()
+{
+	if (m_Mode == RM_EDIT)
+		return m_RunTime;
+	m_RunTime = GetTickCount64() - m_StartTime;
+	return m_RunTime;
+}
+void Controller::SetTime(ULONG64 time)
+{
+	m_RunTime = time;
+	m_StartTime = GetTickCount64() - time;
 }

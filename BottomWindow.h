@@ -94,23 +94,32 @@ class KeyframeEdit
 	HWND m_hWnd;
 	HWND m_hTime;
 	HWND m_hCanvas;
-	HWND m_hBotten;
+	HWND m_hButten;
 	HWND m_hFile;
 
 	std::wstring m_ClassName;
 	std::wstring m_TimeClassName;
 	std::wstring m_FileClassName;
 	std::wstring m_CanvasClassName;
-	std::wstring m_BottenClassName;
+	std::wstring m_ButtenClassName;
 	HINSTANCE m_hInst;
+
+	ULONG64 m_LeftTime;
+	ULONG64 m_RightTime;
+	int m_Y;
 public:
 	KeyframeEdit(HINSTANCE hInst, HWND parent);
 	~KeyframeEdit();
+	void UpdateView()const;
 	HWND GethWnd()const;
 	void MoveSize(int w, int h);
+	int GetY()const;
+	void MoveY(int y);
+	void MoveTime(int x);
+	void GetTime(ULONG64* left, ULONG64* right)const;
 	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeFileProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	static LRESULT CALLBACK KeyframeBottenProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LRESULT CALLBACK KeyframeButtenProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeCanvasProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 };

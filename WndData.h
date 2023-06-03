@@ -2,8 +2,12 @@
 #include<Windows.h>
 #include<vector>
 #include<string>
-#include<sstream>
+#include<glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
 #include"resource.h"
+#include"vector_向量.h"
+
+//子窗口标识
 enum class ChildWindSign
 {
 	MainWind = 1,
@@ -32,12 +36,13 @@ enum class ChildWindSign
 	TopSeekBar,
 };
 
-//自定义窗口消息
+//窗口消息
 enum UserWinMessage
 {
 	UM_CREATE_TIMER = WM_USER + 1,//创建定时器，定时器间隔时间
 	UM_UPDATE,
 };
+//消息窗口运行模式
 enum MSGMode
 {
 	_ALL,
@@ -45,12 +50,14 @@ enum MSGMode
 	_WARNING,
 	_REMIND
 };
+//消息种类
 enum MSGtype
 {
 	_Message,
 	_Error,
 	_Warning
 };
+//物品种类
 enum ObjectType
 {
 	OT_UNKNOWN,
@@ -67,6 +74,7 @@ enum ObjectType
 	OT_BUTTON,				//交互键
 	OT_UI,					//固定ui 
 };
+//加载文件返回
 enum ReturnedOfLoadFile :unsigned int
 {
 	//默认状态
@@ -87,6 +95,7 @@ enum ReturnedOfLoadFile :unsigned int
 };
 ReturnedOfLoadFile operator|(ReturnedOfLoadFile a, ReturnedOfLoadFile b);
 ReturnedOfLoadFile& operator|=(ReturnedOfLoadFile& a, ReturnedOfLoadFile b);
+//物品包含的属性窗口种类
 enum _ControlType
 {
 	CT_NAME = 0b00001,
@@ -99,6 +108,7 @@ inline _ControlType operator|(const _ControlType& lhs, const _ControlType& rhs)
 {
 	return static_cast<_ControlType>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
+//消息存储
 typedef struct WndMsg
 {
 	HWND hWnd;
@@ -107,6 +117,7 @@ typedef struct WndMsg
 	RECT m_rect;
 	WndMsg() :hWnd(nullptr) { m_rect = { 0 }; }
 }WndMsg;
+//默认着色器标识
 enum ShaderID
 {
 	SI_Empty,
@@ -116,24 +127,15 @@ enum ShaderID
 	SI_SkyBoxShader,
 	SI_User,
 };
-ATOM MyRegisterClass(HINSTANCE   hInstance,
-	LPCWSTR     lpszClassName,
-	LRESULT(*wnd_proc)(HWND, UINT, WPARAM, LPARAM),
-	LPCWSTR     lpszMenuName = NULL,
-	UINT        style = CS_HREDRAW | CS_VREDRAW,
-	HCURSOR     hCursor = NULL,
-	HBRUSH      hbrBackground = (HBRUSH)(COLOR_WINDOW + 1),
-	HICON       hIconSm = NULL,
-	HICON       hIcon = NULL,
-	int         cbClsExtra = 0,
-	int         cbWndExtra = 0);
 int getBit(int num, int pos);
-enum ModelMode
-{
-	MM_DEFAULT,
-	MM_VISIBLE = 1,
-	MM_STATEIC = 2,
-};
+//模型模式
+//enum ModelMode
+//{
+//	MM_DEFAULT,
+//	MM_VISIBLE = 1,
+//	MM_STATEIC = 2,
+//};
+//窗口布局
 enum WindowLayout
 {
 	WL_BottenHeight = 20,
@@ -145,6 +147,40 @@ enum WindowLayout
 	WL_KeyframeTime_SmallScale = 5,
 	WL_KeyframeTime_BigScale = 10,
 	WL_KeyframeTime_TimeLine = 3,
+	WL_KeyframeFile_BottenHeight = 20,
 	WL_WindowMaxHeigt = 480,
 	WL_WindowMaxWidth = 640,
+};
+
+enum OperatingMode
+{
+	OM_Start,
+	OM_Suspend,
+};
+
+typedef struct TransForm
+{
+	glm::vec3 Position;
+	glm::vec3 Scale;
+	vec::Rotation Rotate;
+	TransForm():Position(0.0f),Scale(0.0f){}
+	TransForm(const glm::vec3& position, const glm::vec3& scale, const vec::Rotation& rotate) :Position(position), Scale(scale), Rotate(rotate) {}
+	TransForm GetKeyframe(const TransForm& next, float ratio)
+	{
+		return TransForm(Position + (next.Position - Position) * ratio, Scale + (next.Scale - Scale) * ratio, Rotate.getRotationTo(next.Rotate, ratio));
+	}
+	glm::mat4 GetOpenGLMat()const
+	{
+		if (Scale == glm::vec3(0.0f))
+			return glm::mat4(1.0);
+		glm::mat4 m_Transform = glm::mat4(1.0f);
+		m_Transform = glm::scale(m_Transform, Scale);
+		m_Transform = glm::rotate(m_Transform, (float)Rotate.angle, (glm::vec3)Rotate.axis);
+		return glm::translate(m_Transform, Position);
+	}
+}TransFrame;
+enum RUNMODE
+{
+	RM_EDIT,
+	RM_RUN,
 };
