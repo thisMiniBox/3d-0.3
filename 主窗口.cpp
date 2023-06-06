@@ -33,9 +33,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SetMenu(Central_control->m_hWnd, hMenu);
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
-    SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
-
-    Central_control->Command(L"loadfile Tree\\Tree.obj");
+    //切换为OpenGL渲染
+    //SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+    //预加载树模型
+    //Central_control->Command(L"loadfile Tree\\Tree.obj");
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -851,7 +852,6 @@ LRESULT CALLBACK KeyframeEdit::KeyframeWndProc(HWND hWnd, UINT message, WPARAM w
 }
 LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-
     switch (message)
     {
     case WM_PAINT:
@@ -871,6 +871,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
         double scale = (double)(width-20) / (rightTime - leftTime);
 
         int tickInterval = 1.0 / scale * 2; // 刻度间隔
+
         // 绘制刻度线
         int startX = 10;
         int startY = WL_KeyframeTime_TimeLine;
@@ -1048,15 +1049,34 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
 
         Rectangle(hdc, 0, 0, width, height);
         DeleteObject(hBrush);
-        hBrush = CreateSolidBrush(RGB(0, 255, 0));
-        SelectObject(hdc, hBrush);
-        POINT tri[3] = {
-            {width / 6 - WL_KeyframeBotten_BottenSize,height / 2 - WL_KeyframeBotten_BottenSize},
-            {width / 6 + WL_KeyframeBotten_BottenSize,height / 2},
-            {width / 6 - WL_KeyframeBotten_BottenSize,height / 2 + WL_KeyframeBotten_BottenSize} };
-        Polygon(hdc, tri, 3);
-        DeleteObject(hBrush);
+        RUNMODE rm = GetRunMode();
+        switch (rm)
+        {
+        case RM_EDIT:
+        {
+            hBrush = CreateSolidBrush(RGB(0, 255, 0));
+            SelectObject(hdc, hBrush);
+            POINT tri[3] = {
+                {width / 6 - WL_KeyframeBotten_BottenSize,height / 2 - WL_KeyframeBotten_BottenSize},
+                {width / 6 + WL_KeyframeBotten_BottenSize,height / 2},
+                {width / 6 - WL_KeyframeBotten_BottenSize,height / 2 + WL_KeyframeBotten_BottenSize} };
+            Polygon(hdc, tri, 3);
+            DeleteObject(hBrush);
+        }
+            break;
+        case RM_RUN:
+        {
 
+            hBrush = CreateSolidBrush(RGB(255, 0, 0));
+            SelectObject(hdc, hBrush);
+            Rectangle(hdc, width / 6 - WL_KeyframeBotten_BottenSize, height / 2 - WL_KeyframeBotten_BottenSize, width / 6 - 2, height / 2 + WL_KeyframeBotten_BottenSize);
+            Rectangle(hdc, width / 6 + 2, height / 2 - WL_KeyframeBotten_BottenSize, width / 6 + WL_KeyframeBotten_BottenSize, height / 2 + WL_KeyframeBotten_BottenSize);
+            DeleteObject(hBrush);
+        }
+            break;
+        default:
+            break;
+        }
         hBrush = CreateSolidBrush(RGB(255, 0, 0));
         SelectObject(hdc, hBrush);
         Rectangle(hdc, width / 2 - WL_KeyframeBotten_BottenSize, height / 2 - WL_KeyframeBotten_BottenSize, width / 2 + WL_KeyframeBotten_BottenSize, height / 2 + WL_KeyframeBotten_BottenSize);
@@ -1102,6 +1122,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
         {
             Central_control->Suspend();
         }
+        InvalidateRect(hWnd, nullptr, true);
         break;
     }
     default:
@@ -1218,8 +1239,30 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         int interval = rightTime - leftTime;
         RECT rect;
         GetClientRect(hWnd, &rect);
-        Central_control->SetTime(leftTime + ((float)xPos) / (rect.right - 20) * interval);
-        Central_control->UpdateKeyframeView();
+
+        double scale = (double)(rect.right - 20) / (rightTime - leftTime);
+        int tickInterval = 1.0 / scale * 2;
+
+        // 初始化绑定线位置为第一个刻度位置
+        int bindingLinePos = (leftTime - leftTime) * scale + 10;
+
+        // 遍历所有的刻度位置，找到最接近鼠标位置的刻度位置
+        for (int i = leftTime; i <= rightTime; i += tickInterval)
+        {
+            int x = (i - leftTime) * scale;
+            if (i % 10 == 0)
+            {
+                // 如果该刻度位置比当前绑定线位置更接近鼠标单击位置，则更新绑定线位置
+                if (abs(x - xPos) < abs(bindingLinePos - xPos))
+                {
+                    bindingLinePos = x;
+                }
+            }
+        }
+        ULONG64 Time = leftTime + ((float)bindingLinePos) / (rect.right - 20) * interval;
+        // 设置绑定线的位置为最接近鼠标单击位置的刻度位置
+        Central_control->SetTime(Time);
+        InvalidateRect(hWnd, nullptr, true);
         break;
     }
     case WM_LBUTTONDBLCLK:
@@ -1232,12 +1275,18 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         case OT_MODEL:
         {
             Model* fModel = dynamic_cast<Model*>(focus);
-            fModel->SetKeyframe(Central_control->GetTime());
+            if (!fModel->SetKeyframe(Central_control->GetTime()))
+            {
+                Keyframe<TransForm>* key = new Keyframe<TransForm>;
+                Central_control->AddObject(key);
+                fModel->SetKeyframe(key);
+            }
             break;
         }
         default:
             break;
         }
+        InvalidateRect(hWnd, nullptr, true);
         break;
     }
     default:

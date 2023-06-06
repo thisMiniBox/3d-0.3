@@ -1654,9 +1654,9 @@ void Picture::FreeOpenGL()
 	m_ID = 0;
 }
 template<typename OBJ>
-Keyframe<OBJ>::Keyframe(OBJ Default)
+Keyframe<OBJ>::Keyframe()
 {
-	m_default = Default;
+	m_Name = "新建关键帧";
 }
 
 template<typename OBJ>
@@ -1699,19 +1699,19 @@ const std::vector<std::pair<ULONG64, OBJ>>& Keyframe<OBJ>::GetData()const
 	return m_keyframe;
 }
 template<typename OBJ>
-OBJ Keyframe<OBJ>::GetKeyframe(ULONG64 time)
+OBJ* Keyframe<OBJ>::GetKeyframe(ULONG64 time)
 {
 	// 首先检查是否存在关键帧
 	if (m_keyframe.empty() || time < m_keyframe.front().first)
-		return m_default;
+		return nullptr;
 	if (time > m_keyframe.back().first)
-		return m_keyframe.back().second;
+		return &m_keyframe.back().second;
 	// 使用二分查找在 vector 中查找关键帧
 	auto iter = std::lower_bound(m_keyframe.begin(), m_keyframe.end(), std::make_pair(time, OBJ()), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
 
 	// 如果找到了匹配的关键帧，则返回其指针；否则进行插值计算
 	if (iter != m_keyframe.end() && iter->first == time)
-		return iter->second;
+		return &iter->second;
 	else
 	{
 		OBJ prev, next;
@@ -1739,7 +1739,8 @@ OBJ Keyframe<OBJ>::GetKeyframe(ULONG64 time)
 		double ratio = static_cast<double>(time - prevTime) / (nextTime - prevTime);
 
 		// 调用 OBJ 类型的 GetKeyframe 函数获取中间状态并返回
-		return prev.GetKeyframe(next, ratio);
+		m_TemporaryStorage = prev.GetKeyframe(next, ratio);
+		return &m_TemporaryStorage;
 	}
 }
 
@@ -1760,20 +1761,20 @@ bool Model::SetKeyframe(ULONG64 time)
 {
 	if (!m_keyframe)
 	{
-		CreateKryframe();
 		return false;
 	}
 	m_keyframe->SetKeyframe(time,GetTransForm());
 	return true;
 }
-bool Model::CreateKryframe()
+
+void Model::SetKeyframe(Keyframe<TransFrame>* NewKeyframe)
 {
-	if (m_keyframe)
-		delete m_keyframe;
-	m_keyframe = new Keyframe<TransForm>(GetTransForm());
-	if (m_keyframe)
-		return true;
-	return false;
+	m_keyframe = NewKeyframe;
+	
+}
+Keyframe<TransForm>* Model::CreateKryframe()
+{
+	return new Keyframe<TransForm>();
 }
 
 //void Model::SetMode(ModelMode Mode)
@@ -1794,15 +1795,49 @@ TransForm Model::GetTransForm()const
 }
 glm::mat4 Model::GetTransform(ULONG64 time)
 {
+
 	if (m_Parent)
 		if (m_keyframe)
-			return m_Parent->GetTransform(time) * m_keyframe->GetKeyframe(time).GetOpenGLMat();
+		{
+			RUNMODE rm = GetRunMode();
+			if(rm==RM_RUN)
+			{
+				TransForm* tf = m_keyframe->GetKeyframe(time);
+				if (tf)
+				{
+					m_Position = tf->Position;
+					m_Scale = tf->Scale;
+					m_Rotate = tf->Rotate;
+					updateTransform();
+					return m_Parent->GetTransform(time) * m_Transform;
+				}
+			}
+			return m_Parent->GetTransform(time) * m_Transform;
+		}
 		else
 			return m_Parent->GetTransform(time) * m_Transform;
 	else
+	{
 		if (!m_keyframe)
 			return m_Transform;
-	return m_keyframe->GetKeyframe(time).GetOpenGLMat();
+		else
+		{
+			RUNMODE rm = GetRunMode();
+			if (rm == RM_RUN)
+			{
+				TransForm* tf = m_keyframe->GetKeyframe(time);
+				if (tf)
+				{
+					m_Position = tf->Position;
+					m_Scale = tf->Scale;
+					m_Rotate = tf->Rotate;
+					updateTransform();
+					return m_Transform;
+				}
+			}
+			return m_Transform;
+		}
+	}
 	//TransForm tf = m_keyframe->GetKeyframe(time);
 	//if (tf.Scale == TransForm().Scale)
 	//	return m_Transform;
@@ -1813,4 +1848,74 @@ const std::vector<std::pair<ULONG64, TransForm>>* Model::GetKeyframeData()const
 	if (m_keyframe)
 		return &m_keyframe->GetData();
 	return nullptr;
+}
+bool Object::SaveFile(const std::wstring path, SaveMode sm)const
+{
+	return false;
+}
+template<typename OBJ>
+bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
+{
+	switch (mode)
+	{
+	case SM_TEXT:
+	{
+		xlnt::workbook wb;
+		xlnt::worksheet ws = wb.active_sheet();
+
+		ws.cell("A1").value(OBJ::GetStrType().c_str());
+		std::stringstream ss;
+		ss << OBJ::GetDataType();
+		std::string line;
+		int column = 2;
+		while (std::getline(ss, line))
+		{
+			ws.cell(column, 1).value(line);
+			column++;
+		}
+		int row_num = 2;
+		for (const auto& frame : m_keyframe) {
+			ws.cell(xlnt::cell_reference(1, row_num)).value(frame.first);
+			ss.clear();
+			ss << frame.second.GetStrData();
+			column = 2;
+			while (std::getline(ss, line))
+			{
+				ws.cell(column, row_num).value(line);
+				column++;
+			}
+			row_num++;
+		}
+		wb.save(path);
+		break;
+	}
+	case SM_BINARY:
+		break;
+	default:
+		return false;
+		break;
+	}
+	return true;
+}
+void Material::DeleteReferenceP(Object* obj)
+{
+	if (!obj)return;
+	if (obj == m_MapKa)
+	{
+		m_MapKa->Dereference(this);
+		m_MapKa = nullptr;
+		return;
+	}
+	if (obj == m_MapKd)
+	{
+		m_MapKd->Dereference(this);
+		m_MapKd = nullptr;
+		return;
+	}
+	if (obj == m_MapKs)
+	{
+		m_MapKs->Dereference(this);
+		m_MapKs = nullptr;
+		return;
+	}
 }

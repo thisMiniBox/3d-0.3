@@ -20,7 +20,7 @@ bool Controller::Command(const CommandData& commad, bool ignoreOutput)
 	break;
 	case CommandAct::LOAD_FILE:
 	{
-		loadModelThread(nullptr, this, com.Parameter);
+		loadFileThread(nullptr, this, com.Parameter);
 		break;
 	}
 	break;
@@ -230,7 +230,7 @@ bool Controller::Command(const std::wstring& command, bool ignoreOutput)
 	break;
 	case CommandAct::LOAD_FILE:
 	{
-		loadModelThread(nullptr, this, com.Parameter);
+		loadFileThread(nullptr, this, com.Parameter);
 		break;
 	}
 	break;

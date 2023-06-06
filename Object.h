@@ -13,6 +13,7 @@
 #include"字符转换.h"
 #include"WndData.h"
 #include<glm/gtc/matrix_transform.hpp>
+#include<xlnt/xlnt.hpp>
 //声明类（方便定位）
 class Object;
 class Folder;
@@ -28,7 +29,7 @@ class FixedUI;
 template<typename OBJ>
 class Keyframe;
 
-
+RUNMODE GetRunMode();
 using namespace vec;
 std::wstring ObjectTypeToWstr(ObjectType);
 std::string ObjectTypeTostr(ObjectType);
@@ -99,22 +100,23 @@ public:
 
 	virtual bool IsStatic()const;
 
-	
+	virtual bool SaveFile(const std::wstring path, SaveMode = SM_BINARY)const;
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
 };
 template<typename OBJ>
 class Keyframe :public Object
 {
-	OBJ m_default;
+	OBJ m_TemporaryStorage;
 	std::vector<std::pair<ULONG64, OBJ>>m_keyframe;
 public:
-	Keyframe(OBJ Default);
+	Keyframe();
 	const std::vector<std::pair<ULONG64, OBJ>>& GetData()const;
 	void SetKeyframe(ULONG64 time, OBJ key);
 	void DeleteKeyframe(ULONG64 time);
-	OBJ GetKeyframe(ULONG64 time);
+	OBJ* GetKeyframe(ULONG64 time);
 	virtual ObjectType GetType()const override;
+	bool SaveFile(const std::wstring path, SaveMode)const override;
 };
 //材质信息结构体
 typedef struct _Material {
@@ -294,28 +296,7 @@ public:
 	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
-	void DeleteReferenceP(Object* obj)override
-	{
-		if (!obj)return;
-		if (obj == m_MapKa)
-		{
-			m_MapKa->Dereference(this);
-			m_MapKa = nullptr;
-			return;
-		}
-		if (obj == m_MapKd)
-		{
-			m_MapKd->Dereference(this);
-			m_MapKd = nullptr;
-			return;
-		}
-		if (obj == m_MapKs)
-		{
-			m_MapKs->Dereference(this);
-			m_MapKs = nullptr;
-			return;
-		}
-	}
+	void DeleteReferenceP(Object* obj)override;
 private:
 	// 私有成员变量
 	float m_Ns;
@@ -353,8 +334,9 @@ public:
 	Model(std::string& name);
 	~Model();
 
+	void SetKeyframe(Keyframe<TransFrame>*);
 	bool SetKeyframe(ULONG64 time);
-	bool CreateKryframe();
+	static Keyframe<TransForm>* CreateKryframe();
 
 	//void SetMode(ModelMode);
 	//ModelMode GetMode()const;
@@ -461,7 +443,6 @@ public:
 	glm::mat4 GetTransform(ULONG64 time);
 private:
 	TransForm GetTransForm()const;
-	// 成员变量（包括父模型指针、子模型向量、网格指针、材质指针、位置、缩放和旋转）
 	/*ModelMode m_Mode;*/
 	Model* m_Parent;
 	std::vector<Model*> m_ChildModel;

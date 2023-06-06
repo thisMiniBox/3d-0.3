@@ -3,9 +3,9 @@
 #include"resource.h"
 Controller* cp = nullptr;
 
-LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, Controller* current_project)
+LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM lP, Controller* Controller)
 {
-    cp = current_project;
+    cp = Controller;
     int wmId = LOWORD(wP);
     // 分析菜单选择:
     switch (wmId)
@@ -28,34 +28,67 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
     case IDM_OPEN:
     {
         std::wstring path = MenuGetPath();
-        if (path == L"")current_project->OutMessage(L"地址获取失败", _Error);
+        if (path == L"")Controller->OutMessage(L"地址获取失败", _Error);
         else
         {
-            std::thread loadthread(loadModelThread,hWnd,current_project,path);
+            std::thread loadthread(loadFileThread,hWnd,Controller,path);
             loadthread.detach();
+        }
+        break;
+    }
+    case IDM_SAVE:
+    {
+        Object* focus = Controller->GetFocusObject();
+        if (!focus)
+        {
+            Controller->OutMessage("未选择任何目标", _Warning);
+            break;
+        }
+        WCHAR szFile[MAX_PATH] = { 0 };
+        OPENFILENAME ofn = { 0 };
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = hWnd;
+        ofn.lpstrFilter = TEXT("以文本格式保存(*.txt)\0*.txt\0以xlsx格式保存\0*.xlsx\0以二进制格式保存(*.*)\0*.*\0");
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = MAX_PATH;
+        ofn.lpstrTitle = TEXT("选择保存文件位置");
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT;
+
+        // Display the Save File dialog box
+        if (GetSaveFileName(&ofn))
+        {
+
+            if (focus->SaveFile(ofn.lpstrFile, SM_TEXT))
+                Controller->OutMessage("保存成功");
+            else
+                Controller->OutMessage("保存失败", _Error);
+        }
+        else
+        {
+            Controller->OutMessage("获取地址失败", MSGtype::_Error);
         }
         break;
     }
     case ID_GDI:
     {
-        current_project->OutMessage("使用GDI绘图");
-        delete current_project->GetMainWind();
-        current_project->m_MainWind = new GDIWND;
-        int cxClient = current_project->GetRect().right - current_project->GetRect().left;
-        int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
-        ShowWindow(current_project->m_MainWind->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
-        current_project->SetFPS(current_project->GetSetFPS());
+        Controller->OutMessage("使用GDI绘图");
+        delete Controller->GetMainWind();
+        Controller->m_MainWind = new GDIWND;
+        int cxClient = Controller->GetRect().right - Controller->GetRect().left;
+        int cyClient = Controller->GetRect().bottom - Controller->GetRect().top;
+        ShowWindow(Controller->m_MainWind->CreateWind(Controller->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200), SW_SHOW);
+        Controller->SetFPS(Controller->GetSetFPS());
         break;
     }
     case ID_OPENGL:
     {
-        current_project->OutMessage("使用OpenGL绘图");
-        delete current_project->GetMainWind();
-        current_project->m_MainWind = new OpenGLWnd;
-        int cxClient = current_project->GetRect().right - current_project->GetRect().left;
-        int cyClient = current_project->GetRect().bottom - current_project->GetRect().top;
-        current_project->m_MainWind->CreateWind(current_project->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
-        current_project->SetFPS(current_project->GetSetFPS());
+        Controller->OutMessage("使用OpenGL绘图");
+        delete Controller->GetMainWind();
+        Controller->m_MainWind = new OpenGLWnd;
+        int cxClient = Controller->GetRect().right - Controller->GetRect().left;
+        int cyClient = Controller->GetRect().bottom - Controller->GetRect().top;
+        Controller->m_MainWind->CreateWind(Controller->m_hWnd, cxClient / 5, 50, cxClient / 5 * 3, cyClient - 200);
+        Controller->SetFPS(Controller->GetSetFPS());
         break;
     }
     default:

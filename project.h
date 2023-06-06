@@ -49,6 +49,7 @@ class Controller
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
 	ReturnedOfLoadFile LoadDLL(const std::wstring& filePath);
+
 public:
 	//窗口信息
 	HWND m_hWnd;
@@ -91,9 +92,9 @@ public:
 	float GetMaxFPS()const;
 	float GetSetFPS()const;
 	//上传消息
-	void OutMessage(const std::string&, const char& mode = _Message);
+	void OutMessage(const std::string&, MSGtype type = _Message);
 	//上传消息
-	void OutMessage(const std::wstring& str, const char& mode = _Message);
+	void OutMessage(const std::wstring& str, MSGtype eype = _Message);
 	//更新消息窗口
 	void updateMsg(const HDC&);
 	//更新模型数据
@@ -148,4 +149,4 @@ public:
 	void MoveKeyframeEditTime(int x);
 };
 
-void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path);
+void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path);

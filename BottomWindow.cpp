@@ -221,7 +221,7 @@ HWND TextOutWind::GethWnd()
 {
 	return m_hWnd;
 }
-size_t TextOutWind::OutMessage(const std::string& str, const char& type)
+size_t TextOutWind::OutMessage(const std::string& str, MSGtype type)
 {
 	SYSTEMTIME sys;
 	GetLocalTime(&sys);
@@ -233,7 +233,7 @@ size_t TextOutWind::OutMessage(const std::string& str, const char& type)
 	else MoveText(vec::Vector2(0, -m_TextTypeFace.lfHeight / 6));
 	return m_MessageData.size();
 }
-size_t TextOutWind::OutMessage(const std::wstring& str, const char& type)
+size_t TextOutWind::OutMessage(const std::wstring& str, MSGtype type)
 {
 	SYSTEMTIME sys;
 	GetLocalTime(&sys);

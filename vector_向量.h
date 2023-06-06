@@ -198,6 +198,12 @@ namespace vec {
         {
             return glm::vec3(x, y, z);
         }
+        void operator=(glm::vec3 v)
+        {
+            this->x = v.x;
+            this->y = v.y;
+            this->z = v.z;
+        }
     };
 
     typedef Vector Vector3;

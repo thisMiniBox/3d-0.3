@@ -178,9 +178,51 @@ typedef struct TransForm
 		m_Transform = glm::rotate(m_Transform, (float)Rotate.angle, (glm::vec3)Rotate.axis);
 		return glm::translate(m_Transform, Position);
 	}
+	static std::string GetStrType()
+	{
+		return "Transform";
+	}
+	static std::string GetDataType()
+	{
+		return "POSITION\nSCALE\nROTATE\n";
+	}
+	std::string GetStrData() const
+	{
+		std::ostringstream oss;
+		oss << Position.x << ' '
+			<< Position.y << ' '
+			<< Position.z << '\n'
+			<< Scale.x << ' '
+			<< Scale.y << ' '
+			<< Scale.z << '\n'
+			<< Rotate.axis.x << ' '
+			<< Rotate.axis.y << ' '
+			<< Rotate.axis.z << ' '
+			<< Rotate.angle << '\n';
+		return oss.str();
+	}
+	void LoadStr(const std::string& data)
+	{
+		std::stringstream ss(data);
+
+		// 从字符串中解析位置数据，并赋值给 Position 成员变量
+		ss >> Position.x >> Position.y >> Position.z;
+
+		// 从字符串中解析缩放数据，并赋值给 Scale 成员变量
+		ss >> Scale.x >> Scale.y >> Scale.z;
+
+		// 从字符串中解析旋转数据，并赋值给 Rotate 成员变量
+		ss >> Rotate.axis.x >> Rotate.axis.y >> Rotate.axis.z >> Rotate.angle;
+	}
 }TransFrame;
 enum RUNMODE
 {
 	RM_EDIT,
 	RM_RUN,
+};
+enum SaveMode
+{
+	SM_TEXT,
+	SM_XLSX,
+	SM_BINARY,
 };

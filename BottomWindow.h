@@ -34,9 +34,8 @@ typedef struct runMsg
 {
 	std::wstring Time;
 	std::wstring Str;
-	char Type;
-	runMsg() :Type(0) {}
-	runMsg(const std::wstring& time, const std::wstring& str, const char& type) :Time(time), Str(str), Type(type) {}
+	MSGtype Type;
+	runMsg(const std::wstring& time, const std::wstring& str, MSGtype type) :Time(time), Str(str), Type(type) {}
 }runMsg;
 class TextOutWind
 {
@@ -63,8 +62,8 @@ public:
 	void SetFont(LOGFONT);
 	void UpdateWindowSize(int w, int h);
 	size_t size();
-	size_t OutMessage(const std::string&, const char&);
-	size_t OutMessage(const std::wstring&, const char&);
+	size_t OutMessage(const std::string&, MSGtype);
+	size_t OutMessage(const std::wstring&, MSGtype);
 	void DrawWind(HDC hdc);
 	HWND GethWnd();
 	static LRESULT CALLBACK TextWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

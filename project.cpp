@@ -175,11 +175,11 @@ Object* Controller::GetFocusObject()const
 {
 	return m_EditWind->GetTarget();
 }
-void Controller::OutMessage(const std::string&str, const char& type)
+void Controller::OutMessage(const std::string&str, MSGtype type)
 {
 	m_TextWind->OutMessage(str, type);
 }
-void Controller::OutMessage(const std::wstring& str, const char& type)
+void Controller::OutMessage(const std::wstring& str, MSGtype type)
 {
 	m_TextWind->OutMessage(str, type);
 }
@@ -189,7 +189,8 @@ void Controller::updateMsg(const HDC& hdc)
 }
 HTREEITEM Controller::AddObject(Object* a, std::string address)
 {
-	m_Models.clear();
+	if (a->GetType() == OT_MODEL)
+		m_Models.clear();
 	m_RootFolder.AddFile_Ìí¼ÓÎÄ¼þ(a);
 	return m_FileWind->AddItem(*a, address);
 }
@@ -347,6 +348,10 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 			return ReturnedOfLoadFile::_FailToOpenFile;
 		}
 		error |= LoadObj(narrowPath);
+	}
+	else if (L"xlsx")
+	{
+
 	}
 	else if (extension == L"xzcom")
 	{
@@ -726,7 +731,7 @@ void Controller::Print(const std::wstring& wstr)
 	m_IOWind->OutputString(wstr);
 	m_IOWind->Clear();
 }
-void loadModelThread(HWND hWnd, Controller* current_project, std::wstring path)
+void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path)
 {
 	//rwlock.lock();
 	current_project->m_FileLoad = true;
