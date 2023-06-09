@@ -666,7 +666,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
             continue;
         if (m_models[model] == nullptr)
             m_models[model] = new OldModelBuffer(model, CurrentShader);
-        if (GetRunMode() == RM_EDIT)
+        if (GetRunMode_g() == RM_EDIT)
             modelTransform = model->GetGLTransform();
         else
             modelTransform = model->GetTransform(GetTime());

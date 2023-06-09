@@ -109,13 +109,14 @@ class KeyframeEdit
 public:
 	KeyframeEdit(HINSTANCE hInst, HWND parent);
 	~KeyframeEdit();
-	void UpdateView()const;
+	void UpdateView(ChildWindSign = ChildWindSign::KeyframeWind)const;
 	HWND GethWnd()const;
 	void MoveSize(int w, int h);
 	int GetY()const;
 	void MoveY(int y);
 	void MoveTime(int x);
 	void GetTime(ULONG64* left, ULONG64* right)const;
+	void ScaleTime(int x);
 	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeFileProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

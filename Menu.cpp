@@ -57,11 +57,40 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         // Display the Save File dialog box
         if (GetSaveFileName(&ofn))
         {
-
-            if (focus->SaveFile(ofn.lpstrFile, SM_TEXT))
-                Controller->OutMessage("保存成功");
+            std::wstring Path = ofn.lpstrFile;
+            
+            if (ofn.nFilterIndex == 1)
+            {
+                if (GetFileExtension(Path).empty())
+                    Path += L".txt";
+                if (focus->SaveFile(Path, SM_TEXT))
+                    Controller->OutMessage("保存成功");
+                else
+                    Controller->OutMessage("保存失败", _Error);
+            }
+            else if (ofn.nFilterIndex == 2)
+            {
+                if (GetFileExtension(Path).empty())
+                    Path += L".xlsx";
+                if (focus->SaveFile(Path, SM_XLSX))
+                    Controller->OutMessage("保存成功");
+                else
+                    Controller->OutMessage("保存失败", _Error);
+            }
+            else if (ofn.nFilterIndex == 3)
+            {
+                if (focus->SaveFile(Path, SM_BINARY))
+                    Controller->OutMessage("保存成功");
+                else
+                    Controller->OutMessage("保存失败", _Error);
+            }
             else
-                Controller->OutMessage("保存失败", _Error);
+            {
+                if (focus->SaveFile(Path))
+                    Controller->OutMessage("保存成功");
+                else
+                    Controller->OutMessage("保存失败", _Error);
+            }
         }
         else
         {

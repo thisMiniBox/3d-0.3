@@ -63,12 +63,29 @@ void BottomWindow::Size(int w, int h)
 		pos++;
 	}
 }
-void KeyframeEdit::UpdateView()const
+void KeyframeEdit::UpdateView(ChildWindSign cws)const
 {
-	InvalidateRect(m_hButten, nullptr, true);
-	InvalidateRect(m_hFile, nullptr, true);
-	InvalidateRect(m_hCanvas, nullptr, true);
-	InvalidateRect(m_hTime, nullptr, true);
+	switch (cws)
+	{
+	case ChildWindSign::KeyframeWind:
+		InvalidateRect(m_hButten, nullptr, true);
+		InvalidateRect(m_hFile, nullptr, true);
+		InvalidateRect(m_hCanvas, nullptr, true);
+		InvalidateRect(m_hTime, nullptr, true);
+		break;
+	case ChildWindSign::KF_TimeWind:
+		InvalidateRect(m_hTime, nullptr, true);
+		break;
+	case ChildWindSign::KF_FileWind:
+		InvalidateRect(m_hFile, nullptr, true);
+		break;
+	case ChildWindSign::KF_ButtenWind:
+		InvalidateRect(m_hButten, nullptr, true);
+		break;
+	case ChildWindSign::KF_CanvasWind:
+		InvalidateRect(m_hCanvas, nullptr, true);
+		break;
+	}
 }
 HWND BottomWindow::Select(HWND hWnd)
 {
@@ -513,35 +530,35 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		L"KeyframeWindows",
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
-		parent, 0, hInst, nullptr);
+		parent, (HMENU)ChildWindSign::KeyframeWind, hInst, nullptr);
 	m_hFile = CreateWindowExW(
 		0,
 		m_FileClassName.c_str(),
 		nullptr,
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
-		m_hWnd, 0, hInst, nullptr);
+		m_hWnd, (HMENU)ChildWindSign::KF_FileWind, hInst, nullptr);
 	m_hTime = CreateWindowExW(
 		0,
 		m_TimeClassName.c_str(),
 		L"KeyframeWindows",
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
-		m_hWnd, 0, hInst, nullptr);
+		m_hWnd, (HMENU)ChildWindSign::KF_TimeWind, hInst, nullptr);
 	m_hCanvas = CreateWindowExW(
 		0,
 		m_CanvasClassName.c_str(),
 		L"KeyframeWindows",
 		WS_CHILD | WS_VISIBLE| CS_DBLCLKS,
 		0, 0, 200, 100,
-		m_hWnd, 0, hInst, nullptr);
+		m_hWnd, (HMENU)ChildWindSign::KF_CanvasWind, hInst, nullptr);
 	m_hButten = CreateWindowExW(
 		0,
 		m_ButtenClassName.c_str(),
 		L"KeyframeWindows",
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
-		m_hWnd, 0, hInst, nullptr);
+		m_hWnd, (HMENU)ChildWindSign::KF_ButtenWind, hInst, nullptr);
 	if (!m_hWnd)
 	{
 		std::cout << L"¹Ø¼üÖ¡±à¼­´°¿Ú´´½¨Ê§°Ü£¡" << std::endl;
@@ -587,7 +604,7 @@ void KeyframeEdit::MoveY(int y)
 void KeyframeEdit::MoveTime(int x)
 {
 	LONG64 left = m_LeftTime;
-	if (left+x <= 0)
+	if (left + x <= 0)
 	{
 		left = m_RightTime - m_LeftTime;
 		m_LeftTime = 0;
@@ -601,4 +618,10 @@ void KeyframeEdit::GetTime(ULONG64* left, ULONG64* right)const
 {
 	*left = m_LeftTime;
 	*right = m_RightTime;
+}
+void KeyframeEdit::ScaleTime(int x)
+{
+	if (m_RightTime - m_LeftTime + x < 200)
+		return;
+	m_RightTime += x;
 }

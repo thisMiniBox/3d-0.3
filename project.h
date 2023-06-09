@@ -24,6 +24,7 @@ class Controller
 	Folder m_RootFolder;			//资源文件夹
 	Folder* m_FocusFolder;			//操作文件夹
 	std::wstring m_CurrentPath;		//操作文件夹地址字符串
+	Object* m_Focus;				//焦点对象
 
 	std::vector<Model*>m_Models;	//临时存储模型索引
 
@@ -49,6 +50,7 @@ class Controller
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
 	ReturnedOfLoadFile LoadDLL(const std::wstring& filePath);
+	bool LoadXlsx(const std::wstring& filePath);
 
 public:
 	//窗口信息
@@ -130,17 +132,21 @@ public:
 	//更新窗口
 	void UpdateFileView()const;
 	void UpdateDetaileViev()const;
-	void UpdateKeyframeView()const;
+	void UpdateKeyframeView(ChildWindSign = ChildWindSign::KeyframeWind)const;
 	/*void UpdateBottomView()const;*/
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	//关键帧窗口相关函数
 
+	void SwitchRunMode();
 	void Run();
 	void Suspend();
 	void Stop();
 	void SetTime(ULONG64 time);
 	void Reset();
+	void SetKeyframeLoop(bool);
+	void SwitchKeyframeLoop();
+	bool GetKeyframeLoop()const;
 	ULONG64 GetTime();
 	ULONG64 GetStartTime()const;
 	void GetTime(ULONG64* left, ULONG64* right)const;

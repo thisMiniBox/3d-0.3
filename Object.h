@@ -29,7 +29,8 @@ class FixedUI;
 template<typename OBJ>
 class Keyframe;
 
-RUNMODE GetRunMode();
+void OutMessage_g(const std::string&, MSGtype type = _Message);
+RUNMODE GetRunMode_g();
 using namespace vec;
 std::wstring ObjectTypeToWstr(ObjectType);
 std::string ObjectTypeTostr(ObjectType);
@@ -101,21 +102,29 @@ public:
 	virtual bool IsStatic()const;
 
 	virtual bool SaveFile(const std::wstring path, SaveMode = SM_BINARY)const;
+
+	virtual void SetKeyframeLoop(bool);
+	virtual bool GetKeyframeLoop()const;
 	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
 	//virtual ClassInfo* GainClassInfo() = 0;
 };
 template<typename OBJ>
 class Keyframe :public Object
 {
-	OBJ m_TemporaryStorage;
 	std::vector<std::pair<ULONG64, OBJ>>m_keyframe;
+	OBJ m_TemporaryStorage;
+	bool m_loop;
 public:
-	Keyframe();
+	Keyframe(const std::string& name = "新建关键帧");
 	const std::vector<std::pair<ULONG64, OBJ>>& GetData()const;
 	void SetKeyframe(ULONG64 time, OBJ key);
 	void DeleteKeyframe(ULONG64 time);
 	OBJ* GetKeyframe(ULONG64 time);
-	virtual ObjectType GetType()const override;
+	void SetLoop(bool loop);
+	bool IsLoop()const;
+	ObjectType GetType()const override;
+	void SetKeyframeLoop(bool) override;
+	bool GetKeyframeLoop()const override;
 	bool SaveFile(const std::wstring path, SaveMode)const override;
 };
 //材质信息结构体
@@ -383,21 +392,7 @@ public:
 	virtual ObjectType GetType() const override { return OT_MODEL; }
 
 	glm::mat4 GetGLTransform()const;
-	void DeleteReferenceP(Object* obj)override
-	{
-		if (!obj)return;
-		if (obj == m_ModelMesh)
-		{
-			m_ModelMesh->Dereference(this);
-			m_ModelMesh = nullptr;
-		}
-		else if (obj == m_Material)
-		{
-			m_Material->Dereference(this);
-			m_Material = nullptr;
-		}
-	}
-
+	void DeleteReferenceP(Object* obj)override;
 	inline void updateTransform();
 	// 切换选中状态
 	void ToggleSelection() override;
@@ -438,7 +433,8 @@ public:
 	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
 
 	bool IsStatic()const override;
-
+	void SetKeyframeLoop(bool) override;
+	bool GetKeyframeLoop()const override;
 	const std::vector<std::pair<ULONG64, TransForm>>* GetKeyframeData()const;
 	glm::mat4 GetTransform(ULONG64 time);
 private:

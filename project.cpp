@@ -119,7 +119,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	ShowWindow(m_hWnd, SW_SHOW);
 	UpdateWindow(m_hWnd);
 	Command(L"");
-	m_EditWind->SetView(&m_RootFolder);
+	SetFoucusObjcet(&m_RootFolder);
 
 	m_ImageList = ImageList_Create(64, 64, ILC_COLOR32, 7, 0);
 	LoadPngFromResources(IDB_UNKNOWN64);
@@ -173,7 +173,7 @@ HINSTANCE Controller::GethInstance()const
 }
 Object* Controller::GetFocusObject()const
 {
-	return m_EditWind->GetTarget();
+	return m_Focus;
 }
 void Controller::OutMessage(const std::string&str, MSGtype type)
 {
@@ -319,18 +319,20 @@ std::vector<Model*>& Controller::UpdateModels()
 void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 {
 	if (m_EditWind->GetTarget() == obj)
-		m_EditWind->SetView(nullptr);
+	{
+		m_Focus = obj->GetParent();
+		m_EditWind->SetView(m_Focus);
+	}
 	if (m_MainWind->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
 	{
 		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(m_MainWind);
 		Model* mod = dynamic_cast<Model*>(obj);
 		glwind->DeleteModelBuffer(mod);
+		m_Models.clear();
 	}
 	m_FocusFolder->DeleteFile_删除文件(obj);
-	UpdateModels();
 	if (hTree)
 		m_FileWind->DeleteItem(hTree);
-	m_Models.clear();
 	InvalidateRect(m_MainWind->GethWnd(), NULL, true);
 }
 
@@ -351,7 +353,10 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 	}
 	else if (L"xlsx")
 	{
-
+		if (LoadXlsx(path))
+			error = _Succese;
+		else
+			error = _Fail;
 	}
 	else if (extension == L"xzcom")
 	{
@@ -713,9 +718,9 @@ void Controller::UpdateDetaileViev()const
 {
 	m_EditWind->UpDate();
 }
-void Controller::UpdateKeyframeView()const
+void Controller::UpdateKeyframeView(ChildWindSign cws)const
 {
-	m_KeyframeWind->UpdateView();
+	m_KeyframeWind->UpdateView(cws);
 }
 //void Controller::UpdateBottomView()const
 //{
@@ -736,50 +741,48 @@ void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path)
 	//rwlock.lock();
 	current_project->m_FileLoad = true;
 	unsigned int Error = current_project->LoadFile(path);
-	if (Error == ReturnedOfLoadFile::_Succese)
-	{
-		current_project->OutMessage(L"加载完毕：" + path, _Message);
-		current_project->Model_att = 0x01;
-	}
-	else if ((Error & 0xff) != 0)
-	{
-		switch (Error & 0xff)
-		{
-		case ReturnedOfLoadFile::_UnknownFormat:
-			current_project->OutMessage(L"未知文件格式：" + path, _Error);
-			break;
-
-		case ReturnedOfLoadFile::_DataError:
-			current_project->OutMessage(L"数据错误：" + path, _Error);
-			break;
-
-		case ReturnedOfLoadFile::_FailToOpenFile:
-			current_project->OutMessage(L"无法打开文件：" + path, _Error);
-			break;
-
-		case ReturnedOfLoadFile::_FailedToCreateFile:
-			current_project->OutMessage(L"文件创建失败：" + path, _Error);
-			break;
-		default:
-			current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
-			break;
-		}
-	}
-	else
-	{
-		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
-		{
-			current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
-		}
-		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
-		{
-			current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
-		}
-		if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
-		{
-			current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
-		}
-	}
+	current_project->Model_att = 0x01;
+	//if (Error == ReturnedOfLoadFile::_Succese)
+	//{
+	//	current_project->OutMessage(L"加载完毕：" + path, _Message);
+	//	current_project->Model_att = 0x01;
+	//}
+	//else if ((Error & 0xff) != 0)
+	//{
+	//	switch (Error & 0xff)
+	//	{
+	//	case ReturnedOfLoadFile::_UnknownFormat:
+	//		current_project->OutMessage(L"未知文件格式：" + path, _Error);
+	//		break;
+	//	case ReturnedOfLoadFile::_DataError:
+	//		current_project->OutMessage(L"数据错误：" + path, _Error);
+	//		break;
+	//	case ReturnedOfLoadFile::_FailToOpenFile:
+	//		current_project->OutMessage(L"无法打开文件：" + path, _Error);
+	//		break;
+	//	case ReturnedOfLoadFile::_FailedToCreateFile:
+	//		current_project->OutMessage(L"文件创建失败：" + path, _Error);
+	//		break;
+	//	default:
+	//		current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
+	//		break;
+	//	}
+	//}
+	//else
+	//{
+	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
+	//	{
+	//		current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
+	//	}
+	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
+	//	{
+	//		current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
+	//	}
+	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
+	//	{
+	//		current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
+	//	}
+	//}
 	current_project->m_FileLoad = false;
 	//rwlock.unlock();
 	return;
@@ -835,6 +838,7 @@ void Controller::SetFoucusObjcet(Object* aim)
 		m_EditWind->SetView(aim);
 		aim->Selected();
 		UpdateKeyframeView();
+		m_Focus = aim;
 	}
 }
 std::map<int, int>& Controller::GetImageListIndex()
@@ -903,13 +907,41 @@ void Controller::Run()
 }
 void Controller::Suspend()
 {
-	m_Mode = RM_EDIT;;
+	m_Mode = RM_EDIT;
+}
+void Controller::Stop()
+{
+	m_Mode = RM_EDIT;
+	SetTime(0);
+}
+void Controller::SwitchRunMode()
+{
+	if (m_Mode == RM_RUN)
+		Suspend();
+	else
+		Run();
 }
 void Controller::Reset()
 {
 	m_Mode = RM_EDIT;
 	m_StartTime = 0;
 	m_RunTime = 0;
+}
+void Controller::SetKeyframeLoop(bool b)
+{
+	if (m_Focus)
+		m_Focus->SetKeyframeLoop(b);
+}
+void Controller::SwitchKeyframeLoop()
+{
+	if (m_Focus)
+		m_Focus->SetKeyframeLoop(!m_Focus->GetKeyframeLoop());
+}
+bool Controller::GetKeyframeLoop()const
+{
+	if (m_Focus)
+		return m_Focus->GetKeyframeLoop();
+	return false;
 }
 int Controller::GetKeyframeEditY()const
 {
@@ -928,10 +960,64 @@ ULONG64 Controller::GetTime()
 	if (m_Mode == RM_EDIT)
 		return m_RunTime;
 	m_RunTime = GetTickCount64() - m_StartTime;
+	ULONG64 leftTime, rightTime;
+	GetTime(&leftTime, &rightTime);
+	if (m_RunTime < leftTime)
+	{
+		int x = m_RunTime - leftTime - 500;
+		MoveKeyframeEditTime(x);
+	}
+	else if (m_RunTime > rightTime)
+	{
+		int x = m_RunTime - rightTime + 500;
+		MoveKeyframeEditTime(x);
+	}
 	return m_RunTime;
 }
 void Controller::SetTime(ULONG64 time)
 {
 	m_RunTime = time;
 	m_StartTime = GetTickCount64() - time;
+	ULONG64 leftTime, rightTime;
+	GetTime(&leftTime, &rightTime);
+	if (time < leftTime)
+	{
+		int x = time - leftTime - 500;
+		MoveKeyframeEditTime(x);
+	}
+	else if (time > rightTime)
+	{
+		int x = time - rightTime + 500;
+		MoveKeyframeEditTime(x);
+	}
+}
+bool Controller::LoadXlsx(const std::wstring& filePath)
+{
+	xlnt::workbook wb;
+	try
+	{
+		wb.load(filePath); // 文件名可以根据实际情况修改
+	}
+	catch (const std::exception& ex)
+	{
+		OutMessage(L"文件打开失败", _Error);
+		return false;
+	}
+
+	// 遍历所有工作表
+	for (const auto& ws : wb)
+	{
+		std::cout << "Sheet: " << ws.title() << std::endl;
+
+		// 遍历所有行和列，并输出每个单元格的值
+		for (const auto& row : ws.rows())
+		{
+			for (auto cell : row)
+			{
+				std::cout << cell.to_string() << "\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
 }

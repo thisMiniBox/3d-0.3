@@ -7,9 +7,16 @@
 #include"resource.h"
 #include"vector_向量.h"
 
+
+int getBit(int num, int pos);
+void ReplaceChar(std::string& str, char from, char to);
+std::string GetFileExtension(const std::string& path);
+std::wstring GetFileExtension(const std::wstring& path);
+
 //子窗口标识
 enum class ChildWindSign
 {
+	UNKNOW,
 	MainWind = 1,
 	GdiWind,
 	OpenGLWind,
@@ -20,9 +27,13 @@ enum class ChildWindSign
 	ProjectContentWind,
 
 	BottomWind,
-	MessageWind,
-	ControlWind,
-	KeyframeWind,
+		MessageWind,
+		ControlWind,
+		KeyframeWind,
+			KF_TimeWind,
+			KF_FileWind,
+			KF_ButtenWind,
+			KF_CanvasWind,
 
 	RightWind,
 	AttributeWind,
@@ -127,7 +138,7 @@ enum ShaderID
 	SI_SkyBoxShader,
 	SI_User,
 };
-int getBit(int num, int pos);
+
 //模型模式
 //enum ModelMode
 //{
@@ -205,13 +216,10 @@ typedef struct TransForm
 	{
 		std::stringstream ss(data);
 
-		// 从字符串中解析位置数据，并赋值给 Position 成员变量
 		ss >> Position.x >> Position.y >> Position.z;
 
-		// 从字符串中解析缩放数据，并赋值给 Scale 成员变量
 		ss >> Scale.x >> Scale.y >> Scale.z;
 
-		// 从字符串中解析旋转数据，并赋值给 Rotate 成员变量
 		ss >> Rotate.axis.x >> Rotate.axis.y >> Rotate.axis.z >> Rotate.angle;
 	}
 }TransFrame;

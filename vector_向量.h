@@ -596,6 +596,14 @@ namespace vec {
 
         // 拷贝构造函数
         Quaternion(const Quaternion& other);
+        Quaternion(const Vector3& axis, double angle) {
+            double half_angle = angle / 2;
+            double sin_half_angle = std::sin(half_angle);
+            w = std::cos(half_angle);
+            x = axis.x * sin_half_angle;
+            y = axis.y * sin_half_angle;
+            z = axis.z * sin_half_angle;
+        }
 
         // 析构函数
         ~Quaternion();
@@ -656,6 +664,12 @@ namespace vec {
 
             return theta;
         }
+
+        Vector3 getAxis() const {
+            double sin_half_angle = std::sqrt(1 - w * w);
+            return Vector3(x / sin_half_angle, y / sin_half_angle, z / sin_half_angle);
+        }
+
         // 根据四元数计算旋转矩阵
         static Matrix4 QuaternionToMatrix(const Quaternion& q);
 
@@ -700,19 +714,11 @@ namespace vec {
             mat[2][1] = t * y * z - s * x;
             mat[2][2] = t * z * z + c;
         }
-        Rotation getRotationTo(const Rotation& b, double c) const 
-        {
-            // 计算当前旋转到目标旋转的旋转向量
-            Vector3 Axis = axis.cross(this->axis, b.axis).Normalize();   // 旋转轴为两个轴向量的叉积
-            if (Axis == Vector3(0.0))
-                Axis = this->axis;
-            double angle = acos(axis.dot(this->axis, b.axis));           // 旋转角度为两个轴向量的夹角
-            if (angle < 0.0) {
-                angle += 2.0 * PI;
-            }
-            angle *= c;
-
-            return Rotation{ angle, Axis };
+        Rotation getRotationTo(const Rotation& b, double t) const {
+            Quaternion q1(axis, angle);
+            Quaternion q2(b.axis, b.angle);
+            Quaternion q = q1.slerp(q2, t);
+            return Rotation(q.getAngle(), q.getAxis());
         }
         // 旋转叠加
         Rotation compose(Rotation r)const {

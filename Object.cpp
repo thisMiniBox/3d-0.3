@@ -989,6 +989,21 @@ glm::mat4 Model::GetGLTransform()const
 		return m_Parent->GetGLTransform() * m_Transform;
 	return m_Transform;
 }
+void Model::DeleteReferenceP(Object* obj)
+{
+	if (!obj)return;
+	if (obj == m_ModelMesh)
+	{
+		m_ModelMesh->Dereference(this);
+		m_ModelMesh = nullptr;
+	}
+	else if (obj == m_Material)
+	{
+		m_Material->Dereference(this);
+		m_Material = nullptr;
+	}
+}
+
 void Model::removeChildModel(Model* model) 
 {
 	auto it = std::find(m_ChildModel.begin(), m_ChildModel.end(), model);
@@ -1654,62 +1669,69 @@ void Picture::FreeOpenGL()
 	m_ID = 0;
 }
 template<typename OBJ>
-Keyframe<OBJ>::Keyframe()
+Keyframe<OBJ>::Keyframe(const std::string& name)
 {
-	m_Name = "新建关键帧";
+	m_loop = false;
+	m_Name = name;
 }
 
 template<typename OBJ>
 void Keyframe<OBJ>::SetKeyframe(ULONG64 time, OBJ key)
 {
-	// 检查该时间点是否已存在关键帧，如果是则更新关键帧数据，否则添加一个新的关键帧
+	// 使用二分法查找该时间点是否已存在关键帧
 	bool found = false;
-	for (auto& pair : m_keyframe)
+	auto it = std::lower_bound(m_keyframe.begin(), m_keyframe.end(), std::make_pair(time, key), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
+	if (it != m_keyframe.end() && it->first == time)
 	{
-		if (pair.first == time)
-		{
-			pair.second = key;
-			found = true;
-			break;
-		}
+		m_keyframe.erase(it);
+		return;
 	}
+	// 如果该时间点不存在关键帧，则添加一个新的关键帧
 	if (!found)
-		m_keyframe.push_back(std::make_pair(time, key));
+		m_keyframe.insert(it, std::make_pair(time, key));
 
 	// 根据关键帧的时间戳从小到大对 vector 进行排序
-	
 	std::sort(m_keyframe.begin(), m_keyframe.end(), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
 }
 template<typename OBJ>
 void Keyframe<OBJ>::DeleteKeyframe(ULONG64 time)
 {
-	// 根据时间删除对应的关键帧
-	for (auto iter = m_keyframe.begin(); iter != m_keyframe.end(); ++iter)
+	for (auto it = m_keyframe.begin(); it != m_keyframe.end(); ++it)
 	{
-		if (iter->first == time)
+		if (it->first == time)
 		{
-			m_keyframe.erase(iter);
+			m_keyframe.erase(it);
 			return;
 		}
 	}
 }
+
 template<typename OBJ>
 const std::vector<std::pair<ULONG64, OBJ>>& Keyframe<OBJ>::GetData()const
 {
 	return m_keyframe;
 }
 template<typename OBJ>
+void Keyframe<OBJ>::SetLoop(bool loop)
+{
+	m_loop = loop;
+}
+template<typename OBJ>
+bool Keyframe<OBJ>::IsLoop()const
+{
+	return m_loop;
+}
+template<typename OBJ>
 OBJ* Keyframe<OBJ>::GetKeyframe(ULONG64 time)
 {
-	// 首先检查是否存在关键帧
 	if (m_keyframe.empty() || time < m_keyframe.front().first)
 		return nullptr;
 	if (time > m_keyframe.back().first)
-		return &m_keyframe.back().second;
-	// 使用二分查找在 vector 中查找关键帧
+		if (m_loop)
+			return GetKeyframe(time % m_keyframe.back().first);
+		else
+			return &m_keyframe.back().second;
 	auto iter = std::lower_bound(m_keyframe.begin(), m_keyframe.end(), std::make_pair(time, OBJ()), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
-
-	// 如果找到了匹配的关键帧，则返回其指针；否则进行插值计算
 	if (iter != m_keyframe.end() && iter->first == time)
 		return &iter->second;
 	else
@@ -1787,6 +1809,18 @@ Keyframe<TransForm>* Model::CreateKryframe()
 //}
 bool Model::IsStatic()const
 {
+	if (m_keyframe)
+		return false;
+	return true;
+}
+void Model::SetKeyframeLoop(bool b)
+{
+	m_keyframe->SetLoop(b);
+}
+bool Model::GetKeyframeLoop()const
+{
+	if (m_keyframe)
+		return m_keyframe->IsLoop();
 	return false;
 }
 TransForm Model::GetTransForm()const
@@ -1799,7 +1833,7 @@ glm::mat4 Model::GetTransform(ULONG64 time)
 	if (m_Parent)
 		if (m_keyframe)
 		{
-			RUNMODE rm = GetRunMode();
+			RUNMODE rm = GetRunMode_g();
 			if(rm==RM_RUN)
 			{
 				TransForm* tf = m_keyframe->GetKeyframe(time);
@@ -1822,7 +1856,7 @@ glm::mat4 Model::GetTransform(ULONG64 time)
 			return m_Transform;
 		else
 		{
-			RUNMODE rm = GetRunMode();
+			RUNMODE rm = GetRunMode_g();
 			if (rm == RM_RUN)
 			{
 				TransForm* tf = m_keyframe->GetKeyframe(time);
@@ -1853,17 +1887,35 @@ bool Object::SaveFile(const std::wstring path, SaveMode sm)const
 {
 	return false;
 }
+void Object::SetKeyframeLoop(bool b)
+{
+	return;
+}
+bool Object::GetKeyframeLoop()const
+{
+	return false;
+}
+template<typename OBJ>
+void Keyframe<OBJ>::SetKeyframeLoop(bool b)
+{
+	SetLoop(b);
+}
+template<typename OBJ>
+bool Keyframe<OBJ>::GetKeyframeLoop()const
+{
+	return IsLoop();
+}
 template<typename OBJ>
 bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 {
 	switch (mode)
 	{
-	case SM_TEXT:
+	case SM_XLSX:
 	{
 		xlnt::workbook wb;
 		xlnt::worksheet ws = wb.active_sheet();
 
-		ws.cell("A1").value(OBJ::GetStrType().c_str());
+		ws.cell("A1").value(OBJ::GetStrType());
 		std::stringstream ss;
 		ss << OBJ::GetDataType();
 		std::string line;
@@ -1887,6 +1939,28 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 			row_num++;
 		}
 		wb.save(path);
+		return true;
+		break;
+	}
+	case SM_TEXT:
+	{
+		std::ofstream fout(path);
+		if (!fout.is_open())
+		{
+			OutMessage_g("文件打开失败", _Error);
+			return false;
+		}
+		std::string str = OBJ::GetStrType() + ' ' + OBJ::GetDataType();
+		ReplaceChar(str, '\n', ' ');
+		fout << str << std::endl;
+		for (const auto& data : m_keyframe)
+		{
+			str = data.second.GetStrData();
+			ReplaceChar(str, '\n', ' ');
+			fout << data.first << ' ' << str << std::endl;
+		}
+		fout.close();
+		return true;
 		break;
 	}
 	case SM_BINARY:
@@ -1895,7 +1969,7 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 		return false;
 		break;
 	}
-	return true;
+	return false;
 }
 void Material::DeleteReferenceP(Object* obj)
 {

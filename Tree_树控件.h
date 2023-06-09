@@ -40,4 +40,3 @@ public:
 
 	std::vector<Object*> GetSelectedItems_获取选中的节点();
 };
-

@@ -341,22 +341,26 @@ namespace vec {
     }
 
     Quaternion Quaternion::slerp(const Quaternion& other, double t) const {
-        Quaternion q1 = *this;
-        Quaternion q2 = other;
-        double dotProd = q1.dot(q2);
-        if (std::abs(dotProd) >= 1.0) {
-            return q1;
+        double dotProd = dot(other);
+        const double DOT_THRESHOLD = 0.9995;
+        if (std::abs(dotProd) > DOT_THRESHOLD) {
+            // 角度很小，直接使用LERP绕过NaN问题
+            return lerp(other, t);
         }
-        else if (std::abs(dotProd) <= 0.0001) {
-            return q1.lerp(q2, t);
+        double theta_0 = std::acos(dotProd);
+        double sin_theta_0 = std::sqrt(1 - dotProd * dotProd);
+        if (sin_theta_0 < 0.001) {
+            // 两个四元数太接近，直接使用LERP
+            return lerp(other, t);
         }
-        else {
-            double theta_0 = std::acos(dotProd);
-            double theta = theta_0 * t;
-            Quaternion q3 = q2 - q1 * dotProd;
-            q3.Normalize();
-            return q1 * std::cos(theta) + q3 * std::sin(theta);
-        }
+        double theta = theta_0 * t;
+        double sin_theta = std::sin(theta);
+        double sin_theta_1 = std::sin(theta_0 - theta);
+        double s0 = sin((1 - t) * theta) / sin_theta;
+        double s1 = sin(t * theta) / sin_theta;
+        Quaternion result = (*this) * s0 + other * s1;
+        result.Normalize(); // 插值后需要归一化
+        return result;
     }
 
     Quaternion Quaternion::fromEulerAngles(double pitch, double yaw, double roll) {

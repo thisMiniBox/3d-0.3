@@ -88,6 +88,11 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         {
             std::wstring text = L"最大帧数：" + std::to_wstring(Central_control->GetMaxFPS());
             SetWindowText(Central_control->m_MenuWind.hWnd, text.c_str());
+            if (GetRunMode_g() == RM_RUN)
+            {
+                Central_control->UpdateKeyframeView(ChildWindSign::KF_CanvasWind);
+                Central_control->UpdateKeyframeView(ChildWindSign::KF_TimeWind);
+            }
         }
         break;
     }
@@ -870,7 +875,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
         // 计算比例尺
         double scale = (double)(width-20) / (rightTime - leftTime);
 
-        int tickInterval = 1.0 / scale * 2; // 刻度间隔
+        float tickInterval = 1.0 / scale * 2; // 刻度间隔
 
         // 绘制刻度线
         int startX = 10;
@@ -1049,7 +1054,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
 
         Rectangle(hdc, 0, 0, width, height);
         DeleteObject(hBrush);
-        RUNMODE rm = GetRunMode();
+        RUNMODE rm = GetRunMode_g();
         switch (rm)
         {
         case RM_EDIT:
@@ -1083,7 +1088,13 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
         DeleteObject(hBrush);
 
         int space = 3;
-        HPEN hpen = CreatePen(PS_SOLID, 0, RGB(0, 0, 180));
+        HPEN hpen;
+        if (Central_control->GetKeyframeLoop())
+        {
+            hpen = CreatePen(PS_SOLID, 0, RGB(0, 0, 180));
+        }
+        else
+            hpen = CreatePen(PS_SOLID, 0, RGB(0, 180, 180));
         HGDIOBJ oldhpen = SelectObject(hdc, hpen);
         MoveToEx(hdc, width / 6 * 5 - WL_KeyframeBotten_BottenSize + space, height / 2 - WL_KeyframeBotten_BottenSize + space, NULL);
         LineTo(hdc, width / 6 * 5 - WL_KeyframeBotten_BottenSize + space, height / 2 + WL_KeyframeBotten_BottenSize - space);
@@ -1103,7 +1114,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
 
         SelectObject(hdc, oldhpen);
         SelectObject(hdc, hOldBrush);
-
+        DeleteObject(hpen);
 
 
         EndPaint(hWnd, &ps);
@@ -1116,13 +1127,17 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
         GetClientRect(hWnd, &rect);
         if (xPos < rect.right / 3)
         {
-            Central_control->Run();
+            Central_control->SwitchRunMode();
         }
         else if (xPos < rect.right * 2 / 3)
         {
-            Central_control->Suspend();
+            Central_control->Stop();
         }
-        InvalidateRect(hWnd, nullptr, true);
+        else
+        {
+            Central_control->SwitchKeyframeLoop();
+        }
+        Central_control->UpdateKeyframeView();
         break;
     }
     default:
@@ -1245,7 +1260,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
 
         // 初始化绑定线位置为第一个刻度位置
         int bindingLinePos = (leftTime - leftTime) * scale + 10;
-
+        ULONG64 Time = 0;
         // 遍历所有的刻度位置，找到最接近鼠标位置的刻度位置
         for (int i = leftTime; i <= rightTime; i += tickInterval)
         {
@@ -1256,10 +1271,10 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
                 if (abs(x - xPos) < abs(bindingLinePos - xPos))
                 {
                     bindingLinePos = x;
+                    Time = i;
                 }
             }
         }
-        ULONG64 Time = leftTime + ((float)bindingLinePos) / (rect.right - 20) * interval;
         // 设置绑定线的位置为最接近鼠标单击位置的刻度位置
         Central_control->SetTime(Time);
         InvalidateRect(hWnd, nullptr, true);
@@ -1299,7 +1314,11 @@ ULONG64 GetTime()
 {
     return Central_control->GetTime();
 }
-RUNMODE GetRunMode()
+RUNMODE GetRunMode_g()
 {
     return Central_control->GetRunMode();
+}
+void OutMessage_g(const std::string& str, MSGtype type)
+{
+    Central_control->OutMessage(str, type);
 }
