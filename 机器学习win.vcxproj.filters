@@ -93,9 +93,6 @@
     <ClInclude Include="xzdll.hpp">
       <Filter>控件类</Filter>
     </ClInclude>
-    <ClInclude Include="Xlsx.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="BottomWindow.h">
       <Filter>窗口类</Filter>
     </ClInclude>
@@ -169,9 +166,6 @@
     </ClCompile>
     <ClCompile Include="FileWind.cpp">
       <Filter>窗口类</Filter>
-    </ClCompile>
-    <ClCompile Include="Xlsx.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="BottomWindow.cpp">
       <Filter>窗口类</Filter>

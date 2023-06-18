@@ -388,11 +388,11 @@ OpenGLWnd::~OpenGLWnd()
         if (p.second)
             delete p.second;
     }
-    for (const auto p : m_Textures)
-    {
-        if (p.second)
-            delete p.second;
-    }
+    //for (const auto p : m_Textures)
+    //{
+    //    if (p.second)
+    //        delete p.second;
+    //}
 }
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
@@ -555,8 +555,8 @@ bool OpenGLWnd::AddModelToBuffer(Model* model)
     Mesh* mesh = model->GetMesh();
     if (mesh)
     {
-        if (!m_Meshs[mesh])
-            m_Meshs[mesh] = new Mesh_OpenGL(mesh->GetVertexData());
+        //if (!m_Meshs[mesh])
+        //    m_Meshs[mesh] = new Mesh_OpenGL(mesh->GetVertexData());
     }
     else
         return false;
@@ -564,17 +564,17 @@ bool OpenGLWnd::AddModelToBuffer(Model* model)
     if(material)
     {
         Picture* picture = material->getMapKa();
-        if (picture)
-            if (!m_Textures[picture])
-                m_Textures[picture] = new Picture_OpenGL(*picture);
-        picture = material->getMapKd();
-        if (picture)
-            if (!m_Textures[picture])
-                m_Textures[picture] = new Picture_OpenGL(*picture);
-        picture = material->getMapKs();
-        if (picture)
-            if (!m_Textures[picture])
-                m_Textures[picture] = new Picture_OpenGL(*picture);
+        //if (picture)
+        //    if (!m_Textures[picture])
+        //        m_Textures[picture] = new Picture_OpenGL(*picture);
+        //picture = material->getMapKd();
+        //if (picture)
+        //    if (!m_Textures[picture])
+        //        m_Textures[picture] = new Picture_OpenGL(*picture);
+        //picture = material->getMapKs();
+        //if (picture)
+        //    if (!m_Textures[picture])
+        //        m_Textures[picture] = new Picture_OpenGL(*picture);
     }
     return true;
 }
@@ -588,31 +588,35 @@ void OpenGLWnd::SetRect(RECT NewRect)
 }
 void OpenGLWnd::DeleteModelBuffer(Model* model)
 {
+
+    auto it = m_models.find(model);
+    if (it != m_models.end())
+        m_models.erase(it);
     Material* material = model->GetMaterial();
-    auto om = m_Meshs.find(model->GetMesh());
-    if (om != m_Meshs.end())
-    {
-        delete (*om).second;
-        m_Meshs.erase(om);
-    }
-    auto op = m_Textures.find(material->getMapKa());
-    if (op != m_Textures.end())
-    {
-        delete (*op).second;
-        m_Textures.erase(op);
-    }
-    op = m_Textures.find(material->getMapKd());
-    if (op != m_Textures.end())
-    {
-        delete (*op).second;
-        m_Textures.erase(op);
-    }
-    op = m_Textures.find(material->getMapKs());
-    if (op != m_Textures.end())
-    {
-        delete (*op).second;
-        m_Textures.erase(op);
-    }
+    //auto om = m_Meshs.find(model->GetMesh());
+    //if (om != m_Meshs.end())
+    //{
+    //    delete (*om).second;
+    //    m_Meshs.erase(om);
+    //}
+    //auto op = m_Textures.find(material->getMapKa());
+    //if (op != m_Textures.end())
+    //{
+    //    delete (*op).second;
+    //    m_Textures.erase(op);
+    //}
+    //op = m_Textures.find(material->getMapKd());
+    //if (op != m_Textures.end())
+    //{
+    //    delete (*op).second;
+    //    m_Textures.erase(op);
+    //}
+    //op = m_Textures.find(material->getMapKs());
+    //if (op != m_Textures.end())
+    //{
+    //    delete (*op).second;
+    //    m_Textures.erase(op);
+    //}
     if (!model->GetChildModel().empty())
         for (auto& cMod : model->GetChildModel())
             DeleteModelBuffer(cMod);
@@ -657,22 +661,55 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
 
     CurrentShader = GetShader(SI_ModelShader);
     CurrentShader->use();
+
+    CurrentShader->setVec3("viewPos", camera.GetPosition());
+
     CurrentShader->setMat4("projection", projection);
     CurrentShader->setMat4("view", view);
     glm::mat4 modelTransform = glm::mat4(1.0f);
     for (const auto& model : models)
     {
-        if (!model->GetMesh())
+        modelTransform = model->GetGLTransform();
+        CurrentShader->setMat4("model",modelTransform);
+        Mesh* mesh = model->GetMesh();
+        if (!mesh)
             continue;
+        if (m_Meshs.find(mesh) == m_Meshs.end())
+            m_Meshs[mesh] = new glMesh(mesh->GetVertexData(), mesh->GetIndices());
+        Material* material = model->GetMaterial();
+        if (material)
+        {
+            Picture* picture = material->getMapKa();
+            if (picture)
+            {
+                if (m_Textures.find(picture) == m_Textures.end())
+                    m_Textures[picture] = {picture->loadTexture(),"material.ambientTexture"};
+            }
+            picture = material->getMapKd();
+            if (picture)
+            {
+                if (m_Textures.find(picture) == m_Textures.end())
+                    m_Textures[picture] = { picture->loadTexture(),"material.diffuseTexture" };
+            }
+            picture = material->getMapKs();
+            if (picture)
+            {
+                if (m_Textures.find(picture) == m_Textures.end())
+                    m_Textures[picture] = { picture->loadTexture(),"material.specularTexture" };
+            }
+        }
+        SetMaterialData(CurrentShader, material, camera);
+        m_Meshs[mesh]->Draw(*CurrentShader);
+
         if (m_models[model] == nullptr)
             m_models[model] = new OldModelBuffer(model, CurrentShader);
-        if (GetRunMode_g() == RM_EDIT)
-            modelTransform = model->GetGLTransform();
-        else
-            modelTransform = model->GetTransform(GetTime());
-        m_models[model]->SetShader(CurrentShader);
-        m_models[model]->SetModelMatrix(modelTransform);
-        m_models[model]->Draw();
+        //if (GetRunMode_g() == RUNMODE::RM_EDIT)
+        //    modelTransform = model->GetGLTransform();
+        //else
+        //modelTransform = model->GetTransform(GetTime());
+        //m_models[model]->SetShader(CurrentShader);
+        //m_models[model]->SetModelMatrix(modelTransform);
+        //m_models[model]->Draw();
     }
     CurrentShader = GetShader(SI_StrokeShader);
     CurrentShader->use();
@@ -707,71 +744,51 @@ void OpenGLWnd::ResetOpenGLViewport()
 {
     glViewport(0, 0, m_width, m_height);
 }
-
-OldModelBuffer::OldModelBuffer(Model* model, OpenGLShader* shader)
-    : m_Model(model), m_Shaders(shader), m_ModelMatrix(glm::mat4(1.0))
+void OpenGLWnd::SetMaterialData(OpenGLShader* shader, Material* material,const Camera& camera)
 {
-    // 创建VAO
-    glGenVertexArrays(1, &m_VAO);
-    glBindVertexArray(m_VAO);
+    if (!material)
+        return;
+    shader->use();
+    shader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+    auto pointLight = GetAllPointLight();
+    PointLight* pointL = pointLight[0];
+    glm::vec3 lightPos;
+    if (pointLight.empty())
+        lightPos = glm::vec3(0, 0, -3);
+    else
+        lightPos = pointL->GetPosition();
+    shader->setVec3("light.position", lightPos);
+    shader->setVec3("viewPos", camera.GetPosition());
 
-    // 创建VBO并存储顶点数据
-    glGenBuffers(1, &m_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_Model->GetMesh()->GetVertexData().size(),
-        m_Model->GetMesh()->GetVertexData().data(), GL_STATIC_DRAW);
-
-    // 指定顶点属性指针
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-    glEnableVertexAttribArray(2);
-
-    // 解绑VAO和VBO
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    m_DiffuseMap = 0;
-    m_MirrorMap = 0;
-    if (m_Model->GetMaterial())
+    shader->setVec3("material.ambient", material->getKa());
+    shader->setVec3("material.diffuse", material->getKd());
+    //shader->setVec3("material.specular", material->getKs());
+    shader->setVec3("material.specular", glm::vec3(0.1f));
+    //shader->setFloat("material.shininess", material->getNs());
+    shader->setFloat("material.shininess", 128);
+    lightPos = pointL->GetLightColor().Normalize();
+    shader->setVec3("light.ambient", lightPos * glm::vec3(0.2));
+    shader->setVec3("light.diffuse", lightPos * glm::vec3(0.7));
+    shader->setVec3("light.specular", lightPos);
+    float cons, line, quad;
+    calculateAttenuationFactors(pointL->GetIntensity(), pointL->GetRange(), cons, line, quad);
+    shader->setFloat("light.constant", cons);
+    shader->setFloat("light.linear", line);
+    shader->setFloat("light.quadratic", quad);
+    Picture* texture = material->getMapKd();
+    int num = 0;
+    if(texture)
     {
-        if (m_Model->GetMaterial()->getMapKd())
-        {
-            m_DiffuseMap = m_Model->GetMaterial()->getMapKd()->loadTexture();
-            if (m_DiffuseMap == 0)
-                std::cout << m_Model->GetName() << "漫反射材质加载失败" << std::endl;
-        }
-        if (m_Model->GetMaterial()->getMapKs())
-        {
-            m_MirrorMap = m_Model->GetMaterial()->getMapKs()->loadTexture();
-            if (m_MirrorMap == 0)
-                std::cout << m_Model->GetName() << "镜面反射材质加载失败" << std::endl;
-        }
-    }
-
-    m_Shaders->use();
-}
-OldModelBuffer::~OldModelBuffer()
-{
-    glDeleteVertexArrays(1, &m_VAO);
-    glDeleteBuffers(1, &m_VBO);
-    glDeleteTextures(1, &m_DiffuseMap);
-    glDeleteTextures(1, &m_MirrorMap);
-}
-void OldModelBuffer::Draw()
-{
-    if (m_Shaders != nullptr)
-    {
-        m_Shaders->use();
-        m_Shaders->setMat4("model", m_ModelMatrix);
+        shader->setInt("material.diffuse", num);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_DiffuseMap);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_MirrorMap);
-
-        glBindVertexArray(m_VAO);
-        glDrawArrays(GL_TRIANGLES, 0, m_Model->GetMesh()->GetVertexData().size());
-        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, m_Textures[texture].id);
+        num++;
     }
 }
+void calculateAttenuationFactors(float intensity, float radius, float& constant, float& linear, float& quadratic)
+{
+    constant = 1.0f;
+    linear = (1.0f - 0.0f) / radius;
+    quadratic = (1.0f - 0.0f) / (radius * radius);
+}
+

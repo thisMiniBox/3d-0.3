@@ -13,7 +13,8 @@
 #include"字符转换.h"
 #include"WndData.h"
 #include<glm/gtc/matrix_transform.hpp>
-#include<xlnt/xlnt.hpp>
+//#include<xlnt/xlnt.hpp>
+#include<assimp/scene.h>
 //声明类（方便定位）
 class Object;
 class Folder;
@@ -22,14 +23,27 @@ class Picture;
 class Material;
 class Model;
 class Camera;
+
 class PointLight;
+class DirectionalLight;
+
 class Room;
 class Button;
 class FixedUI;
 template<typename OBJ>
 class Keyframe;
 
+class ModelShader_模型着色器;
+
+struct _Material;
+struct _OutPoint3;
+struct _fm_面信息;
+struct _face_完整的三角面数据;
+struct Vertex;
+struct _PictureData;
+
 void OutMessage_g(const std::string&, MSGtype type = _Message);
+std::vector<PointLight*>& GetAllPointLight();
 RUNMODE GetRunMode_g();
 using namespace vec;
 std::wstring ObjectTypeToWstr(ObjectType);
@@ -65,11 +79,17 @@ public:
 	bool IsSelected();
 	
 	//资源文件的引用状态切换
+	//设置引用（引用资源时调用，资源记录引用地址）
 	virtual void Reference(Object*);
 	virtual const std::set<Object*>* GetAllReference()const;
+	//解除引用
 	virtual void Dereference(Object*);
+	//判断引用
 	virtual bool IsReference(Object*)const;
+	//从调用者解引用
 	virtual void DeleteReferenceP(Object*);
+	//由被引用的资源调用，删除被引用的指针
+	virtual void InitReferenceP(Object*);
 	// 获取物体类型，纯虚函数
 	virtual ObjectType GetType()const = 0;
 	// 获取物体位置，返回默认值
@@ -216,6 +236,7 @@ struct Vertex {
 class Mesh :public Object
 {
 	std::vector<Vertex>m_Data;
+	std::vector<UINT>m_Indices;
 	std::set<Object*>m_Reference;
 public:
 	Mesh() {}
@@ -223,14 +244,18 @@ public:
 	~Mesh();
 	void Reference(Object*);
 	const std::set<Object*>* GetAllReference()const override;
-	void Dereference(Object*);
-	bool IsReference(Object*)const;
+	void Dereference(Object*)override;
+	bool IsReference(Object*)const override;
+	void processMesh(aiMesh* mesh, const aiScene* scene);
 
 	std::vector<vec::Vector> m_VertexPosition;  // 顶点坐标数据
 	std::vector<vec::Vector> m_Normal;  // 法向量数据
 	std::vector<vec::Vector2> m_TexCoords;  // 贴图坐标数据
 	std::vector<FaceData_面信息> m_FaceIndices;  // 面信息
+
+
 	const std::vector<Vertex>& GetVertexData();
+	const std::vector<UINT>& GetIndices();
 	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return  ObjectType::OT_MESH; }
@@ -246,7 +271,6 @@ class Picture :public Object
 {
 	std::set<Object*>m_Reference;
 	unsigned char* m_Data;
-	unsigned int m_ID;
 	int m_Width, m_Height, m_NrComponents;
 public:
 	Picture();
@@ -257,7 +281,6 @@ public:
 	PictureData GetPicture()const;
 	//加载图片并载入到OpenGl
 	unsigned int loadTexture();
-	unsigned int GetID() { return m_ID; }
 
 	void Reference(Object*);
 	const std::set<Object*>* GetAllReference()const;
@@ -267,7 +290,6 @@ public:
 	int GetWidth() { return m_Width; }
 	//释放图片
 	void FreePictureData();
-	void FreeOpenGL();
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_PICTURE; }
 	virtual ObjectType GetType() const override { return OT_PICTURE; }
 };
@@ -276,7 +298,7 @@ class Material :public Object
 public:
 	// 构造函数
 	Material();
-	Material(std::string& name) { m_Name = name; }
+	Material(std::string& name);
 	// 析构函数
 	~Material();
 	void Reference(Object*);
@@ -290,12 +312,16 @@ public:
 	void setNi(float ni);
 	float getTr() const;
 	void setTr(float tr);
-	const float* getKa() const;
-	void setKa(const float ka[3]);
-	const float* getKd() const;
-	void setKd(const float kd[3]);
-	const float* getKs() const;
-	void setKs(const float ks[3]);
+
+	const vec::Vector3& getKa() const;
+	void setKa(const vec::Vector3& ka);
+
+	const vec::Vector3& getKd() const;
+	void setKd(const vec::Vector3& kd);
+
+	const vec::Vector3& getKs() const;
+	void setKs(const vec::Vector3& ks);
+
 	Picture* getMapKa() const;
 	void setMapKa(Picture* mapKa);
 	Picture* getMapKd() const;
@@ -306,14 +332,16 @@ public:
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	virtual ObjectType GetType() const override { return OT_MATERIAL; }
 	void DeleteReferenceP(Object* obj)override;
+	void InitReferenceP(Object*)override;
+	void processMaterial(aiMesh* mesh, const aiScene* scene, Folder* folder, const std::string& directory);
 private:
 	// 私有成员变量
 	float m_Ns;
 	float m_Ni;
 	float m_Tr;
-	float m_Ka[3];
-	float m_Kd[3];
-	float m_Ks[3];
+	vec::Vector3 m_Ka;
+	vec::Vector3 m_Kd;
+	vec::Vector3 m_Ks;
 	Picture* m_MapKa;
 	Picture* m_MapKd;
 	Picture* m_MapKs;
@@ -393,6 +421,7 @@ public:
 
 	glm::mat4 GetGLTransform()const;
 	void DeleteReferenceP(Object* obj)override;
+	void InitReferenceP(Object* obj)override;
 	inline void updateTransform();
 	// 切换选中状态
 	void ToggleSelection() override;
@@ -437,9 +466,11 @@ public:
 	bool GetKeyframeLoop()const override;
 	const std::vector<std::pair<ULONG64, TransForm>>* GetKeyframeData()const;
 	glm::mat4 GetTransform(ULONG64 time);
+
+	//bool processNode(aiNode* node, const aiScene* scene);
 private:
 	TransForm GetTransForm()const;
-	/*ModelMode m_Mode;*/
+	ModelMode m_Mode;
 	Model* m_Parent;
 	std::vector<Model*> m_ChildModel;
 	Mesh* m_ModelMesh;
@@ -489,6 +520,7 @@ public:
 	void DeleteFile_删除文件(Object*);
 	void DeleteIndex(Object*);
 	std::vector<Model*> GetAllModleFile_找到所有模型()const;
+	std::vector<PointLight*> GetAllPointLightFile_找到所有光源文件()const;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_FILEVIEW; }
 	INT_PTR ListControlView(const HWND hWndList, HIMAGELIST, std::map<int, int>& index)override;
  	virtual ObjectType GetType()const override;
@@ -520,7 +552,7 @@ public:
 	void SetCameraUP(const Vector3&);
 	void Move(const Vector3&)override;
 	void SetAspectRatio(float aspect_ratio) { m_Ratio = aspect_ratio; }
-	void SetFieldOfView(float FieldOfView) { m_Field = FieldOfView; }
+	void SetFieldOfView(float FieldOfView);
 	void SetNear(float Near) { m_Near = Near; }
 	void SetFar(float Far) { m_Far = Far; }
 
@@ -541,22 +573,37 @@ public:
 	Matrix4 GetGLMView()const;
 	Matrix4 GetProjection()const;
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM; }
+	Rotation GetRotate()const override;
+	void SetRotate(const Rotation&)override;
 };
 
 class PointLight : public Object
 {
 public:
-	PointLight();
-	PointLight(const std::string&);
+	PointLight(const std::string& name = "点光源", const vec::Vector& pos = vec::Vector3(0.f), const vec::Vector& col = vec::Vector(1.f), float intens = 100, float rng = 100)
+		: m_Position(pos), m_Color(col), m_Intensity(intens), m_Range(rng)
+	{
+		m_Name = name;
+	}
 	~PointLight();
 
 	ObjectType GetType() const override;
 
 	void SetPosition(const Vector& position)override;    // 设置位置
-	Vector GetPosition() const;							 // 获取位置
+	Vector GetPosition() const override;				 // 获取位置
+	void Move(const Vector&)override;
 
 	void SetLightColor(const Vector& lightColor);        // 设置颜色
 	const Vector& GetLightColor() const;                 // 获取颜色
+
+	//设置颜色
+	void SetScale(const Vector& position)override;
+	//获取颜色
+	Vector GetScale() const override;
+	//获取光照信息
+	Rotation GetRotate()const override;
+	//设置光照信息
+	void SetRotate(const Rotation&)override;
 
 	void SetIntensity(float intensity);                  // 设置强度
 	float GetIntensity() const;                          // 获取强度
@@ -564,15 +611,12 @@ public:
 	void SetRange(float range);                          // 设置灯半径
 	float GetRange() const;                              // 获取灯半径
 
-	void SetSoftShadow(float softShadow);                // 设置衰减系数
-	float GetSoftShadow() const;                         // 获取衰减系数
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
 private:
 	Vector m_Position;                                   // 点光源位置
-	Vector m_LightColor;                                 // 点光源颜色
+	Vector m_Color;										 // 点光源颜色
 	float m_Intensity;                                   // 点光源强度
-	float m_Range;                                       // 点光源半径
-	float m_SoftShadow;                                  // 点光源衰减系数
+	float m_Range;                                       // 点光照半径
 };
 
 class Room :public Object
@@ -582,4 +626,31 @@ public:
 private:
 	Folder m_RoomContent;
 
+};
+class DirectionalLight : public Object {
+public:
+	DirectionalLight(const std::string& name="平行光", const Vector& dir = vec::Vector3(-1.f), const Vector& col = vec::Vector3(1.f), float intens = 100.f)
+		: m_Direction(dir), m_Color(col), m_Intensity(intens) 
+	{
+		m_Name = name;
+	}
+	~DirectionalLight();
+
+	ObjectType GetType() const override;
+
+	void SetDirection(const Vector& direction);          // 设置光源方向
+	Vector GetDirection() const;                         // 获取光源方向
+
+	void SetLightColor(const Vector& lightColor);         // 设置光源颜色
+	const Vector& GetLightColor() const;                  // 获取光源颜色
+
+	void SetIntensity(float intensity);                   // 设置光源强度
+	float GetIntensity() const;                           // 获取光源强度
+
+	_ControlType SetDetaileView() const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
+
+private:
+	Vector m_Direction;                                  // 光源方向
+	Vector m_Color;                                      // 光源颜色
+	float m_Intensity;                                   // 光源强度
 };

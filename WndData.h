@@ -78,8 +78,8 @@ enum ObjectType
 	OT_MESH,				//网格
 	OT_PICTURE,				//图片
 	OT_MATERIAL,			//材质
-	OT_POINTLIGHT,			//点光源
-	OT_PARALLELLIGHT,		//平行光光源
+	OT_POINT_LIGHT,			//点光源
+	OT_DIRECTIONAL_LIGHT,	//平行光光源
 	OT_KEYFRAME,			//关键帧
 	OT_ROOM,				//房间
 	OT_BUTTON,				//交互键
@@ -223,9 +223,10 @@ typedef struct TransForm
 		ss >> Rotate.axis.x >> Rotate.axis.y >> Rotate.axis.z >> Rotate.angle;
 	}
 }TransFrame;
-enum RUNMODE
+enum class RUNMODE
 {
 	RM_EDIT,
+	RM_VIEW,
 	RM_RUN,
 };
 enum SaveMode
@@ -233,4 +234,9 @@ enum SaveMode
 	SM_TEXT,
 	SM_XLSX,
 	SM_BINARY,
+};
+enum class ModelMode
+{
+	MM_EDIT,
+	MM_VIEW,
 };

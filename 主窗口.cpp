@@ -1,6 +1,7 @@
 ﻿#include "framework.h"
 #include "机器学习win.h"
 
+
 HINSTANCE hInstance;
 Controller* Central_control = new Controller;
 HBRUSH g_hBrush = NULL; // 全局变量，用于存储画刷
@@ -34,9 +35,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN));
 
     //切换为OpenGL渲染
-    //SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
+    SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
     //预加载树模型
-    //Central_control->Command(L"loadfile Tree\\Tree.obj");
+    Central_control->Command(L"loadfile Model\\背景.obj");
+
+    PointLight* PL = new PointLight("点光源", Vector3(0, 0, 10), Vector(1.0f), 100, 100);
+
+    Central_control->AddObject(PL);
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -88,7 +93,7 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         {
             std::wstring text = L"最大帧数：" + std::to_wstring(Central_control->GetMaxFPS());
             SetWindowText(Central_control->m_MenuWind.hWnd, text.c_str());
-            if (GetRunMode_g() == RM_RUN)
+            if (GetRunMode_g() == RUNMODE::RM_RUN)
             {
                 Central_control->UpdateKeyframeView(ChildWindSign::KF_CanvasWind);
                 Central_control->UpdateKeyframeView(ChildWindSign::KF_TimeWind);
@@ -548,7 +553,10 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
     }
     case UM_UPDATE:
     {
-        Vector v = Central_control->GetFocusObject()->GetPosition();
+        Object* focusOBJ = Central_control->GetFocusObject();
+        if (!focusOBJ)
+            break;
+        Vector v = focusOBJ->GetPosition();
         HWND hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_X);
         std::wstring wstr = NumberToWString(v.x);
         SetWindowText(hWndControl, wstr.c_str());
@@ -558,7 +566,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_Z);
         wstr = NumberToWString(v.z);
         SetWindowText(hWndControl, wstr.c_str());
-        v = Central_control->GetFocusObject()->GetScale();
+        v = focusOBJ->GetScale();
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_X);
         wstr = NumberToWString(v.x);
         SetWindowText(hWndControl, wstr.c_str());
@@ -568,7 +576,7 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_Z);
         wstr = NumberToWString(v.z);
         SetWindowText(hWndControl, wstr.c_str());
-        Rotation rot = Central_control->GetFocusObject()->GetRotate();
+        Rotation rot = focusOBJ->GetRotate();
         v = rot.axis;
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_X);
         wstr = NumberToWString(v.x);
@@ -584,6 +592,47 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         SetWindowText(hWndControl, wstr.c_str());
         hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_SLIDER);
         SendMessage(hWndControl, TBM_SETPOS, TRUE, vec::RadToDeg(rot.angle));
+        switch (focusOBJ->GetType())
+        {
+        case OT_POINT_LIGHT:
+        {
+            hWndControl= GetDlgItem(hDlg, IDC_TRAN_POS_TEXT);
+            SetWindowText(hWndControl, L"位置");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_TEXT);
+            SetWindowText(hWndControl, L"颜色");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT1);
+            SetWindowText(hWndControl, L"强度");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_Y);
+            SetWindowText(hWndControl, L"半径");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT2);
+            SetWindowText(hWndControl, L"未启用");
+            break;
+        }
+        case OT_CAMERA:
+        {
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_TEXT);
+            SetWindowText(hWndControl, L"位置");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_TEXT);
+            SetWindowText(hWndControl, L"未启用");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT1);
+            SetWindowText(hWndControl, L"方向");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT2);
+            SetWindowText(hWndControl, L"视野");
+            break;
+        }
+        default:
+        {
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_POS_TEXT);
+            SetWindowText(hWndControl, L"位置");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_SCA_TEXT);
+            SetWindowText(hWndControl, L"缩放");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT1);
+            SetWindowText(hWndControl, L"旋转");
+            hWndControl = GetDlgItem(hDlg, IDC_TRAN_ROT_TEXT2);
+            SetWindowText(hWndControl, L"旋转角");
+        }
+            break;
+        }
         break;
     }
     case WM_SIZE:
@@ -617,9 +666,13 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
         if (HIWORD(wParam) == EN_CHANGE)
         {
             HWND hWndControl = (HWND)lParam;
+            Object* focusOBJ = Central_control->GetFocusObject();
+            if (!focusOBJ)
+                break;
+            Central_control->SetRunMode(RUNMODE::RM_EDIT);
             Vector Position;
-            Vector Scale = Central_control->GetFocusObject()->GetScale();
-            Rotation rotation = Central_control->GetFocusObject()->GetRotate();
+            Vector Scale = focusOBJ->GetScale();
+            Rotation rotation = focusOBJ->GetRotate();
             wchar_t szText[64];
             switch (GetDlgCtrlID(GetFocus()))
             {
@@ -721,9 +774,9 @@ INT_PTR TransForm_变换控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPA
                 break;
             }
             }
-            Central_control->m_EditWind->GetTarget()->Move(Position);
-            Central_control->GetFocusObject()->SetScale(Scale);
-            Central_control->GetFocusObject()->SetRotate(rotation);
+            focusOBJ->Move(Position);
+            focusOBJ->SetScale(Scale);
+            focusOBJ->SetRotate(rotation);
             InvalidateRect(Central_control->GetMainWind()->GethWnd(), NULL, false);
         }
 
@@ -877,11 +930,8 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
 
         float tickInterval = 1.0 / scale * 2; // 刻度间隔
 
-        // 绘制刻度线
-        int startX = 10;
         int startY = WL_KeyframeTime_TimeLine;
         int endX = width-20;
-        int endY = height / 2;
 
         // 绘制背景色
         HBRUSH hBrushBg = CreateSolidBrush(RGB(242, 247, 251));
@@ -944,6 +994,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
             }
         }
         SelectObject(hdc, old);
+        DeleteObject(hPenTimeLine);
         EndPaint(hWnd, &ps);
         break;
     }
@@ -1057,7 +1108,8 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
         RUNMODE rm = GetRunMode_g();
         switch (rm)
         {
-        case RM_EDIT:
+        case RUNMODE::RM_VIEW:
+        case RUNMODE::RM_EDIT:
         {
             hBrush = CreateSolidBrush(RGB(0, 255, 0));
             SelectObject(hdc, hBrush);
@@ -1069,7 +1121,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeButtenProc(HWND hWnd, UINT message, WPARA
             DeleteObject(hBrush);
         }
             break;
-        case RM_RUN:
+        case RUNMODE::RM_RUN:
         {
 
             hBrush = CreateSolidBrush(RGB(255, 0, 0));
@@ -1240,11 +1292,14 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         int x = (int)(((float)Central_control->GetTime() - leftTime) / (rightTime - leftTime) * (rect.right - 20)) + 10;
         MoveToEx(hdc, x, 0, NULL);
         LineTo(hdc, x, rect.bottom);
+        SelectObject(hdc, old);
+        DeleteObject(hPenTimeLine);
         EndPaint(hWnd, &ps);
         break;
     }
     case WM_LBUTTONDOWN:
     {
+ 
         int xPos = LOWORD(lParam) - 10;
         if (xPos < 0)
             xPos = 0;
@@ -1275,6 +1330,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
                 }
             }
         }
+        Central_control->SetRunMode(RUNMODE::RM_VIEW);
         // 设置绑定线的位置为最接近鼠标单击位置的刻度位置
         Central_control->SetTime(Time);
         InvalidateRect(hWnd, nullptr, true);
@@ -1321,4 +1377,8 @@ RUNMODE GetRunMode_g()
 void OutMessage_g(const std::string& str, MSGtype type)
 {
     Central_control->OutMessage(str, type);
+}
+std::vector<PointLight*>& GetAllPointLight()
+{
+    return Central_control->GetAllPointLight();
 }

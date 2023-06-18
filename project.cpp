@@ -3,6 +3,8 @@ Controller::Controller()
 {
 	m_RootFolder.SetName("根目录");
 	m_FocusFolder = &m_RootFolder;
+	m_Focus = &m_RootFolder;
+	m_Mode = RUNMODE::RM_EDIT;
 	m_FileLoad = false;
 	m_ImageList = nullptr;
 	m_FileWind = nullptr;
@@ -259,7 +261,7 @@ Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType ty
 	}
 	break;
 
-	case OT_POINTLIGHT:
+	case OT_POINT_LIGHT:
 	{
 		if (!parent)
 			out = m_RootFolder.CreateFile_创建文件<PointLight>(name);
@@ -268,12 +270,12 @@ Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType ty
 	}
 	break;
 
-	case OT_PARALLELLIGHT:
+	case OT_DIRECTIONAL_LIGHT:
 	{
-		//if (!parent)
-		//	out = m_RootFolder.CreateFile_创建文件<ParallelLight>(name);
-		//else
-		//	out = parent->CreateFile_创建文件<ParallelLight>(name);
+		if (!parent)
+			out = m_RootFolder.CreateFile_创建文件<DirectionalLight>(name);
+		else
+			out = parent->CreateFile_创建文件<DirectionalLight>(name);
 	}
 	break;
 	case OT_KEYFRAME:
@@ -310,6 +312,12 @@ std::vector<Model*>& Controller::GetModels()
 	m_Models = m_RootFolder.GetAllModleFile_找到所有模型();
 	return m_Models;
 }
+std::vector<PointLight*>& Controller::GetAllPointLight()
+{
+	if (!m_PointLights.empty())return m_PointLights;
+	m_PointLights = m_RootFolder.GetAllPointLightFile_找到所有光源文件();
+	return m_PointLights;
+}
 std::vector<Model*>& Controller::UpdateModels()
 {
 	m_Models.clear();
@@ -323,13 +331,14 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 		m_Focus = obj->GetParent();
 		m_EditWind->SetView(m_Focus);
 	}
-	if (m_MainWind->GetType() == MOPENGL && obj->GetType() == OT_MODEL)
+	if (m_MainWind->GetType() == MOPENGL)
 	{
 		OpenGLWnd* glwind = dynamic_cast<OpenGLWnd*>(m_MainWind);
 		Model* mod = dynamic_cast<Model*>(obj);
-		glwind->DeleteModelBuffer(mod);
-		m_Models.clear();
+		if (mod)
+			glwind->DeleteModelBuffer(mod);
 	}
+	m_Models.clear();
 	m_FocusFolder->DeleteFile_删除文件(obj);
 	if (hTree)
 		m_FileWind->DeleteItem(hTree);
@@ -339,43 +348,45 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 {
 	OutMessage(L"开始加载文件" + path);
-	std::wstring extension = path.substr(path.find_last_of('.') + 1);
+	std::wstring extension = path.substr(path.find_last_of('.'));
 	ReturnedOfLoadFile error = ReturnedOfLoadFile::_Fail;
-	if (extension == L"obj")
+	if (extension == L".obj")
 	{
-		char narrowPath[MAX_PATH];
-		int pathLength = WideCharToMultiByte(CP_ACP, 0, path.c_str(), -1, narrowPath, MAX_PATH, nullptr, nullptr);
-		if (pathLength == 0) {
-			std::cout << "字符串转换错误" << std::endl;
-			return ReturnedOfLoadFile::_FailToOpenFile;
-		}
-		error |= LoadObj(narrowPath);
+		error |= LoadObj(wstrstr(path));
 	}
-	else if (L"xlsx")
+	else if (this->isSupportedModelFile(wstrstr(extension)))
 	{
-		if (LoadXlsx(path))
+		if (LoadModel(wstrstr(path)))
 			error = _Succese;
-		else
-			error = _Fail;
+		error= _Fail;
 	}
-	else if (extension == L"xzcom")
+
+	//else if (extension == L".xlsx")
+	//{
+	//	if (LoadXlsx(path))
+	//		error = _Succese;
+	//	else
+	//		error = _Fail;
+	//}
+	else if (extension == L".xzcom")
 	{
 		error |= LoadCommand(path);
 	}
-	else if (extension == L"dll")
+	else if (extension == L".dll")
 	{
 		if (MessageBox(m_hWnd, L"是否链接消息处理程序？", L"", MB_OKCANCEL))
 		{
 			error |= LoadDLL(path);
 		}
-		return _Succese;
+		error = _Succese;
 	}
 	else
-		return ReturnedOfLoadFile::_UnknownFormat;
+		error = ReturnedOfLoadFile::_UnknownFormat;
 	if ((error | 0xff00) == ReturnedOfLoadFile::_Succese)
 	{
 		m_Models.clear();
 		m_FileWind->ShowFolder(m_RootFolder,GetFocusObject());
+		UpdateFileView();
 	}
 	return error;
 	
@@ -441,12 +452,15 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	MatFileReader* mtl_材质 = new MatFileReader;
 	Material* CurrentMaterial = nullptr;
 
-	ReturnedOfLoadFile Error =ReturnedOfLoadFile::_ModelFail;
+	ReturnedOfLoadFile Error = ReturnedOfLoadFile::_ModelFail;
 	char c = 0;
 	size_t charLocate = 0;
 	size_t m = 0;
 
 	Model* NewModel = nullptr;
+	Model* RootModel = new Model;
+	RootModel->SetName(filePath.substr(pos + 1));
+	Model* parentModel = RootModel;
 
 	vec::Vector vector;
 	vec::Vector2 vector2d;
@@ -505,7 +519,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 					if (!NewModel)return ReturnedOfLoadFile::_DataError;
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
 					charLocate = (FileData = FileData.substr(charLocate)).find_last_not_of(' ');
-					FileData = FileData.substr(0, charLocate + 1); 
+					FileData = FileData.substr(0, charLocate + 1);
 					FileData += ' ';
 					std::vector<std::string>vertexIncludeInLine;
 					while (1)
@@ -519,13 +533,16 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 					{
 						NewModel->GetMesh()->m_FaceIndices.push_back(faceData(vertexIncludeInLine[0] + ' ' + vertexIncludeInLine[i - 1] + ' ' + vertexIncludeInLine[i]));
 					}
-				}				
+				}
 				else if (w == "g" || w == "o" || w == "mg")
 				{
 					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
 					FileData = FileData.substr(charLocate);
+					if (FileData == "default")
+						parentModel = RootModel;
 					std::string ModelName = FileData + "网格模型";
 					NewModel = new Model(ModelName);
+					parentModel->addChildModel(NewModel);
 					NewModel->SetMesh(new Mesh(FileData));
 					NewModel->SetMaterial(CurrentMaterial);
 					Models.push_back(NewModel);
@@ -568,23 +585,23 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 		if (!i->GetMaterial())
 			continue;
 		if (i->GetMaterial()->getMapKa())
-		if (i->GetMaterial()->getMapKa()->GetPicture().m_Data)
-		{
-			result++;
-			map = true;
-		}
+			if (i->GetMaterial()->getMapKa()->GetPicture().m_Data)
+			{
+				result++;
+				map = true;
+			}
 		if (i->GetMaterial()->getMapKd())
-		if (i->GetMaterial()->getMapKd()->GetPicture().m_Data)
-		{
-			result++;
-			map = true;
-		}
+			if (i->GetMaterial()->getMapKd()->GetPicture().m_Data)
+			{
+				result++;
+				map = true;
+			}
 		if (i->GetMaterial()->getMapKs())
-		if (i->GetMaterial()->getMapKs()->GetPicture().m_Data)
-		{
-			result++;
-			map = true;
-		}
+			if (i->GetMaterial()->getMapKs()->GetPicture().m_Data)
+			{
+				result++;
+				map = true;
+			}
 	}
 	if (!map || result > 0)
 	{
@@ -596,9 +613,9 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	std::vector<vec::Vector> child_normal_data;
 	std::vector<vec::Vector2> child_texcoord_data;
 	std::vector<FaceData_面信息> child_face_data;
-	std::unordered_map<int, int> vertex_index;
-	std::unordered_map<int, int> normal_index;
-	std::unordered_map<int, int> texcoord_index;
+	std::map<int, int> vertex_index;
+	std::map<int, int> normal_index;
+	std::map<int, int> texcoord_index;
 
 	// 遍历子模型
 	for (auto child : Models)
@@ -667,8 +684,8 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 		}
 
 		// 将数据分配给子模型
-		
-		child->GetMesh()->m_VertexPosition= (child_vertex_data);
+
+		child->GetMesh()->m_VertexPosition = (child_vertex_data);
 		child->GetMesh()->m_Normal = (child_normal_data);
 		child->GetMesh()->m_TexCoords = (child_texcoord_data);
 		child->GetMesh()->m_FaceIndices.clear();
@@ -685,7 +702,7 @@ ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件<Folder>(filePath.substr(pos + 1) + "资源"));
 	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("网格文件夹"));
 	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("材质文件夹"));
-	
+
 	for (auto& child : Models)
 	{
 		MObj->addChildModel(child);
@@ -742,47 +759,34 @@ void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path)
 	current_project->m_FileLoad = true;
 	unsigned int Error = current_project->LoadFile(path);
 	current_project->Model_att = 0x01;
-	//if (Error == ReturnedOfLoadFile::_Succese)
-	//{
-	//	current_project->OutMessage(L"加载完毕：" + path, _Message);
-	//	current_project->Model_att = 0x01;
-	//}
-	//else if ((Error & 0xff) != 0)
-	//{
-	//	switch (Error & 0xff)
-	//	{
-	//	case ReturnedOfLoadFile::_UnknownFormat:
-	//		current_project->OutMessage(L"未知文件格式：" + path, _Error);
-	//		break;
-	//	case ReturnedOfLoadFile::_DataError:
-	//		current_project->OutMessage(L"数据错误：" + path, _Error);
-	//		break;
-	//	case ReturnedOfLoadFile::_FailToOpenFile:
-	//		current_project->OutMessage(L"无法打开文件：" + path, _Error);
-	//		break;
-	//	case ReturnedOfLoadFile::_FailedToCreateFile:
-	//		current_project->OutMessage(L"文件创建失败：" + path, _Error);
-	//		break;
-	//	default:
-	//		current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
-	//		break;
-	//	}
-	//}
-	//else
-	//{
-	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedVertex) != ReturnedOfLoadFile::_SuccessfullyLoadedVertex)
-	//	{
-	//		current_project->OutMessage(L"加载顶点数据失败：" + path, _Warning);
-	//	}
-	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile)
-	//	{
-	//		current_project->OutMessage(L"加载材质文件失败：" + path, _Warning);
-	//	}
-	//	if ((Error & ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps) != ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps)
-	//	{
-	//		current_project->OutMessage(L"加载材质贴图失败：" + path, _Warning);
-	//	}
-	//}
+
+	if (Error == ReturnedOfLoadFile::_Succese)
+	{
+		current_project->OutMessage(L"加载完毕：" + path, _Message);
+		current_project->Model_att = 0x01;
+	}
+	else if ((Error & 0xff) != 0)
+	{
+		switch (Error & 0xff)
+		{
+		case ReturnedOfLoadFile::_UnknownFormat:
+			current_project->OutMessage(L"未知文件格式：" + path, _Error);
+			break;
+		case ReturnedOfLoadFile::_DataError:
+			current_project->OutMessage(L"数据错误：" + path, _Error);
+			break;
+		case ReturnedOfLoadFile::_FailToOpenFile:
+			current_project->OutMessage(L"无法打开文件：" + path, _Error);
+			break;
+		case ReturnedOfLoadFile::_FailedToCreateFile:
+			current_project->OutMessage(L"文件创建失败：" + path, _Error);
+			break;
+		default:
+			current_project->OutMessage(L"模型加载时发生未知错误：" + path, _Error);
+			break;
+		}
+	}
+
 	current_project->m_FileLoad = false;
 	//rwlock.unlock();
 	return;
@@ -902,28 +906,28 @@ ULONG64 Controller::GetStartTime()const
 }
 void Controller::Run()
 {
-	m_Mode = RM_RUN;
+	m_Mode = RUNMODE::RM_RUN;
 	m_StartTime = GetTickCount64() - m_RunTime;
 }
 void Controller::Suspend()
 {
-	m_Mode = RM_EDIT;
+	m_Mode = RUNMODE::RM_EDIT;
 }
 void Controller::Stop()
 {
-	m_Mode = RM_EDIT;
+	m_Mode = RUNMODE::RM_EDIT;
 	SetTime(0);
 }
 void Controller::SwitchRunMode()
 {
-	if (m_Mode == RM_RUN)
+	if (m_Mode == RUNMODE::RM_RUN)
 		Suspend();
 	else
 		Run();
 }
 void Controller::Reset()
 {
-	m_Mode = RM_EDIT;
+	m_Mode = RUNMODE::RM_EDIT;
 	m_StartTime = 0;
 	m_RunTime = 0;
 }
@@ -957,21 +961,21 @@ void Controller::MoveKeyframeEditTime(int x)
 }
 ULONG64 Controller::GetTime()
 {
-	if (m_Mode == RM_EDIT)
+	if (m_Mode == RUNMODE::RM_EDIT)
 		return m_RunTime;
 	m_RunTime = GetTickCount64() - m_StartTime;
-	ULONG64 leftTime, rightTime;
-	GetTime(&leftTime, &rightTime);
-	if (m_RunTime < leftTime)
-	{
-		int x = m_RunTime - leftTime - 500;
-		MoveKeyframeEditTime(x);
-	}
-	else if (m_RunTime > rightTime)
-	{
-		int x = m_RunTime - rightTime + 500;
-		MoveKeyframeEditTime(x);
-	}
+	//ULONG64 leftTime, rightTime;
+	//GetTime(&leftTime, &rightTime);
+	//if (m_RunTime < leftTime)
+	//{
+	//	int x = m_RunTime - leftTime - 500;
+	//	MoveKeyframeEditTime(x);
+	//}
+	//else if (m_RunTime > rightTime)
+	//{
+	//	int x = m_RunTime - rightTime + 500;
+	//	MoveKeyframeEditTime(x);
+	//}
 	return m_RunTime;
 }
 void Controller::SetTime(ULONG64 time)
@@ -991,33 +995,147 @@ void Controller::SetTime(ULONG64 time)
 		MoveKeyframeEditTime(x);
 	}
 }
-bool Controller::LoadXlsx(const std::wstring& filePath)
+//bool Controller::LoadXlsx(const std::wstring& filePath)
+//{
+//	xlnt::workbook wb;
+//	try
+//	{
+//		wb.load(filePath); // 文件名可以根据实际情况修改
+//	}
+//	catch (const std::exception& ex)
+//	{
+//		OutMessage(L"文件打开失败", _Error);
+//		return false;
+//	}
+//
+//	// 遍历所有工作表
+//	for (const auto& ws : wb)
+//	{
+//		std::cout << "Sheet: " << ws.title() << std::endl;
+//
+//		// 遍历所有行和列，并输出每个单元格的值
+//		for (const auto& row : ws.rows())
+//		{
+//			for (auto cell : row)
+//			{
+//				std::cout << cell.to_string() << "\t";
+//			}
+//			std::cout << std::endl;
+//		}
+//	}
+//}
+bool Controller::LoadModel(const std::string& path)
 {
-	xlnt::workbook wb;
-	try
-	{
-		wb.load(filePath); // 文件名可以根据实际情况修改
-	}
-	catch (const std::exception& ex)
-	{
-		OutMessage(L"文件打开失败", _Error);
+	// 读取模型文件到内存缓冲区
+	std::ifstream file(path, std::ios::binary);
+	if (!file) {
+		OutMessage(L"无法打开文件", _Error);
 		return false;
 	}
-
-	// 遍历所有工作表
-	for (const auto& ws : wb)
+	std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	size_t pos = path.find_last_of('/');
+	if (pos == -1)
 	{
-		std::cout << "Sheet: " << ws.title() << std::endl;
-
-		// 遍历所有行和列，并输出每个单元格的值
-		for (const auto& row : ws.rows())
+		pos = path.find_last_of('\\');
+	}
+	// 加载模型
+	Assimp::Importer aimporter;
+	const aiScene* scene = aimporter.ReadFileFromMemory(buffer.data(), buffer.size(),
+		aiProcess_Triangulate | aiProcess_FlipUVs, nullptr);
+	//const aiScene* scene = aimporter.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);
+	std::string Output;
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	{
+		cout << "ERROR::ASSIMP::" << aimporter.GetErrorString() << endl;
+		Output = "加载出错";
+		Output += aimporter.GetErrorString();
+		OutMessage(Output, _Error);
+		aimporter.FreeScene();
+		return false;
+	}
+	aiNode* node = scene->mRootNode;
+	Output = path.substr(pos + 1);
+	if(!node)
+	{
+		OutMessage(L"模型未包含节点", _Error);
+		std::cout << "模型未包含节点" << std::endl;
+		aimporter.FreeScene();
+		return false;
+	}
+	Folder* folder = m_FocusFolder->CreateFile_创建文件<Folder>(Output);
+	if (!folder)
+	{
+		OutMessage(L"文件夹创建失败", _Error);
+		std::cout << "文件夹创建失败" << std::endl;
+		aimporter.FreeScene();
+		return false;
+	}
+	Model* parentModel = dynamic_cast<Model*>(this->CreateObject(folder, Output, OT_MODEL));
+	if (!parentModel)
+	{
+		OutMessage(L"模型创建失败", _Error);
+		std::cout << "模型创建失败" << std::endl;
+		aimporter.FreeScene();
+		return false;
+	}
+	if (!processModelNode(node, scene, parentModel, folder, path.substr(0, pos + 1)))
+	{
+		aimporter.FreeScene();
+		return false;
+	}
+	aimporter.FreeScene();
+	return true;
+}
+bool Controller::processModelNode(aiNode* node, const aiScene* scene, Model* parentModel, Folder* folder,const std::string& directory)
+{
+	Model* currentModel = parentModel;
+	std::string Output = node->mName.C_Str();
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		currentModel = new Model(Output);
+		if (!currentModel)
 		{
-			for (auto cell : row)
+			OutMessage(L"模型创建失败", _Error);
+			std::cout << "模型创建失败" << std::endl;
+			return false;
+		}
+		parentModel->addChildModel(currentModel);
+		aiMesh* amesh = scene->mMeshes[node->mMeshes[i]];
+		Mesh* mesh = dynamic_cast<Mesh*>(this->CreateObject(folder, Output + "网格", OT_MESH));
+		if (!mesh)
+		{
+			OutMessage(L"网格创建失败", _Error);
+			std::cout << "网格创建失败" << std::endl;
+			return false;
+		}
+		mesh->processMesh(amesh, scene);
+		currentModel->SetMesh(mesh);
+		if (amesh->mMaterialIndex >= 0)
+		{
+			Material* material = dynamic_cast<Material*>(this->CreateObject(folder, Output + "材质", OT_MATERIAL));
+			if (!material)
 			{
-				std::cout << cell.to_string() << "\t";
+				OutMessage(L"材质创建失败", _Error);
+				std::cout << "材质创建失败" << std::endl;
+				return false;
 			}
-			std::cout << std::endl;
+			material->processMaterial(amesh, scene,folder, directory);
+			currentModel->SetMaterial(material);
 		}
 	}
-
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		if (!processModelNode(node->mChildren[i], scene, currentModel, folder, directory))
+		{
+			return false;
+		}
+	}
 }
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+bool Controller::isSupportedModelFile(const std::string& extension)
+{
+	static Assimp::Importer importer;
+	return importer.IsExtensionSupported(extension.c_str());
+}
+

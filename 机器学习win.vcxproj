@@ -88,11 +88,11 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\assimp\include;$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
@@ -101,19 +101,19 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\assimp;$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\assimp\include;$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
@@ -124,17 +124,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\assimp;$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;$(SolutionDir)OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\assimp\include;$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;$(SolutionDir)OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
@@ -143,19 +143,19 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\assimp;$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)第三方库\assimp\include;$(SolutionDir)第三方库\glm-0.9.9.8;$(SolutionDir)第三方库\glad\include;E:\OpenGL\glad\include;E:\OpenGL\glm-0.9.9.8;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>framework.h</PrecompiledHeaderFile>
@@ -166,8 +166,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)assimp-vc143-mt.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)第三方库\assimp;$(SolutionDir)第三方库\xInt;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -188,7 +188,6 @@
     <ClInclude Include="Tree_树控件.h" />
     <ClInclude Include="vector_向量.h" />
     <ClInclude Include="WndData.h" />
-    <ClInclude Include="Xlsx.h" />
     <ClInclude Include="xzdll.hpp" />
     <ClInclude Include="字符转换.h" />
     <ClInclude Include="机器学习win.h" />
@@ -213,7 +212,6 @@
     <ClCompile Include="Tree_树控件.cpp" />
     <ClCompile Include="vector_向量.cpp" />
     <ClCompile Include="WndData.cpp" />
-    <ClCompile Include="Xlsx.cpp" />
     <ClCompile Include="字符转换.cpp" />
     <ClCompile Include="属性页窗口循环.cpp" />
     <ClCompile Include="文件窗口消息循环.cpp" />

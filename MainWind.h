@@ -12,7 +12,6 @@
 
 void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out);
 ULONG64 GetTime();
-RUNMODE GetRunMode();
 enum MainWindType
 {
 	MGDIWND,
@@ -83,33 +82,8 @@ public:
 #include"Shader.h"
 #pragma comment (lib,"opengl32.lib")
 
-class OldModelBuffer {
-public:
-	OldModelBuffer(Model* model, OpenGLShader* shader = nullptr);
-
-	~OldModelBuffer();
-
-	void Draw();
-
-	void SetModelMatrix(glm::mat4 model)
-	{
-		m_ModelMatrix = model;
-	}
-
-	void SetShader(OpenGLShader* shader)
-	{
-		m_Shaders = shader;
-	}
-
-private:
-	GLuint m_VAO, m_VBO;
-	Model* m_Model;
-	OpenGLShader* m_Shaders;
-	glm::mat4 m_ModelMatrix;
-	unsigned int m_DiffuseMap;
-	unsigned int m_MirrorMap;
-};
 #include"stb_image.h"
+void calculateAttenuationFactors(float intensity, float radius, float& constant, float& linear, float& quadratic);
 class OpenGLWnd : public MainWind
 {
 public:
@@ -130,10 +104,18 @@ public:
 	void ResetOpenGLViewport();
 private:
 	void DrawModel(Model* model, const glm::mat4& view);
+	void SetMaterialData(OpenGLShader* shader, Material* material, const Camera& camera);
 	HGLRC m_hglrc;
-	std::unordered_map<Model*, OldModelBuffer*>m_models;
-	std::unordered_map<Mesh*, Mesh_OpenGL*>m_Meshs;
-	std::unordered_map<Picture*, Picture_OpenGL*>m_Textures;
-	std::unordered_map<int, OpenGLShader*>m_Shaders;
+
+	//旧的渲染方式
+	std::map<Model*, OldModelBuffer*>m_models;
+	//std::unordered_map<Mesh*, Mesh_OpenGL*>m_Meshs;
+	//std::unordered_map<Picture*, Picture_OpenGL*>m_Textures;
+	std::map<int, OpenGLShader*>m_Shaders;
+
+	std::map<Picture*, glTexture>m_Textures;
+	std::map<Mesh*, glMesh*>m_Meshs;
+
+	//暂替的天空盒
 	UINT skyboxVAO, skyboxVBO, skyCubemapTexture;
 };

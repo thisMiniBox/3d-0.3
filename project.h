@@ -8,12 +8,17 @@
 #include"resource.h"
 #include<time.h>
 #include<math.h>
+#include<unordered_set>
 #include<CommCtrl.h>
 #include"Tree_树控件.h"
 #include"BottomWindow.h"
 #include"FileWind.h"
 #include"Object.h"
 #include"xzdll.hpp"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <boost/filesystem.hpp>
 #include<map>
 
 typedef ComUserCode(*UserCode)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -27,6 +32,7 @@ class Controller
 	Object* m_Focus;				//焦点对象
 
 	std::vector<Model*>m_Models;	//临时存储模型索引
+	std::vector<PointLight*>m_PointLights; //临时存储点光源数据
 
 	BottomWindow* m_BottomWind;		//底部窗口
 	InputOutput* m_IOWind;			//控制台窗口
@@ -50,8 +56,11 @@ class Controller
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
 	ReturnedOfLoadFile LoadDLL(const std::wstring& filePath);
-	bool LoadXlsx(const std::wstring& filePath);
+	//bool LoadXlsx(const std::wstring& filePath);
 
+	bool LoadModel(const std::string& filePath);
+	bool isSupportedModelFile(const std::string& filepath);
+	bool processModelNode(aiNode* node, const aiScene* scene, Model* parent,Folder* folder,const std::string& directory);
 public:
 	//窗口信息
 	HWND m_hWnd;
@@ -113,6 +122,7 @@ public:
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);
 	//返回所有对象
 	std::vector<Model*>& GetModels();
+	std::vector<PointLight*>& GetAllPointLight();
 	//添加对象
 	HTREEITEM AddObject(Object*, std::string address = "0");
 	//添加对象到此节点下

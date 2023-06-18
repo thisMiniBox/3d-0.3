@@ -38,10 +38,10 @@ std::wstring ObjectTypeToWstr(ObjectType OT)
 	case OT_MATERIAL:
 		return L"材质";
 		break;
-	case OT_POINTLIGHT:
+	case OT_POINT_LIGHT:
 		return L"点光源";
 		break;
-	case OT_PARALLELLIGHT:
+	case OT_DIRECTIONAL_LIGHT:
 		return L"平行光源";
 		break;
 	case OT_KEYFRAME:
@@ -74,10 +74,10 @@ std::string ObjectTypeTostr(ObjectType OT)
 	case OT_MATERIAL:
 		return "材质";
 		break;
-	case OT_POINTLIGHT:
+	case OT_POINT_LIGHT:
 		return "点光源";
 		break;
-	case OT_PARALLELLIGHT:
+	case OT_DIRECTIONAL_LIGHT:
 		return "平行光源";
 		break;
 	case OT_KEYFRAME:
@@ -109,10 +109,10 @@ ObjectType StrToObjectType(const std::string& str)
 		return OT_MATERIAL;
 	}
 	else if (str == "点光源" || str == "PointLight" || str == "pointlight") {
-		return OT_POINTLIGHT;
+		return OT_POINT_LIGHT;
 	}
 	else if (str == "平行光源" || str == "ParallelLight" || str == "parallellight") {
-		return OT_PARALLELLIGHT;
+		return OT_DIRECTIONAL_LIGHT;
 	}
 	else if (str == "关键帧" || str == "Keyframe" || str == "keyframe") {
 		return OT_KEYFRAME;
@@ -143,10 +143,10 @@ ObjectType WStrToObjectType(const std::wstring& str)
 		return OT_MATERIAL;
 	}
 	else if (str == L"点光源" || str == L"PointLight" || str == L"pointlight") {
-		return OT_POINTLIGHT;
+		return OT_POINT_LIGHT;
 	}
 	else if (str == L"平行光源" || str == L"ParallelLight" || str == L"parallellight") {
-		return OT_PARALLELLIGHT;
+		return OT_DIRECTIONAL_LIGHT;
 	}
 	else if (str == L"关键帧" || str == L"Keyframe" || str == L"keyframe") {
 		return OT_KEYFRAME;
@@ -274,11 +274,10 @@ void Folder::ClearFolder_清空文件夹()
 void Folder::AddFile_添加文件(Object* obj)
 {
 	if (!obj)return;
-	Folder* fold = dynamic_cast<Folder*>(obj);
-	if (fold)
-		fold->SetParent(this);
+	obj->SetParent(this);
 	std::string name = obj->GetName();
-	if (m_Child.find(name) == m_Child.end()) {
+	if (m_Child.find(name) == m_Child.end())
+	{
 		m_Child.insert(std::make_pair(name, obj));
 		return;
 	}
@@ -427,15 +426,6 @@ void Model::Scale(const Vector3& sca)
 {
 	scale(sca);
 }
-PointLight::PointLight(const std::string& name)
-{
-	m_Intensity = 100;
-	m_LightColor = Vector(255, 255, 255);
-	m_Position = Vector(0, 0, 0);
-	m_Range = 0.1;
-	m_SoftShadow = 0.01;
-	m_Name = name;
-}
 // 获取物体世界坐标，返回默认值
 Vector Object::GetWorldPosition() const
 {
@@ -527,7 +517,16 @@ Matrix4 Camera::GetProjection() const
 		Vector4(0.0f, 0.0f, -2.0f * m_Far * m_Near / range, 0.0f)
 	);
 }
-
+Rotation Camera::GetRotate()const
+{
+	
+	return Rotation(vec::DegToRad(m_Field), m_Direction);
+}
+void Camera::SetRotate(const Rotation& rot)
+{
+	SetDirection(rot.axis);
+	this->SetFieldOfView(vec::RadToDeg(rot.angle));
+}
 void Camera::SetTarget(const Vector3& Target)
 {
 	m_Target = Target;
@@ -537,6 +536,12 @@ void Camera::SetCameraUP(const Vector3& Cup)
 {
 	m_CameraUp = Cup;
 	SetDirection(m_Target - m_Position);
+}
+void Camera::SetFieldOfView(float FieldOfView)
+{ 
+	if (FieldOfView < 1 || FieldOfView >= 180)
+		return;
+	m_Field = FieldOfView; 
 }
 Matrix4 Camera::GetGLMView()const
 {
@@ -552,53 +557,55 @@ Matrix4 Camera::GetGLMView()const
 		0, 0, 0, 1
 	);
 }
-inline float Material::getNs() const {
+float Material::getNs() const {
 	return m_Ns;
 }
 
-inline void Material::setNs(float ns) {
+void Material::setNs(float ns) {
 	m_Ns = ns;
 }
 
-inline float Material::getNi() const {
+float Material::getNi() const {
 	return m_Ni;
 }
 
-inline void Material::setNi(float ni) {
+void Material::setNi(float ni) {
 	m_Ni = ni;
 }
 
-inline float Material::getTr() const {
+float Material::getTr() const {
 	return m_Tr;
 }
 
-inline void Material::setTr(float tr) {
+void Material::setTr(float tr) {
 	m_Tr = tr;
 }
 
-inline const float* Material::getKa() const {
+const vec::Vector3& Material::getKa()const
+{
 	return m_Ka;
 }
-
-inline void Material::setKa(const float ka[3]) {
-	memcpy(m_Ka, ka, sizeof(float) * 3);
+void Material::setKa(const vec::Vector3& ka)
+{
+	m_Ka = ka;
 }
-
-inline const float* Material::getKd() const {
+const vec::Vector3& Material::getKd()const
+{
 	return m_Kd;
 }
-
-inline void Material::setKd(const float kd[3]) {
-	memcpy(m_Kd, kd, sizeof(float) * 3);
+void Material::setKd(const vec::Vector3& kd)
+{
+	m_Kd = kd;
 }
-
-inline const float* Material::getKs() const {
+const vec::Vector3& Material::getKs()const
+{
 	return m_Ks;
 }
-
-inline void Material::setKs(const float ks[3]) {
-	memcpy(m_Ks, ks, sizeof(float) * 3);
+void Material::setKs(const vec::Vector3& ks)
+{
+	m_Ks = ks;
 }
+
 
 Picture* Material::getMapKa() const {
 	return m_MapKa;
@@ -636,7 +643,16 @@ inline void Material::setMapKs(Picture* mapKs) {
 		m_MapKs->Reference(this);
 }
 
-
+Material::Material(std::string& name)
+	: m_Ns(0.0f),
+	m_Ni(0.0f),
+	m_Tr(0.0f),
+	m_MapKa(nullptr),
+	m_MapKd(nullptr),
+	m_MapKs(nullptr)
+{ 
+	m_Name = name; 
+}
 Material::Material()
 	: m_Ns(0.0f),
 	m_Ni(0.0f),
@@ -645,12 +661,10 @@ Material::Material()
 	m_MapKd(nullptr),
 	m_MapKs(nullptr)
 {
-	memset(m_Ka, 0, sizeof(float) * 3);
-	memset(m_Kd, 0, sizeof(float) * 3);
-	memset(m_Ks, 0, sizeof(float) * 3);
+	m_Name = "新建材质";
 }
-void Object::DeleteReferenceP(Object*)
-{}
+void Object::DeleteReferenceP(Object*){}
+void Object::InitReferenceP(Object*){}
 Material::~Material()
 {
 	auto ls = m_Reference;
@@ -674,6 +688,7 @@ Model::Model()
 	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
 	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
 	m_Name = "新建模型";
+	m_Mode = ModelMode::MM_EDIT;
 }
 Model::Model(std::string& name)
 	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
@@ -872,10 +887,7 @@ const std::vector<FACE>& Model::GetTriFace()
 			outf.normalA = m_ModelMesh->m_Normal[fi.a[2] - 1];
 			outf.normalB = m_ModelMesh->m_Normal[fi.a[5] - 1];
 			outf.normalC = m_ModelMesh->m_Normal[fi.a[8] - 1];
-			if (m_Material && m_Material->getKd())
-				outf.color = RGB(m_Material->getKd()[0] * 255, m_Material->getKd()[1] * 255, m_Material->getKd()[2] * 255);
-			else
-				outf.color = RGB(200, 200, 200);
+			outf.color = RGB(m_Material->getKd().x * 255, m_Material->getKd().y * 255, m_Material->getKd().z * 255);
 			m_GDI_TriFaceData.push_back(outf);
 		}
 	}
@@ -935,7 +947,8 @@ void Model::Unselected()
 	for (auto c : m_ChildModel)
 		c->Unselected();
 }
-void Model::addChildModel(Model* model) {
+void Model::addChildModel(Model* model) 
+{
 	if (!model) {
 		return;
 	}
@@ -953,6 +966,10 @@ void Model::SetModelParent(Model* model)
 Mesh* Model::GetMesh()const
 {
 	return m_ModelMesh;
+}
+const std::vector<UINT>& Mesh::GetIndices()
+{
+	return m_Indices;
 }
 const std::vector<Vertex>& Mesh::GetVertexData()
 {
@@ -972,6 +989,11 @@ const std::vector<Vertex>& Mesh::GetVertexData()
 		m_Data.push_back(v0);
 		m_Data.push_back(v1);
 		m_Data.push_back(v2);
+
+		UINT indexSize = static_cast<UINT>(m_Data.size()) - 3;
+		m_Indices.push_back(indexSize);
+		m_Indices.push_back(indexSize + 1);
+		m_Indices.push_back(indexSize + 2);
 	}
 	return m_Data;
 }
@@ -988,6 +1010,18 @@ glm::mat4 Model::GetGLTransform()const
 	if (m_Parent)
 		return m_Parent->GetGLTransform() * m_Transform;
 	return m_Transform;
+}
+void Model::InitReferenceP(Object* obj)
+{
+	if (!obj)return;
+	if (obj == m_ModelMesh)
+	{
+		m_ModelMesh = nullptr;
+	}
+	else if (obj == m_Material)
+	{
+		m_Material = nullptr;
+	}
 }
 void Model::DeleteReferenceP(Object* obj)
 {
@@ -1014,11 +1048,9 @@ void Model::removeChildModel(Model* model)
 }
 Picture::Picture() :m_Data(nullptr), m_Width(0), m_Height(0), m_NrComponents(0)
 {
-	m_ID = 0;
 }
 Picture::Picture(std::string& name) :m_Data(nullptr), m_Width(0), m_Height(0), m_NrComponents(0)
 {
-	m_ID = 0;
 	m_Name = name;
 }
 Picture::~Picture()
@@ -1036,7 +1068,6 @@ void Picture::FreePictureData()
 	if (m_Data)
 		stbi_image_free(m_Data);
 	m_Data = nullptr;
-	m_ID = 0;
 }
 PictureData Picture::GetPicture()const
 {
@@ -1097,18 +1128,18 @@ bool MatFileReader::read(const std::string& filename)
 			current_material->SetName(token.c_str());
 		}
 		else if (token == "Ka") {
-			float ka[3];
-			iss >> ka[0] >> ka[1] >> ka[2];
+			vec::Vector3 ka;
+			iss >> ka.x >> ka.y >> ka.z;
 			current_material->setKa(ka);
 		}
 		else if (token == "Kd") {
-			float kd[3];
-			iss >> kd[0] >> kd[1] >> kd[2];
+			vec::Vector3 kd;
+			iss >> kd.x >> kd.y >> kd.z;
 			current_material->setKd(kd);
 		}
 		else if (token == "Ks") {
-			float ks[3];
-			iss >> ks[0] >> ks[1] >> ks[2];
+			vec::Vector3 ks;
+			iss >> ks.x >> ks.y >> ks.z;
 			current_material->setKs(ks);
 		}
 		else if (token == "Ns") {
@@ -1198,27 +1229,43 @@ std::vector<Model*> Folder::GetAllModleFile_找到所有模型()const
 	}
 	return out;
 }
+std::vector<PointLight*> Folder::GetAllPointLightFile_找到所有光源文件()const
+{
+	std::vector<PointLight*> out;
+	for (const auto& c : m_Child)
+	{
+		switch (c.second->GetType())
+		{
+		case ObjectType::OT_POINT_LIGHT:
+		{
+			out.push_back(dynamic_cast<PointLight*>(c.second));
+			break;
+		}
+		case ObjectType::OT_FOLDER:
+		{
+			Folder* folder = dynamic_cast<Folder*>(c.second);
+			std::vector<PointLight*> f = (folder)->GetAllPointLightFile_找到所有光源文件();
+			out.insert(out.end(), f.begin(), f.end());
+			break;
+		}
+		default:
+			break;
+		}
+	}
+	return out;
+}
 Folder::~Folder()
 {
 	for (auto& c : m_Child)
 	{
-		delete c.second;
+ 		delete c.second;
 		c.second = nullptr;
 	}
 	m_Child.clear();
 }
 ObjectType PointLight::GetType()const
 {
-	return OT_POINTLIGHT;
-}
-PointLight::PointLight()
-{
-	m_Intensity = 100;
-	m_LightColor = Vector(255, 255, 255);
-	m_Name = "新建点光源";
-	m_Position = Vector(0, 0, 0);
-	m_Range = 0.1;
-	m_SoftShadow = 0.01;
+	return OT_POINT_LIGHT;
 }
 PointLight::~PointLight()
 {
@@ -1227,6 +1274,10 @@ void PointLight::SetPosition(const Vector& position)
 {
 	m_Position = position;
 }
+void PointLight::Move(const Vector& move)
+{
+	m_Position += move;
+}
 Vector PointLight::GetPosition() const
 {
 	return m_Position;
@@ -1234,13 +1285,31 @@ Vector PointLight::GetPosition() const
 
 void PointLight::SetLightColor(const Vector& lightColor)
 {
-	m_LightColor = lightColor;
+	m_Color = lightColor;
 }
 const Vector& PointLight::GetLightColor() const
 {
-	return m_LightColor;
+	return m_Color;
 }
-
+//设置颜色
+void PointLight::SetScale(const Vector& color)
+{
+	SetLightColor(color);
+}
+//获取颜色
+Vector PointLight::GetScale() const
+{
+	return GetLightColor();
+}
+Rotation PointLight::GetRotate()const
+{
+	return Rotation(0, vec::Vector3(m_Intensity, 0, m_Range));
+}
+void PointLight::SetRotate(const Rotation& rot)
+{
+	SetIntensity(rot.axis.x);
+	SetRange(rot.axis.z);
+}
 void PointLight::SetIntensity(float intensity)
 {
 	m_Intensity = intensity;
@@ -1257,14 +1326,6 @@ void PointLight::SetRange(float range)
 float PointLight::GetRange() const
 {
 	return m_Range;
-}
-void PointLight::SetSoftShadow(float softShadow)
-{
-	m_SoftShadow = softShadow;
-}
-float PointLight::GetSoftShadow() const
-{
-	return m_SoftShadow;
 }
 void Object::ToggleSelection()
 {
@@ -1328,7 +1389,12 @@ const std::set<Object*>* Mesh::GetAllReference()const
 }
 void Mesh::Dereference(Object* obj)
 {
-	m_Reference.erase(obj);
+	auto it = m_Reference.find(obj);
+	if (it != m_Reference.end())
+	{
+		m_Reference.erase(obj);
+		obj->InitReferenceP(this);
+	}
 }
 bool Mesh::IsReference(Object* obj)const
 {
@@ -1346,7 +1412,12 @@ const std::set<Object*>* Picture::GetAllReference()const
 }
 void Picture::Dereference(Object* obj)
 {
-	m_Reference.erase(obj);
+	auto it = m_Reference.find(obj);
+	if (it != m_Reference.end())
+	{
+		m_Reference.erase(obj);
+		obj->InitReferenceP(this);
+	}
 }
 bool Picture::IsReference(Object* obj)const
 {
@@ -1364,7 +1435,12 @@ const std::set<Object*>* Material::GetAllReference()const
 }
 void Material::Dereference(Object* obj)
 {
-	m_Reference.erase(obj);
+	auto it = m_Reference.find(obj);
+	if (it != m_Reference.end())
+	{
+		m_Reference.erase(obj);
+		obj->InitReferenceP(this);
+	}
 }
 bool Material::IsReference(Object* obj)const
 {
@@ -1580,66 +1656,57 @@ INT_PTR Material::ListControlView(const HWND hWndList, HIMAGELIST, std::map<int,
 		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
 		item++;
 	}
-	if (m_Ka)
-	{
-		name = L"环境光";
-		lvItem.mask = LVIF_TEXT;
-		lvItem.iItem = item;
-		lvItem.iSubItem = 0;
-		lvItem.pszText = (LPWSTR)name.c_str();
-		ListView_InsertItem(hWndList, &lvItem);
-		name = L"颜色";
-		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ka[0]);
-		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ka[1]);
-		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ka[2]);
-		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
-		item++;
-	}
-	if (m_Kd)
-	{
-		name = L"漫反射";
-		lvItem.mask = LVIF_TEXT;
-		lvItem.iItem = item;
-		lvItem.iSubItem = 0;
-		lvItem.pszText = (LPWSTR)name.c_str();
-		ListView_InsertItem(hWndList, &lvItem);
-		name = L"颜色";
-		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Kd[0]);
-		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Kd[1]);
-		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Kd[2]);
-		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
-		item++;
-	}
-	if (m_Ks)
-	{
-		name = L"镜面反射";
-		lvItem.mask = LVIF_TEXT;
-		lvItem.iItem = item;
-		lvItem.iSubItem = 0;
-		lvItem.pszText = (LPWSTR)name.c_str();
-		ListView_InsertItem(hWndList, &lvItem);
-		name = L"颜色";
-		ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ks[0]);
-		ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ks[1]);
-		ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
-		name = std::to_wstring(m_Ks[2]);
-		ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
-		item++;
-	}
+	name = L"环境光";
+	lvItem.mask = LVIF_TEXT;
+	lvItem.iItem = item;
+	lvItem.iSubItem = 0;
+	lvItem.pszText = (LPWSTR)name.c_str();
+	ListView_InsertItem(hWndList, &lvItem);
+	name = L"颜色";
+	ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ka.x);
+	ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ka.y);
+	ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ka.z);
+	ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+	item++;
+	name = L"漫反射";
+	lvItem.mask = LVIF_TEXT;
+	lvItem.iItem = item;
+	lvItem.iSubItem = 0;
+	lvItem.pszText = (LPWSTR)name.c_str();
+	ListView_InsertItem(hWndList, &lvItem);
+	name = L"颜色";
+	ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Kd.x);
+	ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Kd.y);
+	ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Kd.z);
+	ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+	item++;
+	name = L"镜面反射";
+	lvItem.mask = LVIF_TEXT;
+	lvItem.iItem = item;
+	lvItem.iSubItem = 0;
+	lvItem.pszText = (LPWSTR)name.c_str();
+	ListView_InsertItem(hWndList, &lvItem);
+	name = L"颜色";
+	ListView_SetItemText(hWndList, item, 1, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ks.x);
+	ListView_SetItemText(hWndList, item, 2, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ks.y);
+	ListView_SetItemText(hWndList, item, 3, (LPWSTR)name.c_str());
+	name = std::to_wstring(m_Ks.z);
+	ListView_SetItemText(hWndList, item, 4, (LPWSTR)name.c_str());
+	item++;
 	return 0;
 }
 unsigned int Picture::loadTexture()
 {
-	if (m_ID != 0)return m_ID;
-	glGenTextures(1, &m_ID);
+	UINT ID;
+	glGenTextures(1, &ID);
 	if (m_Data)
 	{
 		GLenum format = GL_RGB;
@@ -1650,7 +1717,7 @@ unsigned int Picture::loadTexture()
 		else if (m_NrComponents == 4)
 			format = GL_RGBA;
 
-		glBindTexture(GL_TEXTURE_2D, m_ID);
+		glBindTexture(GL_TEXTURE_2D, ID);
 		glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, format, GL_UNSIGNED_BYTE, m_Data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -1658,15 +1725,9 @@ unsigned int Picture::loadTexture()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		return m_ID;
+		return ID;
 	}
 	return 0;
-}
-void Picture::FreeOpenGL()
-{
-	if (m_ID)
-		glDeleteTextures(1, &m_ID);
-	m_ID = 0;
 }
 template<typename OBJ>
 Keyframe<OBJ>::Keyframe(const std::string& name)
@@ -1798,7 +1859,6 @@ Keyframe<TransForm>* Model::CreateKryframe()
 {
 	return new Keyframe<TransForm>();
 }
-
 //void Model::SetMode(ModelMode Mode)
 //{
 //	m_Mode = Mode;
@@ -1834,7 +1894,7 @@ glm::mat4 Model::GetTransform(ULONG64 time)
 		if (m_keyframe)
 		{
 			RUNMODE rm = GetRunMode_g();
-			if(rm==RM_RUN)
+			if (rm == RUNMODE::RM_RUN)
 			{
 				TransForm* tf = m_keyframe->GetKeyframe(time);
 				if (tf)
@@ -1857,7 +1917,7 @@ glm::mat4 Model::GetTransform(ULONG64 time)
 		else
 		{
 			RUNMODE rm = GetRunMode_g();
-			if (rm == RM_RUN)
+			if (rm == RUNMODE::RM_RUN)
 			{
 				TransForm* tf = m_keyframe->GetKeyframe(time);
 				if (tf)
@@ -1910,38 +1970,38 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 {
 	switch (mode)
 	{
-	case SM_XLSX:
-	{
-		xlnt::workbook wb;
-		xlnt::worksheet ws = wb.active_sheet();
+	//case SM_XLSX:
+	//{
+	//	xlnt::workbook wb;
+	//	xlnt::worksheet ws = wb.active_sheet();
 
-		ws.cell("A1").value(OBJ::GetStrType());
-		std::stringstream ss;
-		ss << OBJ::GetDataType();
-		std::string line;
-		int column = 2;
-		while (std::getline(ss, line))
-		{
-			ws.cell(column, 1).value(line);
-			column++;
-		}
-		int row_num = 2;
-		for (const auto& frame : m_keyframe) {
-			ws.cell(xlnt::cell_reference(1, row_num)).value(frame.first);
-			ss.clear();
-			ss << frame.second.GetStrData();
-			column = 2;
-			while (std::getline(ss, line))
-			{
-				ws.cell(column, row_num).value(line);
-				column++;
-			}
-			row_num++;
-		}
-		wb.save(path);
-		return true;
-		break;
-	}
+	//	ws.cell("A1").value(OBJ::GetStrType());
+	//	std::stringstream ss;
+	//	ss << OBJ::GetDataType();
+	//	std::string line;
+	//	int column = 2;
+	//	while (std::getline(ss, line))
+	//	{
+	//		ws.cell(column, 1).value(line);
+	//		column++;
+	//	}
+	//	int row_num = 2;
+	//	for (const auto& frame : m_keyframe) {
+	//		ws.cell(xlnt::cell_reference(1, row_num)).value(frame.first);
+	//		ss.clear();
+	//		ss << frame.second.GetStrData();
+	//		column = 2;
+	//		while (std::getline(ss, line))
+	//		{
+	//			ws.cell(column, row_num).value(line);
+	//			column++;
+	//		}
+	//		row_num++;
+	//	}
+	//	wb.save(path);
+	//	return true;
+	//	break;
+	//}
 	case SM_TEXT:
 	{
 		std::ofstream fout(path);
@@ -1971,6 +2031,25 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 	}
 	return false;
 }
+void Material::InitReferenceP(Object* obj)
+{
+	if (!obj)return;
+	if (obj == m_MapKa)
+	{
+		m_MapKa = nullptr;
+		return;
+	}
+	if (obj == m_MapKd)
+	{
+		m_MapKd = nullptr;
+		return;
+	}
+	if (obj == m_MapKs)
+	{
+		m_MapKs = nullptr;
+		return;
+	}
+}
 void Material::DeleteReferenceP(Object* obj)
 {
 	if (!obj)return;
@@ -1992,4 +2071,136 @@ void Material::DeleteReferenceP(Object* obj)
 		m_MapKs = nullptr;
 		return;
 	}
+}
+void Mesh::processMesh(aiMesh* mesh, const aiScene* scene)
+{
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+	{
+		Vertex vertex;
+		Vector3 vector;
+		vector.x = mesh->mVertices[i].x;
+		vector.y = mesh->mVertices[i].y;
+		vector.z = mesh->mVertices[i].z;
+		vertex.position = vector;
+		vector.x = mesh->mNormals[i].x;
+		vector.y = mesh->mNormals[i].y;
+		vector.z = mesh->mNormals[i].z;
+		vertex.normal = vector;
+		if (mesh->mTextureCoords[0]) // 网格是否有纹理坐标？
+		{
+			Vector2 vec;
+			vec.x = mesh->mTextureCoords[0][i].x;
+			vec.y = mesh->mTextureCoords[0][i].y;
+			vertex.texCoord = vec;
+		}
+		else
+			vertex.texCoord = Vector2(0.0f, 0.0f);
+		vertices.push_back(vertex);
+	}
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
+			indices.push_back(face.mIndices[j]);
+	}
+	m_Data = vertices;
+	m_Indices = indices;
+}
+void Material::processMaterial(aiMesh* mesh, const aiScene* scene, Folder* folder,const std::string& directory)
+{
+	if (mesh->mMaterialIndex >= 0)
+	{
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		// 提取漫反射系数
+		aiColor4D diffuse;
+		if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE, &diffuse))
+		{
+			m_Kd.x = diffuse.r;
+			m_Kd.y = diffuse.g;
+			m_Kd.z = diffuse.b;
+		}
+
+		// 提取镜面反射系数
+		aiColor4D specular;
+		if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR, &specular))
+		{
+			m_Ks.x = specular.r;
+			m_Ks.y = specular.g;
+			m_Ks.z = specular.b;
+		}
+
+		// 提取环境光反射系数
+		aiColor4D ambient;
+		if (AI_SUCCESS == aiGetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT, &ambient))
+		{
+			m_Ka.x = ambient.r;
+			m_Ka.y = ambient.g;
+			m_Ka.z = ambient.b;
+		}
+
+		if (material->GetTextureCount(aiTextureType_AMBIENT) > 0)
+		{
+			aiString path;
+			material->GetTexture(aiTextureType_AMBIENT, 0, &path);
+			m_MapKa = folder->CreateFile_创建文件<Picture>(material->GetName().C_Str());
+			m_MapKa->LoadPicture(directory + path.C_Str());
+			m_MapKa->Reference(this);
+		}
+
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
+		{
+			aiString path;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &path);
+			m_MapKd = folder->CreateFile_创建文件<Picture>(material->GetName().C_Str());
+			m_MapKd->LoadPicture(directory + path.C_Str());
+			m_MapKd->Reference(this);
+		}
+
+		if (material->GetTextureCount(aiTextureType_SPECULAR) > 0)
+		{
+			aiString path;
+			material->GetTexture(aiTextureType_SPECULAR, 0, &path);
+			m_MapKs = folder->CreateFile_创建文件<Picture>(material->GetName().C_Str());
+			m_MapKs->LoadPicture(directory + path.C_Str());
+			m_MapKs->Reference(this);
+		}
+	}
+}
+
+DirectionalLight::~DirectionalLight() 
+{
+	// 析构函数
+}
+
+ObjectType DirectionalLight::GetType() const 
+{
+	return ObjectType::OT_DIRECTIONAL_LIGHT;
+}
+
+void DirectionalLight::SetDirection(const Vector& direction) 
+{
+	m_Direction = direction.Normalize();
+}
+
+Vector DirectionalLight::GetDirection() const {
+	return m_Direction;
+}
+
+void DirectionalLight::SetLightColor(const Vector& lightColor) {
+	m_Color = lightColor;
+}
+
+const Vector& DirectionalLight::GetLightColor() const {
+	return m_Color;
+}
+
+void DirectionalLight::SetIntensity(float intensity) {
+	m_Intensity = intensity;
+}
+
+float DirectionalLight::GetIntensity() const {
+	return m_Intensity;
 }

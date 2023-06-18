@@ -148,7 +148,7 @@ TextOutWind::TextOutWind(HINSTANCE hInst)
 	m_TextTypeFace.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 	m_TextTypeFace.lfQuality = DEFAULT_QUALITY;
 	m_TextTypeFace.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-	lstrcpy(m_TextTypeFace.lfFaceName, TEXT("华文行楷"));  // 字体名称
+	lstrcpy(m_TextTypeFace.lfFaceName, TEXT("仿宋"));  // 字体名称
 }
 void TextOutWind::SetFont(LOGFONT NewFont)
 {

@@ -665,11 +665,6 @@ namespace vec {
             return theta;
         }
 
-        Vector3 getAxis() const {
-            double sin_half_angle = std::sqrt(1 - w * w);
-            return Vector3(x / sin_half_angle, y / sin_half_angle, z / sin_half_angle);
-        }
-
         // 根据四元数计算旋转矩阵
         static Matrix4 QuaternionToMatrix(const Quaternion& q);
 
@@ -692,7 +687,7 @@ namespace vec {
         Vector3 axis;     // 旋转轴向量
 
         // 初始化旋转
-        Rotation(double angle, Vector3 axis) : angle(angle), axis(axis.Normalize()) {}
+        Rotation(double angle, Vector3 axis) : angle(angle), axis(axis) {}
         Rotation() : angle(0) ,axis(1,0,0) {}
         // 获取旋转矩阵
         void getMatrix(double mat[][3]) {
@@ -718,7 +713,12 @@ namespace vec {
             Quaternion q1(axis, angle);
             Quaternion q2(b.axis, b.angle);
             Quaternion q = q1.slerp(q2, t);
-            return Rotation(q.getAngle(), q.getAxis());
+            Vector aixs = q.GetAxis();
+            if ( aixs== Vector(0.0f))
+            {
+                return Rotation(q.getAngle(), Vector(0.0f, 1.0f, 0.0f));
+            }
+            return Rotation(q.getAngle(), q.GetAxis());
         }
         // 旋转叠加
         Rotation compose(Rotation r)const {
