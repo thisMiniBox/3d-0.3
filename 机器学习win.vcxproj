@@ -246,15 +246,15 @@
     <Image Include="机器学习win.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LightShader.fs" />
-    <None Include="LightShader.vs" />
     <None Include="packages.config" />
     <None Include="resource.hm" />
-    <None Include="Shader\ModelShader.fs" />
-    <None Include="Shader\ModelShader.vs" />
-    <None Include="Shader\SkyBox.fs" />
-    <None Include="Shader\SkyBox.vs" />
-    <None Include="Shader\Stroke.fs" />
+    <None Include="Shader\LightShader.glfs" />
+    <None Include="Shader\LightShader.glvs" />
+    <None Include="Shader\ModelShader.glfs" />
+    <None Include="Shader\ModelShader.glvs" />
+    <None Include="Shader\SkyBox.glfs" />
+    <None Include="Shader\SkyBox.glvs" />
+    <None Include="Shader\Stroke.glfs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

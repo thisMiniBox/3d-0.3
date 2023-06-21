@@ -248,26 +248,26 @@
     <None Include="resource.hm">
       <Filter>头文件</Filter>
     </None>
-    <None Include="Shader\ModelShader.fs">
-      <Filter>窗口类\着色器文件</Filter>
-    </None>
-    <None Include="Shader\ModelShader.vs">
-      <Filter>窗口类\着色器文件</Filter>
-    </None>
-    <None Include="LightShader.vs">
-      <Filter>窗口类\着色器文件</Filter>
-    </None>
-    <None Include="LightShader.fs">
-      <Filter>窗口类\着色器文件</Filter>
-    </None>
     <None Include="packages.config" />
-    <None Include="Shader\Stroke.fs">
+    <None Include="Shader\LightShader.glfs">
       <Filter>窗口类\着色器文件</Filter>
     </None>
-    <None Include="Shader\SkyBox.fs">
+    <None Include="Shader\LightShader.glvs">
       <Filter>窗口类\着色器文件</Filter>
     </None>
-    <None Include="Shader\SkyBox.vs">
+    <None Include="Shader\ModelShader.glfs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\ModelShader.glvs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\SkyBox.glfs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\SkyBox.glvs">
+      <Filter>窗口类\着色器文件</Filter>
+    </None>
+    <None Include="Shader\Stroke.glfs">
       <Filter>窗口类\着色器文件</Filter>
     </None>
   </ItemGroup>
