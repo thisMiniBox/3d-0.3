@@ -123,10 +123,8 @@ public:
 	//返回所有对象
 	std::vector<Model*>& GetModels();
 	std::vector<PointLight*>& GetAllPointLight();
-	//添加对象
-	HTREEITEM AddObject(Object*, std::string address = "0");
 	//添加对象到此节点下
-	HTREEITEM AddObject(Object* a, HTREEITEM parent);
+	HTREEITEM AddObject(Object* a, HTREEITEM parent = TVI_ROOT);
 	//寻找文件
 	Object* SearchObject(std::wstring filename);
 	//创建物品
@@ -143,6 +141,8 @@ public:
 	void UpdateFileView()const;
 	void UpdateDetaileViev()const;
 	void UpdateKeyframeView(ChildWindSign = ChildWindSign::KeyframeWind)const;
+
+	bool MoveFile_(Object* aim, Object* parent);
 	/*void UpdateBottomView()const;*/
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

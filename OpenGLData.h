@@ -40,6 +40,10 @@ private:
 struct glTexture {
 	unsigned int id;
 	std::string type;
+    ~glTexture()
+    {
+        glDeleteTextures(1, &id);
+    }
 };
 struct glVertex {
 	glm::vec3 Position;

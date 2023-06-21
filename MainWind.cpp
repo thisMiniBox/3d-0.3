@@ -373,11 +373,6 @@ OpenGLWnd::~OpenGLWnd()
     ReleaseDC(m_hWnd, m_hdc);
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(m_hglrc);
-    for (const auto p : m_models)
-    {
-        if (p.second)
-            delete p.second;
-    }
     for (const auto p : m_Meshs)
     {
         if (p.second)
@@ -388,11 +383,11 @@ OpenGLWnd::~OpenGLWnd()
         if (p.second)
             delete p.second;
     }
-    //for (const auto p : m_Textures)
-    //{
-    //    if (p.second)
-    //        delete p.second;
-    //}
+    for (const auto p : m_Textures)
+    {
+        if (p.second)
+            delete p.second;
+    }
 }
 HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h) 
 {
@@ -441,14 +436,12 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDepthFunc(GL_LESS);
     glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     // 设置视口大小
     glViewport(0, 0, w, h); // w和h分别是窗口的宽度和高度
-    CreateShader("Shader/ModelShader.vs", "Shader/ModelShader.fs", SI_ModelShader);
-    CreateShader("Shader/LightShader.vs", "Shader/LightShader.fs", SI_LightShader);
-    CreateShader("Shader/ModelShader.vs", "Shader/Stroke.fs", SI_StrokeShader);
-    CreateShader("Shader/SkyBox.vs", "Shader/SkyBox.fs", SI_SkyBoxShader);
+    CreateShader("Shader/ModelShader.glvs", "Shader/ModelShader.glfs", SI_ModelShader);
+    CreateShader("Shader/LightShader.glvs", "Shader/LightShader.glfs", SI_LightShader);
+    CreateShader("Shader/ModelShader.glvs", "Shader/Stroke.glfs", SI_StrokeShader);
+    CreateShader("Shader/SkyBox.glvs", "Shader/SkyBox.glfs", SI_SkyBoxShader);
     std::vector<std::string> faces
     {
         "skybox/right.jpg",
@@ -549,35 +542,6 @@ OpenGLShader* OpenGLWnd::GetShader(int id) const
     else 
         return nullptr;
 }
-
-bool OpenGLWnd::AddModelToBuffer(Model* model)
-{
-    Mesh* mesh = model->GetMesh();
-    if (mesh)
-    {
-        //if (!m_Meshs[mesh])
-        //    m_Meshs[mesh] = new Mesh_OpenGL(mesh->GetVertexData());
-    }
-    else
-        return false;
-    Material* material = model->GetMaterial();
-    if(material)
-    {
-        Picture* picture = material->getMapKa();
-        //if (picture)
-        //    if (!m_Textures[picture])
-        //        m_Textures[picture] = new Picture_OpenGL(*picture);
-        //picture = material->getMapKd();
-        //if (picture)
-        //    if (!m_Textures[picture])
-        //        m_Textures[picture] = new Picture_OpenGL(*picture);
-        //picture = material->getMapKs();
-        //if (picture)
-        //    if (!m_Textures[picture])
-        //        m_Textures[picture] = new Picture_OpenGL(*picture);
-    }
-    return true;
-}
 void OpenGLWnd::SetRect(RECT NewRect)
 {
     m_rect = NewRect;
@@ -585,41 +549,6 @@ void OpenGLWnd::SetRect(RECT NewRect)
     m_height = m_rect.bottom - m_rect.top;
     if (m_hWnd)
         ResetOpenGLViewport();
-}
-void OpenGLWnd::DeleteModelBuffer(Model* model)
-{
-
-    auto it = m_models.find(model);
-    if (it != m_models.end())
-        m_models.erase(it);
-    Material* material = model->GetMaterial();
-    //auto om = m_Meshs.find(model->GetMesh());
-    //if (om != m_Meshs.end())
-    //{
-    //    delete (*om).second;
-    //    m_Meshs.erase(om);
-    //}
-    //auto op = m_Textures.find(material->getMapKa());
-    //if (op != m_Textures.end())
-    //{
-    //    delete (*op).second;
-    //    m_Textures.erase(op);
-    //}
-    //op = m_Textures.find(material->getMapKd());
-    //if (op != m_Textures.end())
-    //{
-    //    delete (*op).second;
-    //    m_Textures.erase(op);
-    //}
-    //op = m_Textures.find(material->getMapKs());
-    //if (op != m_Textures.end())
-    //{
-    //    delete (*op).second;
-    //    m_Textures.erase(op);
-    //}
-    if (!model->GetChildModel().empty())
-        for (auto& cMod : model->GetChildModel())
-            DeleteModelBuffer(cMod);
 }
 void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out)
 {
@@ -630,19 +559,63 @@ void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out)
         GetChildModel(i->GetChildModel(), out);
     }
 }
-void OpenGLWnd::DrawModel(Model* model, const glm::mat4& view)
+void OpenGLWnd::DeleteModelBuffer(Model* model)
 {
-
+    if (!model)
+        return;
+    Mesh* mesh = model->GetMesh();
+    if (mesh)
+    {
+        auto m = m_Meshs.find(mesh);
+        if (m != m_Meshs.end())
+        {
+            delete (*m).second;
+            m_Meshs.erase(m);
+        }
+    }
+    Material* material = model->GetMaterial();
+    if (!material)
+        return;
+    Picture* picture = material->getMapKa();
+    if (picture)
+    {
+        auto t = m_Textures.find(picture);
+        if (t != m_Textures.end())
+        {
+            delete (*t).second;
+            m_Textures.erase(t);
+        }
+    }
+    picture = material->getMapKd();
+    if (picture)
+    {
+        auto itKd = m_Textures.find(picture);
+        if (itKd != m_Textures.end())
+        {
+            delete (*itKd).second;
+            m_Textures.erase(itKd);
+        }
+    }
+    picture = material->getMapKs();
+    if (picture)
+    {
+        auto itKs = m_Textures.find(picture);
+        if (itKs != m_Textures.end())
+        {
+            delete (*itKs).second;
+            m_Textures.erase(itKs);
+        }
+    }
+    m_hdc = GetDC(m_hWnd);
+    wglMakeCurrent(m_hdc, m_hglrc);
 }
 void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
 {
     std::vector<Model*> models;
     GetChildModel(Models, models);
-    for (auto model : models)
-        AddModelToBuffer(model);
     PAINTSTRUCT ps;
     m_hdc = BeginPaint(m_hWnd, &ps);
-    wglMakeCurrent(m_hdc, m_hglrc);
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     OpenGLShader* CurrentShader = nullptr;
@@ -683,26 +656,23 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
             if (picture)
             {
                 if (m_Textures.find(picture) == m_Textures.end())
-                    m_Textures[picture] = {picture->loadTexture(),"material.ambientTexture"};
+                    m_Textures[picture] = new glTexture{picture->loadTexture(),"material.ambientTexture"};
             }
             picture = material->getMapKd();
             if (picture)
             {
                 if (m_Textures.find(picture) == m_Textures.end())
-                    m_Textures[picture] = { picture->loadTexture(),"material.diffuseTexture" };
+                    m_Textures[picture] = new glTexture{ picture->loadTexture(),"material.diffuseTexture" };
             }
             picture = material->getMapKs();
             if (picture)
             {
                 if (m_Textures.find(picture) == m_Textures.end())
-                    m_Textures[picture] = { picture->loadTexture(),"material.specularTexture" };
+                    m_Textures[picture] = new glTexture{ picture->loadTexture(),"material.specularTexture" };
             }
         }
         SetMaterialData(CurrentShader, material, camera);
         m_Meshs[mesh]->Draw(*CurrentShader);
-
-        if (m_models[model] == nullptr)
-            m_models[model] = new OldModelBuffer(model, CurrentShader);
         //if (GetRunMode_g() == RUNMODE::RM_EDIT)
         //    modelTransform = model->GetGLTransform();
         //else
@@ -725,10 +695,14 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     {
         if (!model->GetMesh() || !model->IsSelected())
             continue;
-        modelTransform = model->GetTransform(GetTime());
-        m_models[model]->SetShader(CurrentShader);
-        m_models[model]->SetModelMatrix(modelTransform);
-        m_models[model]->Draw();
+        modelTransform = model->GetGLTransform();
+        CurrentShader->setMat4("model", modelTransform);
+        Mesh* mesh = model->GetMesh();
+        if (!mesh)
+            continue;
+        if (m_Meshs.find(mesh) == m_Meshs.end())
+            m_Meshs[mesh] = new glMesh(mesh->GetVertexData(), mesh->GetIndices());
+        m_Meshs[mesh]->Draw(*CurrentShader);
     }
     glDisable(GL_CULL_FACE);
     glStencilMask(0xFF);
@@ -736,7 +710,8 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glEnable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    SwapBuffers(GetDC(m_hWnd));
+    SwapBuffers(m_hdc);
+
     EndPaint(m_hWnd, &ps);
 }
 
@@ -749,15 +724,26 @@ void OpenGLWnd::SetMaterialData(OpenGLShader* shader, Material* material,const C
     if (!material)
         return;
     shader->use();
-    shader->setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-    auto pointLight = GetAllPointLight();
-    PointLight* pointL = pointLight[0];
-    glm::vec3 lightPos;
-    if (pointLight.empty())
-        lightPos = glm::vec3(0, 0, -3);
-    else
-        lightPos = pointL->GetPosition();
-    shader->setVec3("light.position", lightPos);
+    auto pointLights = GetAllPointLight();
+    for (int i = 0; i < pointLights.size(); i++)
+    {
+        const PointLight* pointL = pointLights[i];
+        glm::vec3 lightPos = pointL->GetPosition();
+        glm::vec3 lightColor = pointL->GetLightColor().Normalize();
+
+        shader->setVec3("pointLights[" + std::to_string(i) + "].position", lightPos);
+        shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", lightColor * glm::vec3(0.2));
+        shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", lightColor * glm::vec3(0.7));
+        shader->setVec3("pointLights[" + std::to_string(i) + "].specular", lightColor);
+
+        float cons, line, quad;
+        calculateAttenuationFactors(pointL->GetRange(), pointL->GetIntensity(), cons, line, quad);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].constant", cons);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].linear", line);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", quad);
+    }
+
+
     shader->setVec3("viewPos", camera.GetPosition());
 
     shader->setVec3("material.ambient", material->getKa());
@@ -765,30 +751,24 @@ void OpenGLWnd::SetMaterialData(OpenGLShader* shader, Material* material,const C
     //shader->setVec3("material.specular", material->getKs());
     shader->setVec3("material.specular", glm::vec3(0.1f));
     //shader->setFloat("material.shininess", material->getNs());
-    shader->setFloat("material.shininess", 128);
-    lightPos = pointL->GetLightColor().Normalize();
-    shader->setVec3("light.ambient", lightPos * glm::vec3(0.2));
-    shader->setVec3("light.diffuse", lightPos * glm::vec3(0.7));
-    shader->setVec3("light.specular", lightPos);
-    float cons, line, quad;
-    calculateAttenuationFactors(pointL->GetIntensity(), pointL->GetRange(), cons, line, quad);
-    shader->setFloat("light.constant", cons);
-    shader->setFloat("light.linear", line);
-    shader->setFloat("light.quadratic", quad);
+    shader->setFloat("material.shininess", 12);
+
+
     Picture* texture = material->getMapKd();
     int num = 0;
     if(texture)
     {
-        shader->setInt("material.diffuse", num);
+        shader->setInt("material.diffuseTexture", num);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_Textures[texture].id);
+        glBindTexture(GL_TEXTURE_2D, m_Textures[texture]->id);
         num++;
     }
 }
-void calculateAttenuationFactors(float intensity, float radius, float& constant, float& linear, float& quadratic)
+void calculateAttenuationFactors(float radius, float intensity, float& constant, float& linear, float& quadratic)
 {
+    // 设置衰减因子的值
     constant = 1.0f;
-    linear = (1.0f - 0.0f) / radius;
-    quadratic = (1.0f - 0.0f) / (radius * radius);
+    linear = 1.0f / (radius * intensity);
+    quadratic = 1.0f / (radius * radius * intensity);
 }
 

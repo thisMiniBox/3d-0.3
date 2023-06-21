@@ -1,25 +1,17 @@
 #include"FileWind.h"
-FileWind::FileWind(HINSTANCE hInst)
+FileWind::FileWind(HWND parent, HINSTANCE hInstance)
 {
-    m_hInst = hInst;
+    m_hInst = hInstance;
     m_ClassName = L"FileWnd";
     WNDCLASSEX wcex = { 0 };
     wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style = CS_HREDRAW | CS_VREDRAW;
     wcex.lpfnWndProc = FileWndProc;
-    wcex.hInstance = hInst;
+    wcex.hInstance = hInstance;
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = m_ClassName.c_str();
     // 注册窗口类
     RegisterClassEx(&wcex);
-}
-void FileWind::ExploreFolder(HTREEITEM type)
-{
-    TreeView_Expand(m_hWnd, type, TVE_EXPAND);
-    InvalidateRect(m_hWnd, NULL, TRUE);
-}
-HWND FileWind::CreateWind(HWND parent)
-{
     m_hWnd = CreateWindowW( //创建编辑框
         m_ClassName.c_str(),
         0,
@@ -29,15 +21,53 @@ HWND FileWind::CreateWind(HWND parent)
         (HMENU)ChildWindSign::FileWind,
         m_hInst,
         nullptr);
-    if (m_hWnd)
-        m_Tree = m_FileTree_文件树.Creat_创建树列表(m_hWnd);
-    else
+    if (!m_hWnd)
     {
-        m_Tree = nullptr;
+        OutMessage_g("文件窗口创建失败", _Error);
         std::cout << "文件窗口创建失败" << std::endl;
-        return nullptr;
     }
-    return m_hWnd;
+    HIMAGELIST hImageList = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 7, 0);
+    int number = LoadPngToList(IDB_UNKNOWN, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_UNKNOWN, number));
+
+    number = LoadPngToList(IDB_CAMERA, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_CAMERA, number));
+
+    number = LoadPngToList(IDB_FOLDER, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_FOLDER, number));
+
+    number = LoadPngToList(IDB_PICTURE, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_PICTURE, number));
+
+    number = LoadPngToList(IDB_MODEL, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_MODEL, number));
+
+    number = LoadPngToList(IDB_MESH, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_MESH, number));
+
+    number = LoadPngToList(IDB_MATERIAL, hImageList, hInstance);
+    m_PngImglist.insert(std::make_pair(IDB_MATERIAL, number));
+
+    //number = LoadPngToList(IDB_KEYFRAME, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_KEYFRAME, number));
+
+    //number = LoadPngToList(IDB_POINTLIGHT, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_POINTLIGHT, number));
+
+    //number = LoadPngToList(IDB_DIRECTIONALLIGHT, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_DIRECTIONALLIGHT, number));
+
+    //number = LoadPngToList(IDB_SPOTLIGHT, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_SPOTLIGHT, number));
+
+    //number = LoadPngToList(IDB_COLLISION_BOX, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_COLLISION_BOX, number));
+
+    //number = LoadPngToList(IDB_SKYBOX, hImageList, hInstance);
+    //m_PngImglist.insert(std::make_pair(IDB_SKYBOX, number));
+
+
+    m_FileTreeView = new TreeControl(m_hWnd, hInstance, hImageList);
 }
 FileWind::~FileWind()
 {
@@ -45,6 +75,8 @@ FileWind::~FileWind()
     DestroyWindow(m_hWnd);
     // 注销窗口类
     UnregisterClass(m_ClassName.c_str(), m_hInst);
+    if (m_FileTreeView)
+        delete m_FileTreeView;
 }
 void FileWind::SetMappingBasedOnObjects(const Object& obj, HTREEITEM hItem)
 {
@@ -85,59 +117,54 @@ void FileWind::SetMappingBasedOnObjects(const Object& obj, HTREEITEM hItem)
         break;
     }
 }
-HTREEITEM FileWind::AddItem(const Object& obj, const std::string& add)
-{
-    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, add);
-    SetMappingBasedOnObjects(obj, hItem);
-    return hItem;
-}
 HTREEITEM FileWind::AddItem(const Object& obj, HTREEITEM ptree)
 {
-    HTREEITEM hItem = m_FileTree_文件树.AddItem_添加节点(obj, ptree);
+    HTREEITEM hItem = m_FileTreeView->AddItem(ptree, strwstr(obj.GetName()).c_str(), IDB_UNKNOWN, (LPARAM)&obj);
     SetMappingBasedOnObjects(obj, hItem);
     return hItem;
 }
 void FileWind::DeleteItem(HTREEITEM a)
 {
-    m_FileTree_文件树.DeleteItem_删除节点(a);
+    m_FileTreeView->DeleteItem(a);
 }
-HTREEITEM FileWind::GetItemParent(HTREEITEM item)
+void FileWind::DeleteItem(Object* a)
 {
-    return TreeView_GetParent(m_Tree, item);
+    m_FileTreeView->DeleteItem((LPARAM)a);
 }
 HTREEITEM FileWind::GetSelectedItem()
 {
-    return m_FileTree_文件树.GetItem_获取被选中节点();
+    return m_FileTreeView->GetSelection();
 }
 Object* FileWind::GetSelectedItemData()
 {
-    return m_FileTree_文件树.GetOption_获取被选中节点对象();
+    HTREEITEM item = m_FileTreeView->GetSelection();
+    return (Object*)m_FileTreeView->GetParamByItem(item);
 }
 HTREEITEM FileWind::GetMousePositionItem()
 {
-    return m_FileTree_文件树.GetMouseItem_获取鼠标位置树节点();
+    return m_FileTreeView->GetMousePosItem();
 }
 Object* FileWind::GetMousePositionItemData()
 {
-    return m_FileTree_文件树.GetMouseOption_获取鼠标位置节点对象();
+    HTREEITEM item = m_FileTreeView->GetMousePosItem();
+    return (Object*)m_FileTreeView->GetParamByItem(item);
+}
+Object* FileWind::GetItemObject(HTREEITEM item)const
+{
+    return (Object*)m_FileTreeView->GetParamByItem(item);
 }
 HWND FileWind::GethWnd()
 {
     return m_hWnd;
 }
-HWND FileWind::GetTree()
-{
-    return m_Tree;
-}
 void FileWind::FixItemName(HTREEITEM ht, const std::wstring Name)
 {
-    m_FileTree_文件树.SetItemText_修改节点名称(ht, Name);
+    m_FileTreeView->SetItemText(ht, Name.c_str());
 }
 void FileWind::ShowFolderRecursion(const Folder& folder, const Object* aim, HTREEITEM Parent)
 {
     std::string folderName = folder.GetName();
-    HTREEITEM hFolder = m_FileTree_文件树.AddItem_添加节点(folder, Parent);
-    SetMappingBasedOnObjects(folder, hFolder);
+    HTREEITEM hFolder = AddItem(folder,Parent);
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
         switch (file->GetType())
@@ -153,25 +180,13 @@ void FileWind::ShowFolderRecursion(const Folder& folder, const Object* aim, HTRE
         }
         case OT_MODEL:
         {
-            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, hFolder);
-            SetMappingBasedOnObjects(*file, i);
-            Model* Mod = dynamic_cast<Model*>(file);
-            for (auto& cm : Mod->GetChildModel())
-            {
-                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, i);
-                SetMappingBasedOnObjects(*cm, j);
-            }
-            if (aim == file)
-                TreeView_Expand(m_hWnd, i, TVE_EXPAND);
+            ShowModel(dynamic_cast<Model*>(file), Parent);
             break;
         }
         default:
         {
             std::string fileName = file->GetName();
-            HTREEITEM i = m_FileTree_文件树.AddItem_添加节点(*file, hFolder);
-            SetMappingBasedOnObjects(*file, i);
-            if (aim == file)
-                TreeView_Expand(m_hWnd, i, TVE_EXPAND);
+            HTREEITEM i = AddItem(*file, hFolder);
             break;
         }
         }
@@ -179,7 +194,7 @@ void FileWind::ShowFolderRecursion(const Folder& folder, const Object* aim, HTRE
 }
 void FileWind::ShowFolder(const Folder& folder, const Object* aim, HTREEITEM Parent)
 {
-    m_FileTree_文件树.ClearTree_清空树();
+    m_FileTreeView->ClearAllItem();
     std::string folderName = folder.GetName();
     for (Object* file : folder.GetTheCurrentDirectoryFile())
     {
@@ -197,23 +212,13 @@ void FileWind::ShowFolder(const Folder& folder, const Object* aim, HTREEITEM Par
         }
         case OT_MODEL:
         {
-            HTREEITEM Item = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
-            SetMappingBasedOnObjects(*file, Item);
-            Model* Mod = dynamic_cast<Model*>(file);
-            for (auto& cm : Mod->GetChildModel())
-            {
-                HTREEITEM j = m_FileTree_文件树.AddItem_添加节点(*cm, Item);
-                SetMappingBasedOnObjects(*cm, j);
-            }
-            if (aim == file)
-                TreeView_Expand(m_hWnd, Item, TVE_EXPAND);
+            ShowModel(dynamic_cast<Model*>(file), Parent);
             break;
         }
         default:
         {
             std::string fileName = file->GetName();
-            HTREEITEM Item = m_FileTree_文件树.AddItem_添加节点(*file, Parent);
-            SetMappingBasedOnObjects(*file, Item);
+            HTREEITEM Item = AddItem(*file, Parent);
             if (aim == file)
                 TreeView_Expand(m_hWnd, Item, TVE_EXPAND);
             break;
@@ -221,13 +226,44 @@ void FileWind::ShowFolder(const Folder& folder, const Object* aim, HTREEITEM Par
         }
     }
 }
+void FileWind::ShowModel(const Model* model, HTREEITEM parent)
+{
+    HTREEITEM Item = AddItem(*model, parent);
+    for (auto& cm : model->GetChildModel())
+    {
+        ShowModel(cm, Item);
+    }
+}
 void FileWind::MoveTree(int x, int y, int w, int h)
 {
-    MoveWindow(m_Tree, x, y, w, h, true);
+    m_FileTreeView->MoveWind(x, y, w, h);
 }
 void FileWind::SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected)
 {
     if (imageIndexSelected == -1)
         imageIndexSelected = imageIndex;
-    m_FileTree_文件树.SetItemImage_设置节点图标(hItem, imageIndex, imageIndexSelected);
+    m_FileTreeView->SetItemImage(hItem, GetPngID(imageIndex), GetPngID(imageIndexSelected));
+}
+void FileWind::ExploreFolder(HTREEITEM item)
+{
+    m_FileTreeView->ExploreFile(item);
+}
+void FileWind::ExploreFolder(Object* obj)
+{
+    m_FileTreeView->ExploreFile((LPARAM)obj);
+}
+int FileWind::GetPngID(int pngIndex)
+{
+    auto item = m_PngImglist.find(pngIndex);
+    if (item == m_PngImglist.end())
+        return -1;
+    return (*item).second;
+}
+void FileWind::FixItemName(Object* obj, const std::wstring Name)
+{
+    FixItemName(m_FileTreeView->FindNodeByParam((LPARAM)obj), Name);
+}
+void FileWind::MoveItem(HTREEITEM moved, HTREEITEM parent)
+{
+    m_FileTreeView->MoveItem(moved, parent);
 }

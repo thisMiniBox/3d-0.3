@@ -48,7 +48,7 @@ BottomWindow* Controller::GetBottom()
 HWND Controller::CreateWind(HINSTANCE hInst)
 {
 	m_TextWind = new TextOutWind(hInst);
-	m_FileWind = new FileWind(hInst);
+
 	WNDCLASSEX wcex = { 0 };
 	wcex.cbSize = sizeof(WNDCLASSEX);
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -80,7 +80,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 		hInst,
 		nullptr);
 	m_hInst = hInst;
-
+	m_FileWind = new FileWind(m_hWnd, hInst);
 	//创建底部折叠窗口
 	m_BottomWind = new BottomWindow(hInst, m_hWnd);
 	//创建文本提示输出窗口
@@ -97,7 +97,6 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	//添加关键帧编辑窗口到底部折叠窗口显示
 	m_BottomWind->AddWind(m_KeyframeWind->GethWnd(), L"关键帧");
 
-	m_FileWind->CreateWind(m_hWnd);
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
 		"新建摄像机", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
@@ -167,7 +166,7 @@ Controller::~Controller()
 void Controller::SetFileName(Object* obj, const std::wstring& NewName)
 {
 	m_FocusFolder->SetFileName(obj, wstr_str(NewName));
-	m_FileWind->FixItemName(m_EditWind->GetTree(), NewName.c_str());
+	m_FileWind->FixItemName(obj, NewName.c_str());
 }
 HINSTANCE Controller::GethInstance()const
 {
@@ -188,13 +187,6 @@ void Controller::OutMessage(const std::wstring& str, MSGtype type)
 void Controller::updateMsg(const HDC& hdc)
 {
 	m_TextWind->DrawWind(hdc);
-}
-HTREEITEM Controller::AddObject(Object* a, std::string address)
-{
-	if (a->GetType() == OT_MODEL)
-		m_Models.clear();
-	m_RootFolder.AddFile_添加文件(a);
-	return m_FileWind->AddItem(*a, address);
 }
 HTREEITEM Controller::AddObject(Object* a, HTREEITEM parent)
 {
@@ -290,11 +282,6 @@ Object* Controller::CreateObject(Folder* parent, std::string name, ObjectType ty
 	default:
 		return nullptr;
 		break;
-	}
-	if (out != nullptr)
-	{
-		HTREEITEM New = m_FileWind->AddItem(*out, (m_EditWind->GetTree()));
-		m_FileWind->ExploreFolder(New);
 	}
 
 	return out;
@@ -738,6 +725,37 @@ void Controller::UpdateDetaileViev()const
 void Controller::UpdateKeyframeView(ChildWindSign cws)const
 {
 	m_KeyframeWind->UpdateView(cws);
+}
+bool Controller::MoveFile_(Object* aim, Object* parent)
+{
+	switch (parent->GetType())
+	{
+	case OT_FOLDER:
+	{
+		Folder* folder = aim->GetParent();
+		if (folder)
+		{
+			folder->DeleteIndex(aim);
+		}
+		folder = dynamic_cast<Folder*>(parent);
+		folder->AddFile_添加文件(aim);
+		break;
+	}
+	case OT_MODEL:
+	{
+		if (aim->GetType() == OT_MODEL)
+		{
+			Model* pmodel = dynamic_cast<Model*>(parent);
+			Model* model = dynamic_cast<Model*>(aim);
+			model->SetModelParent(pmodel);
+		}
+		break;
+	}
+	default:
+		return false;
+		break;
+	}
+	return true;
 }
 //void Controller::UpdateBottomView()const
 //{

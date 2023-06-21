@@ -22,6 +22,7 @@
 #define IDB_PICTURE                     147
 #define IDB_MESH                        148
 #define IDB_UNKNOW                      149
+#define IDB_UNKNOWN                     149
 #define IDD_TRANSFORM                   150
 #define IDD_IOWND                       152
 #define IDD_FILE_VIEW                   153

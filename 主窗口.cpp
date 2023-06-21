@@ -37,11 +37,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     //切换为OpenGL渲染
     SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
     //预加载树模型
+#ifdef _DEBUG
+    Central_control->Command(L"loadfile C:\\Users\\xujiacheng\\Desktop\\程序\\Model\\背景.obj");
+#endif
+#ifndef _DEBUG
     Central_control->Command(L"loadfile Model\\背景.obj");
+#endif // _RELEASE
 
-    PointLight* PL = new PointLight("点光源", Vector3(0, 0, 10), Vector(1.0f), 100, 100);
-
+    PointLight* PL = new PointLight("点光源1", Vector3(-2, 0, 10), Vector(1.0f), 5, 10);
     Central_control->AddObject(PL);
+    PL = new PointLight("点光源2", Vector3(2, 0, 10), Vector(1.0f), 5, 10);
+    Central_control->AddObject(PL);
+    DirectionalLight* DL = new DirectionalLight;
+    Central_control->AddObject(DL);
     // 主消息循环:
     while (GetMessage(&msg, nullptr, 0, 0))
     {
@@ -79,13 +87,6 @@ LRESULT CALLBACK Controller::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
         return DefWindowProc(hWnd, message, wParam, lParam);
         
         break;
-    }
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        EndPaint(hWnd, &ps);
-        break; 
     }
     case WM_TIMER:
     {
@@ -1253,8 +1254,9 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
                     int x = (int)(((float)k.first - leftTime) / (rightTime - leftTime) * (width - 20)) + 10;
                     rect.left = x - 2;
                     rect.right = x + 2;
-                    hBrushA = CreateSolidBrush(RGB(180, 20, 20));
-                    FillRect(hdc, &rect, hBrushA);
+                    HBRUSH hBrushC = CreateSolidBrush(RGB(180, 20, 20));
+                    FillRect(hdc, &rect, hBrushC);
+                    DeleteObject(hBrushC); // 释放创建的画刷对象
                 }
                 break;
             }
@@ -1276,9 +1278,12 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
                 DrawTextW(hdc, L"目标不可用", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
                 break;
             }
+
+            // 释放创建的画刷对象
             DeleteObject(hBrushA);
             DeleteObject(hBrushB);
         }
+
         else
         {
             DrawTextW(hdc, L"无目标", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);

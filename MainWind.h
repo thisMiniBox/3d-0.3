@@ -83,7 +83,7 @@ public:
 #pragma comment (lib,"opengl32.lib")
 
 #include"stb_image.h"
-void calculateAttenuationFactors(float intensity, float radius, float& constant, float& linear, float& quadratic);
+void calculateAttenuationFactors(float radius, float intensity,float& constant, float& linear, float& quadratic);
 class OpenGLWnd : public MainWind
 {
 public:
@@ -95,25 +95,17 @@ public:
 		return MOPENGL;
 	}
 	void SetRect(RECT rect)override;
-	bool AddModelToBuffer(Model*);
-	void DeleteModelBuffer(Model*);
 
 	int CreateShader(const char* vertexPath, const char* fragmentPath, int id);
 	OpenGLShader* GetShader(int id) const;
 	static LRESULT CALLBACK WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void ResetOpenGLViewport();
+	void DeleteModelBuffer(Model* model);
 private:
-	void DrawModel(Model* model, const glm::mat4& view);
 	void SetMaterialData(OpenGLShader* shader, Material* material, const Camera& camera);
 	HGLRC m_hglrc;
-
-	//旧的渲染方式
-	std::map<Model*, OldModelBuffer*>m_models;
-	//std::unordered_map<Mesh*, Mesh_OpenGL*>m_Meshs;
-	//std::unordered_map<Picture*, Picture_OpenGL*>m_Textures;
 	std::map<int, OpenGLShader*>m_Shaders;
-
-	std::map<Picture*, glTexture>m_Textures;
+	std::map<Picture*, glTexture*>m_Textures;
 	std::map<Mesh*, glMesh*>m_Meshs;
 
 	//暂替的天空盒

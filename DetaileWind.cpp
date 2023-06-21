@@ -1,5 +1,5 @@
 #include "DetaileWind.h"
-DetaileWind::DetaileWind() :m_TreeTarget(nullptr)
+DetaileWind::DetaileWind()
 {
     m_ControlPos = 0;
     m_hInstance = GetModuleHandle(NULL);
@@ -95,10 +95,6 @@ void DetaileWind::SetView(Object* obj)
             y += CreateContrle(type, 0, y, m_rect.right, obj);
     }
     UpDate();
-}
-void DetaileWind::SetTree(HTREEITEM htree)
-{
-    m_TreeTarget = htree;
 }
 int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
 {

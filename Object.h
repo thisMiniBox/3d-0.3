@@ -27,6 +27,7 @@ class Camera;
 class PointLight;
 class DirectionalLight;
 
+class Project;
 class Room;
 class Button;
 class FixedUI;
@@ -365,7 +366,8 @@ public:
 	std::map<std::string, Picture*> m_Picture;
 };
 
-class Model : public Object {
+class Model : public Object 
+{
 public:
 	Model();
 	Model(std::string& name);
@@ -405,7 +407,10 @@ public:
 
 	// 添加或删除子模型
 	void addChildModel(Model* model);
-	void removeChildModel(Model* model);
+	//移除引用
+	void RemoveChildModel(Model* model);
+	//删除模型
+	void DeleteChildModel(Model* model);
 
 	//修改父模型
 	void SetModelParent(Model* model);
@@ -622,10 +627,28 @@ private:
 class Room :public Object
 {
 public:
-	virtual ObjectType GetType()const override;
+	Room(const std::string& name = "新键场景");
+	ObjectType GetType()const override;
 private:
 	Folder m_RoomContent;
 
+};
+class Project :public Object
+{
+private:
+	std::string m_Notes;
+	std::vector<Room*>m_Sence;
+	Folder m_ResourceFolder;
+public:
+	Project(std::string name);
+	~Project();
+	ObjectType GetType()const override;
+	Room* AddRoom(std::string roomName);
+	Room* GetRoom(UINT ID)const;
+	void DeleteRoom(Room*);
+	void DeleteRoom(UINT id);
+	bool SaveProject(const std::string& path)const;
+	bool LoadProject(const std::string& path);
 };
 class DirectionalLight : public Object {
 public:

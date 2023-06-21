@@ -16,7 +16,6 @@ class DetaileWind
 	Object* m_target;
 	RECT m_rect;
 	std::wstring WindClassName;
-	HTREEITEM m_TreeTarget;
 	int m_ControlPos;
 	int CreateContrle(int type, int x, int y, int w, Object* obj = nullptr);
 public:
@@ -24,7 +23,6 @@ public:
 	~DetaileWind();
 	const HWND GethWnd()const { return m_hWnd; }
 	const RECT GetRect()const { return m_rect; }
-	HTREEITEM GetTree()const { return m_TreeTarget; }
 	int GetControlPos()const { return m_ControlPos; }
 	void SetControlPos(int y) { m_ControlPos = y; }
 	void ControlPosMove(int change);
@@ -33,7 +31,6 @@ public:
 	void UpDate(int type = -1);
 	HWND CreateWind(HWND parent);
 	void SetView(Object*);
-	void SetTree(HTREEITEM);
 	Object* GetTarget() { return m_target; }
 	HWND CreateDialogToWind(LRESULT(CALLBACK* aWNDPROC)(HWND, UINT, WPARAM, LPARAM), LPCWSTR lpTemplate);
 	static LRESULT CALLBACK DetaileWndProc(HWND, UINT, WPARAM, LPARAM);

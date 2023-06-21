@@ -50,7 +50,6 @@ LRESULT CALLBACK cMainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
     time_end = time_start;
     if (current_project->MainWindUserCode)
     {
-
         ComUserCode com = current_project->MainWindUserCode(hWnd, message, wParam, lParam);
         if (com.Act != CommandAct::UNKNOWN)
         {

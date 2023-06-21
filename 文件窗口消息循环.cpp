@@ -1,27 +1,34 @@
  #include"消息循环声明.h"
 LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam, Controller* Central_control)
 {
+    static bool gDragging = false;
+    static HTREEITEM gStartItem = nullptr;
     switch (message)
     {
     case WM_NOTIFY:
     {
         LPNMHDR lphr = (LPNMHDR)lParam;
-        if (lphr->hwndFrom == Central_control->m_FileWind->GetTree())//判断是否是树形控件发来的消息
+        switch (lphr->code)
         {
-            switch (lphr->code)
-            {
-            case NM_CLICK://鼠标单击
-            {
-                Object* o = Central_control->m_FileWind->GetMousePositionItemData();
-                if (!o)break;
-                Central_control->SetFoucusObjcet(o);
-                Central_control->m_EditWind->SetTree(Central_control->m_FileWind->GetMousePositionItem());
-            }
-            break;
-            }
+        case NM_CLICK://鼠标单击
+        {
+            Object* o = Central_control->m_FileWind->GetMousePositionItemData();
+            if (!o)break;
+            Central_control->SetFoucusObjcet(o);
             break;
         }
+        case TVN_BEGINDRAG:
+        {
+            gStartItem = Central_control->m_FileWind->GetMousePositionItem();
+            SetCapture(hWnd);
+            gDragging = true;
+            break;
+        }
+        break;
+        }
+        break;
     }
+
     case WM_CONTEXTMENU:
     {
         // 获取鼠标当前位置
@@ -44,6 +51,8 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
                 break;
             }
             Object* ta = Central_control->m_FileWind->GetSelectedItemData();
+            if (!ta)
+                break;
             switch (ta->GetType())
             {
             case OT_CAMERA:
@@ -101,11 +110,28 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         DestroyMenu(hMenu);
         break;
     }
+    case WM_LBUTTONUP:
+    {
+        if (gDragging)
+        {
+            FileWind* filewind = Central_control->m_FileWind;
+            HTREEITEM gAimItem = Central_control->m_FileWind->GetMousePositionItem();
+            if (gAimItem == gStartItem)
+                break;
+            if (Central_control->MoveFile_(filewind->GetItemObject(gStartItem), filewind->GetItemObject(gAimItem)))
+                filewind->MoveItem(gStartItem, gAimItem);
+            gDragging = false;
+            ReleaseCapture();
+        }
+
+        break;
+    }
     case WM_SIZE:
     {
         int cxClient = LOWORD(lParam);  // 获得客户区宽度
         int cyClient = HIWORD(lParam);
-        Central_control->m_FileWind->MoveTree(0, 0, cxClient, cyClient);
+        if (Central_control->m_FileWind)
+            Central_control->m_FileWind->MoveTree(0, 0, cxClient, cyClient);
         break;
     }
     case WM_CREATE:

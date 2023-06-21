@@ -341,6 +341,7 @@ void Folder::DeleteIndex(Object* child)
 	{
 		if (i.second == child)
 		{
+			child->SetParent(nullptr);
 			m_Child.erase(i.first);
 			return;
 		}
@@ -954,13 +955,17 @@ void Model::addChildModel(Model* model)
 	}
 	if (model->m_Parent) 
 	{
-		model->m_Parent->removeChildModel(model);
+		model->m_Parent->RemoveChildModel(model);
 	}
 	model->m_Parent = this;
 	m_ChildModel.push_back(model);
 }
 void Model::SetModelParent(Model* model)
 {
+	if (m_Parent)
+	{
+		m_Parent->RemoveChildModel(this);
+	}
 	m_Parent = model;
 }
 Mesh* Model::GetMesh()const
@@ -1038,13 +1043,20 @@ void Model::DeleteReferenceP(Object* obj)
 	}
 }
 
-void Model::removeChildModel(Model* model) 
+void Model::RemoveChildModel(Model* model) 
 {
 	auto it = std::find(m_ChildModel.begin(), m_ChildModel.end(), model);
-	if (it != m_ChildModel.end()) {
+	if (it != m_ChildModel.end()) 
+	{
 		(*it)->m_Parent = nullptr;
 		m_ChildModel.erase(it);
 	}
+}
+void Model::DeleteChildModel(Model* model)
+{
+	RemoveChildModel(model);
+	delete model;
+	model = nullptr;
 }
 Picture::Picture() :m_Data(nullptr), m_Width(0), m_Height(0), m_NrComponents(0)
 {
@@ -1347,7 +1359,14 @@ ObjectType Room::GetType()const
 {
 	return ObjectType::OT_ROOM;
 }
-
+Project::Project(std::string name)
+{
+	m_Name = name;
+}
+ObjectType Project::GetType()const
+{
+	return ObjectType::OT_PREJECT;
+}
 INT_PTR Folder::ListControlView(const HWND hWndList,HIMAGELIST hImageList, std::map<int, int>& index)
 {
 	while (ListView_DeleteColumn(hWndList, 0));
@@ -2185,22 +2204,79 @@ void DirectionalLight::SetDirection(const Vector& direction)
 	m_Direction = direction.Normalize();
 }
 
-Vector DirectionalLight::GetDirection() const {
+Vector DirectionalLight::GetDirection() const 
+{
 	return m_Direction;
 }
 
-void DirectionalLight::SetLightColor(const Vector& lightColor) {
+void DirectionalLight::SetLightColor(const Vector& lightColor)
+{
 	m_Color = lightColor;
 }
 
-const Vector& DirectionalLight::GetLightColor() const {
+const Vector& DirectionalLight::GetLightColor() const 
+{
 	return m_Color;
 }
 
-void DirectionalLight::SetIntensity(float intensity) {
+void DirectionalLight::SetIntensity(float intensity) 
+{
 	m_Intensity = intensity;
 }
 
-float DirectionalLight::GetIntensity() const {
+float DirectionalLight::GetIntensity() const
+{
 	return m_Intensity;
+}
+Project::~Project()
+{
+	for (auto cr = m_Sence.begin(); cr < m_Sence.end(); cr++)
+	{
+		delete *cr;
+	}
+}
+Room* Project::AddRoom(std::string roomName)
+{
+	Room* room = new Room(roomName);
+	m_Sence.push_back(room);
+	return room;
+}
+Room* Project::GetRoom(UINT ID)const
+{
+	if (ID == 0 || ID > m_Sence.size())
+		return nullptr;
+	ID -= 1;
+	return m_Sence[ID];
+}
+void Project::DeleteRoom(Room* room)
+{
+	for (auto cr = m_Sence.begin(); cr < m_Sence.end(); cr++)
+	{
+		if (*cr == room)
+		{
+			delete room;
+			m_Sence.erase(cr);
+			break;
+		}
+	}
+}
+void Project::DeleteRoom(UINT ID)
+{
+	if (ID == 0 || ID > m_Sence.size())
+		return;
+	ID -= 1;
+	delete m_Sence[ID];
+	m_Sence.erase(m_Sence.begin() + ID);
+}
+bool Project::SaveProject(const std::string& path)const
+{
+	return false;
+}
+bool Project::LoadProject(const std::string& path)
+{
+	return false;
+}
+Room::Room(const std::string& name)
+{
+	m_Name = name;
 }

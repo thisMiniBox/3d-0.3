@@ -82,6 +82,7 @@ enum ObjectType
 	OT_DIRECTIONAL_LIGHT,	//平行光光源
 	OT_KEYFRAME,			//关键帧
 	OT_ROOM,				//房间
+	OT_PREJECT,				//项目
 	OT_BUTTON,				//交互键
 	OT_UI,					//固定ui 
 };
