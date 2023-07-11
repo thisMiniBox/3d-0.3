@@ -114,9 +114,6 @@ int DetaileWind::CreateContrle(int type, int x, int y, int w, Object* obj)
         case CT_FILEVIEW:
             m_ChildControl[type] = new FileContentView(m_hInstance, m_hWnd, x, y, w, dynamic_cast<Folder*>(obj));
             break;
-        case CT_ROTATE:
-            m_ChildControl[type] = new Rotation_旋转控件(m_hInstance, m_hWnd, x, y, w);
-            break;
         case CT_TRANSFORM:
             m_ChildControl[type] = new TransForm_变换控件(m_hInstance, m_hWnd, x, y, w);
             break;

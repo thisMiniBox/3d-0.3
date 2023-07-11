@@ -236,7 +236,7 @@ void FileWind::ShowModel(const Model* model, HTREEITEM parent)
 }
 void FileWind::MoveTree(int x, int y, int w, int h)
 {
-    m_FileTreeView->MoveWind(x, y, w, h);
+    m_FileTreeView->MoveWnd(x, y, w, h);
 }
 void FileWind::SetNodeImage(HTREEITEM hItem, int imageIndex, int imageIndexSelected)
 {

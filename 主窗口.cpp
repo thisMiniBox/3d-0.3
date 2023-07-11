@@ -28,7 +28,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Central_control->m_MenuWind.className = L"EDIT";
     InitCommonControls();
     MSG msg;
-    Central_control->CreateWind(hInstance);
+    Central_control->InitWindow(hInstance);
 
     HMENU hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDC_WIN));
     SetMenu(Central_control->m_hWnd, hMenu);
@@ -38,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SendMessage(Central_control->m_hWnd, WM_COMMAND, MAKEWPARAM(ID_OPENGL, 0), 0);
     //预加载树模型
 #ifdef _DEBUG
-    Central_control->Command(L"loadfile C:\\Users\\xujiacheng\\Desktop\\程序\\Model\\背景.obj");
+    Central_control->Command(L"loadfile Tree\\Tree.obj");
 #endif
 #ifndef _DEBUG
     Central_control->Command(L"loadfile Model\\背景.obj");
@@ -168,6 +168,8 @@ LRESULT CALLBACK TextOutWind::TextWndProc(HWND hWnd, UINT message, WPARAM wParam
 {
     return cTextWndProc(hWnd, message, wParam, lParam, Central_control);
 }
+template <typename T>
+T findClosestDivisible(T a, T b);
 //内容控件消息循环
 INT_PTR FileContentView::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -292,249 +294,6 @@ INT_PTR Name_对象名称控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LP
     }
     return FALSE;
 
-}
-INT_PTR Rotation_旋转控件::Dlgproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg)
-    {
-    case WM_INITDIALOG:
-    {
-        HWND hWndControl = GetDlgItem(hDlg, IDC_RO_FOV);
-        SendMessage(hWndControl, TBM_SETRANGEMIN, TRUE, -180);
-        SendMessage(hWndControl, TBM_SETRANGEMAX, TRUE, 180);
-    }
-    case UM_UPDATE:
-    {
-        Rotation v = Central_control->m_EditWind->GetTarget()->GetRotate();
-        HWND hWndControl = GetDlgItem(hDlg, IDC_RO_XEDIT);
-        std::wstring wstr = NumberToWString(v.axis.x);
-        SetWindowText(hWndControl, wstr.c_str());
-        hWndControl = GetDlgItem(hDlg, IDC_RO_YEDIT);
-        wstr = NumberToWString(v.axis.y);
-        SetWindowText(hWndControl, wstr.c_str());
-        hWndControl = GetDlgItem(hDlg, IDC_RO_ZEDIT);
-        wstr = NumberToWString(v.axis.z);
-        SetWindowText(hWndControl, wstr.c_str());
-        hWndControl = GetDlgItem(hDlg, IDC_RO_WEDIT);
-        wstr = NumberToWString(vec::RadToDeg(v.angle));
-        SetWindowText(hWndControl, wstr.c_str());
-        hWndControl = GetDlgItem(hDlg, IDC_RO_FOV);
-        SendMessage(hWndControl, TBM_SETPOS, TRUE, vec::RadToDeg(v.angle));
-        break;
-    }
-    case WM_SIZE:
-    {
-        RECT hDlgRect;
-        GetWindowRect(hDlg, &hDlgRect);
-        int TextW = 20;
-
-        struct ControlParams
-        {
-            int id;
-            int x;
-            int y;
-            int width;
-            int height;
-            bool isSpecial;
-        };
-
-        ControlParams ParamsList[] = {
-            {IDC_RO_X, 0, 0, TextW, 0, true},
-            {IDC_RO_Y, 0, 0, TextW, 0, true},
-            {IDC_RO_Z, 0, 0, TextW, 0, true},
-            {IDC_RO_XEDIT, TextW, 0, 0, 0, false},
-            {IDC_RO_YEDIT, TextW, 0, 0, 0, false},
-            {IDC_RO_ZEDIT, TextW, 0, 0, 0, false},
-            {IDC_RO_TITLE, 0, 0, 0, 0, false},
-            {IDC_RO_TIP, 0, 0, 0, 0, false},
-            {IDC_RO_W, 0, 0, 0, 0, false},
-            {IDC_RO_FOV, 0, 0, 0, 0, false},
-            {IDC_RO_WEDIT, 0, 0, 0, 0, false},
-            {IDC_RO_ERROR, 0, 0, 0, 0, false},
-            {IDC_RO_QUATERNION, 0, 0, LOWORD(lParam) / 2, 0, true},
-            {IDC_RO_EULERANGLE, LOWORD(lParam) / 2, 0, LOWORD(lParam) / 2, 0, true}
-        };
-
-        for (auto& params : ParamsList)
-        {
-            HWND hWndEdit = GetDlgItem(hDlg, params.id);
-            RECT EditRect;
-            GetWindowRect(hWndEdit, &EditRect);
-            params.height = EditRect.bottom - EditRect.top;
-            params.y = EditRect.top - hDlgRect.top;
-            if (params.isSpecial)
-            {
-                params.width = EditRect.right - EditRect.left;
-            }
-            else
-            {
-                params.width = LOWORD(lParam) - params.x;
-            }
-
-            MoveWindow(hWndEdit, params.x, params.y, params.width, params.height, true);
-            if (!params.isSpecial && params.x == 0)
-            {
-                params.width = LOWORD(lParam);
-            }
-            else if (!params.isSpecial)
-            {
-                params.width = LOWORD(lParam) / 2;
-            }
-            params.x = params.width;
-        }
-        break;
-    }
-    case WM_COMMAND:
-    {
-        if (HIWORD(wParam) == EN_CHANGE)
-        {
-            HWND hWndEdit = nullptr;
-            Rotation Qua = Central_control->m_EditWind->GetTarget()->GetRotate();
-            Vector Aixs = Qua.axis;
-            wchar_t szText[64];
-            switch (GetDlgCtrlID(GetFocus()))
-            {
-            case IDC_RO_XEDIT:
-            {
-                hWndEdit = GetDlgItem(hDlg, IDC_RO_XEDIT);
-                GetWindowText(hWndEdit, szText, _countof(szText));
-                if (IsNumeric(szText))
-                {
-                    Aixs.x = std::wcstod(szText, nullptr);
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
-                }
-                break;
-            }
-            case IDC_RO_YEDIT:
-            {
-                hWndEdit = GetDlgItem(hDlg, IDC_RO_YEDIT);
-                GetWindowText(hWndEdit, szText, _countof(szText));
-                if (IsNumeric(szText))
-                {
-                    Aixs.y = std::wcstod(szText, nullptr);
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
-                }
-                break;
-            }
-            case IDC_RO_ZEDIT:
-            {
-                hWndEdit = GetDlgItem(hDlg, IDC_RO_ZEDIT);
-                GetWindowText(hWndEdit, szText, _countof(szText));
-                if (IsNumeric(szText))
-                {
-                    Aixs.z = std::wcstod(szText, nullptr);
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
-                }
-                break;
-            }
-            case IDC_RO_WEDIT:
-            {
-                hWndEdit = GetDlgItem(hDlg, IDC_RO_WEDIT);
-                GetWindowText(hWndEdit, szText, _countof(szText));
-                if (IsNumeric(szText))
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_FOV);
-                    int angle = (std::wcstod(szText, nullptr));
-                    SendMessage(hWndEdit, TBM_SETPOS, TRUE, (angle));
-                    Qua.angle = vec::DegToRad(angle);
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"");
-                }
-                else
-                {
-                    hWndEdit = GetDlgItem(hDlg, IDC_RO_ERROR);
-                    SetWindowText(hWndEdit, L"请输入正确的数字");
-                }
-                break;
-            }
-            }
-            if (Aixs != Vector(0, 0, 0))
-                Qua.axis = Aixs;
-            Central_control->m_EditWind->GetTarget()->SetRotate(Qua);
-            InvalidateRect(Central_control->GetMainWind()->GethWnd(), NULL, false);
-        }
-
-        break;
-    }
-    case WM_HSCROLL:
-    {
-        int nScrollBar = LOWORD(wParam);
-        HWND hWndCtl = (HWND)lParam;
-        int nPos = (short)HIWORD(wParam);
-        switch (nScrollBar) 
-        {
-        case SB_THUMBTRACK: // 用户正在拖动滑块
-        case SB_THUMBPOSITION: // 用户释放滑块
-        {
-            HWND hWndControl = GetDlgItem(hDlg, IDC_RO_WEDIT);
-            std::wstring wstr = std::to_wstring(nPos);
-            SetWindowText(hWndControl, wstr.c_str());
-            Rotation OldQuat = Central_control->m_EditWind->GetTarget()->GetRotate();
-            OldQuat.angle = DegToRad(nPos);
-            Central_control->m_EditWind->GetTarget()->SetRotate(OldQuat);
-            break;
-        }
-        default:
-            break;
-        }
-        break;
-    }
-    case WM_CTLCOLORSTATIC:
-    {
-        HDC hdcStatic = (HDC)wParam;
-        int ctrlID = GetDlgCtrlID((HWND)lParam);
-
-        if (ctrlID == IDC_RO_ERROR) // 第一个静态文本框
-        {
-            if (g_hBrush == NULL) // 如果画刷对象不存在，则创建一个画刷
-            {
-                g_hBrush = CreateSolidBrush(RGB(255, 255, 0)); // 黄色画刷
-            }
-
-            SetTextColor(hdcStatic, RGB(255, 0, 0)); // 红色前景色
-            SetBkMode(hdcStatic, TRANSPARENT); // 透明背景色
-            SetBkColor(hdcStatic, RGB(255, 255, 0)); // 背景色也设置为黄色
-            return (LRESULT)g_hBrush; // 返回画刷句柄
-        }
-    }
-    break;
-    case WM_DESTROY:
-    {
-        // 销毁画刷对象
-        if (g_hBrush != NULL)
-        {
-            DeleteObject(g_hBrush);
-            g_hBrush = NULL;
-        }
-    }
-    break;
-
-    case WM_CLOSE:
-        // 关闭对话框
-        EndDialog(hDlg, 0);
-        break;
-    default:
-        return DefWindowProc(hDlg, uMsg, wParam, lParam);
-    }
-    return FALSE;
 }
 
 void MoveDlgItem(HWND hDlg, int id, int x, int y, int cx, int cy) 
@@ -849,11 +608,6 @@ LRESULT CALLBACK BottomWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, L
         }
         break;
     }
-    case WM_CREATE:
-    {
-
-        break;
-    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
@@ -917,9 +671,9 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        ULONG64 leftTime;
-        ULONG64 rightTime;
-        Central_control->GetTime(&leftTime, &rightTime);
+        ULONG64 timeStart;
+        ULONG64 timeRange;
+        Central_control->GetTime(&timeStart, &timeRange);
         // 获取窗口大小
         RECT rect;
         GetClientRect(hWnd, &rect);
@@ -927,12 +681,12 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
         int height = rect.bottom - rect.top;
 
         // 计算比例尺
-        double scale = (double)(width-20) / (rightTime - leftTime);
-
-        float tickInterval = 1.0 / scale * 2; // 刻度间隔
+        double scale = (double)(width-20) / (timeRange);
+        // 计算实际步长
+        ULONG64 stepSize = Central_control->GetKeyframeEditStepSize();
 
         int startY = WL_KeyframeTime_TimeLine;
-        int endX = width-20;
+        int endX = width - 20;
 
         // 绘制背景色
         HBRUSH hBrushBg = CreateSolidBrush(RGB(242, 247, 251));
@@ -944,11 +698,13 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
         HGDIOBJ old = SelectObject(hdc, hPenTimeLine);
         MoveToEx(hdc, 10, WL_KeyframeTime_TimeLine, NULL);
         LineTo(hdc, width - 10, WL_KeyframeTime_TimeLine);
-
-        for (int i = leftTime; i <= rightTime; i+=tickInterval)
+        
+        ULONG64 start = (stepSize - timeStart % stepSize);
+        for (ULONG64 t = (start < stepSize) ? start : 0; t < timeRange; t += stepSize)
         {
-            int x = (i - leftTime) * scale + 10;
-            if (i % 1000 == 0)
+            ULONG64 i = (t + timeStart);
+            int x = 10 + t * scale;
+            if (i % (stepSize * 10) == 0)
             {
                 // 绘制长刻度线和标签
                 MoveToEx(hdc, x, startY, NULL);
@@ -968,7 +724,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
                 rect.bottom = WL_KeyframeTime_TimeLine + WL_KeyframeTime_BigScale + WL_BottenHeight;
                 DrawTextW(hdc, oss.str().c_str(), -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
             }
-            else if (i % 100 == 0)
+            else if (i % (stepSize * 5) == 0)
             {
                 // 绘制数字
                 float num = (float)i / 1000;
@@ -987,7 +743,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
                 MoveToEx(hdc, x, startY, NULL);
                 LineTo(hdc, x, startY + 6);
             }
-            else if (i % 10 == 0)
+            else
             {
                 // 绘制短刻度线
                 MoveToEx(hdc, x, startY, NULL);
@@ -1002,8 +758,13 @@ LRESULT CALLBACK KeyframeEdit::KeyframeTimeProc(HWND hWnd, UINT message, WPARAM 
     case WM_MOUSEWHEEL:
     {
         float zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-        Central_control->MoveKeyframeEditTime(zDelta / 6);
+        short shiftKeyState = GetKeyState(VK_SHIFT);
+        if (shiftKeyState & 0x8000)
+            Central_control->ScaleKeyframeEditTime(zDelta / 6);
+        else
+            Central_control->MoveKeyframeEditTime(zDelta / 60);
         InvalidateRect(hWnd, nullptr, true);
+        Central_control->UpdateKeyframeView(ChildWindSign::KF_CanvasWind);
         break;
     }
     default:
@@ -1249,9 +1010,9 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
                 {
                     if (k.first < leftTime)
                         continue;
-                    if (k.first > rightTime)
+                    if (k.first > rightTime+leftTime)
                         break;
-                    int x = (int)(((float)k.first - leftTime) / (rightTime - leftTime) * (width - 20)) + 10;
+                    int x = (int)(((float)k.first - leftTime) / (rightTime) * (width - 20)) + 10;
                     rect.left = x - 2;
                     rect.right = x + 2;
                     HBRUSH hBrushC = CreateSolidBrush(RGB(180, 20, 20));
@@ -1294,7 +1055,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         HPEN hPenTimeLine = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
         HGDIOBJ old = SelectObject(hdc, hPenTimeLine);
         GetClientRect(hWnd, &rect);
-        int x = (int)(((float)Central_control->GetTime() - leftTime) / (rightTime - leftTime) * (rect.right - 20)) + 10;
+        int x = (int)(((float)Central_control->GetTime() - leftTime) / (rightTime) * (rect.right - 20)) + 10;
         MoveToEx(hdc, x, 0, NULL);
         LineTo(hdc, x, rect.bottom);
         SelectObject(hdc, old);
@@ -1309,23 +1070,26 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
         if (xPos < 0)
             xPos = 0;
         ULONG64 leftTime;
-        ULONG64 rightTime;
-        Central_control->GetTime(&leftTime, &rightTime);
-        int interval = rightTime - leftTime;
+        ULONG64 rangeTime;
+        Central_control->GetTime(&leftTime, &rangeTime);
+        int interval = rangeTime;
         RECT rect;
         GetClientRect(hWnd, &rect);
 
-        double scale = (double)(rect.right - 20) / (rightTime - leftTime);
-        int tickInterval = 1.0 / scale * 2;
+        double scale = (double)(rect.right - 20) / (rangeTime);
+        int tickInterval = Central_control->GetKeyframeEditStepSize();
 
         // 初始化绑定线位置为第一个刻度位置
-        int bindingLinePos = (leftTime - leftTime) * scale + 10;
+        int bindingLinePos = 10;
         ULONG64 Time = 0;
-        // 遍历所有的刻度位置，找到最接近鼠标位置的刻度位置
-        for (int i = leftTime; i <= rightTime; i += tickInterval)
+
+        ULONG64 start = (tickInterval - leftTime % tickInterval);
+
+        for (ULONG64 t = (start < tickInterval) ? start : 0; t <= rangeTime; t += tickInterval)
         {
-            int x = (i - leftTime) * scale;
-            if (i % 10 == 0)
+            ULONG64 i = (t + leftTime);
+            int x = t * scale;
+            if (i % tickInterval == 0)
             {
                 // 如果该刻度位置比当前绑定线位置更接近鼠标单击位置，则更新绑定线位置
                 if (abs(x - xPos) < abs(bindingLinePos - xPos))
@@ -1371,7 +1135,7 @@ LRESULT CALLBACK KeyframeEdit::KeyframeCanvasProc(HWND hWnd, UINT message, WPARA
     }
     return 0;
 }
-ULONG64 GetTime()
+ULONG64 GetRunTime_g()
 {
     return Central_control->GetTime();
 }
@@ -1386,4 +1150,15 @@ void OutMessage_g(const std::string& str, MSGtype type)
 std::vector<PointLight*>& GetAllPointLight()
 {
     return Central_control->GetAllPointLight();
+}
+template <typename T>
+T findClosestDivisible(T a, T b) {
+    T remainder = a % b;
+    T c = a + (b - remainder);
+
+    if (c <= a) {
+        c += b;
+    }
+
+    return c;
 }

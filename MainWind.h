@@ -11,7 +11,7 @@
 #pragma comment (lib, "d3dcompiler.lib")
 
 void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out);
-ULONG64 GetTime();
+ULONG64 GetRunTime_g();
 enum MainWindType
 {
 	MGDIWND,

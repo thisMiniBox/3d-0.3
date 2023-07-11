@@ -13,6 +13,9 @@
 #include"字符转换.h"
 #include"WndData.h"
 #include<glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtx/euler_angles.hpp>
+
 //#include<xlnt/xlnt.hpp>
 #include<assimp/scene.h>
 //声明类（方便定位）
@@ -471,7 +474,7 @@ public:
 	bool GetKeyframeLoop()const override;
 	const std::vector<std::pair<ULONG64, TransForm>>* GetKeyframeData()const;
 	glm::mat4 GetTransform(ULONG64 time);
-
+	void SetTransform(const glm::mat4&);
 	//bool processNode(aiNode* node, const aiScene* scene);
 private:
 	TransForm GetTransForm()const;

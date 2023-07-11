@@ -34,17 +34,59 @@ HWND BottomWindow::CreateWind(HWND parent)
 		m_hInst, NULL);
 	return m_hWnd;
 }
-void BottomWindow::AddWind(HWND hWnd, const std::wstring& text)
+int BottomWindow::AddWind(HWND hWnd, const std::wstring& text)
 {
-	m_Foucs = CreateWindow(
+	HWND Foucs = CreateWindow(
 		TEXT("button"), text.c_str(),
 		WS_VISIBLE | WS_CHILD | WS_BORDER,
 		0, 0, 100, 15,
 		m_hWnd, (HMENU)m_ChildWindNumber,
 		m_hInst, NULL);
-	if (m_Foucs)
-		m_Index[m_Foucs] = hWnd;
+	if (Foucs)
+		m_Index[Foucs] = hWnd;
 	m_ChildWindNumber++;
+	ShowWindow(hWnd, SW_HIDE);
+	return m_ChildWindNumber - 1;
+}
+HWND BottomWindow::Select(const std::wstring& windowTitle)
+{
+	HWND hWnd = FindValueByWindowTitle(windowTitle);
+	SwitchViewWindow(hWnd);
+	return hWnd;
+}
+HWND  BottomWindow::FindValueByWindowTitle(const std::wstring& windowTitle)
+{
+	for (const auto& pair : m_Index)
+	{
+		HWND key = pair.first;
+		HWND value = pair.second;
+
+		// 获取窗口标题
+		const int titleLength = GetWindowTextLength(key) + 1;
+		std::wstring title(titleLength, L'\0');
+		GetWindowText(key, &title[0], titleLength);
+		// 去除 title 末尾的多余 null 字符
+		title.resize(titleLength - 1);
+
+		// 比较窗口标题，如果匹配，则返回对应的值
+		if (title == windowTitle)
+		{
+			return value;
+		}
+	}
+
+	// 找不到匹配的窗口标题，返回特定的错误值或抛出异常
+	return nullptr; // 或其他错误标识，如INVALID_HANDLE_VALUE等
+}
+
+void BottomWindow::SwitchViewWindow(HWND hWnd)
+{
+	if (m_Foucs == hWnd)
+		printf_s("窗口相同");
+	if(m_Foucs)
+		ShowWindow(m_Foucs, SW_HIDE);
+	ShowWindow(hWnd, SW_SHOW);
+	m_Foucs = hWnd;
 }
 void BottomWindow::DeleteWind(HWND hWnd)
 {
@@ -90,32 +132,9 @@ void KeyframeEdit::UpdateView(ChildWindSign cws)const
 HWND BottomWindow::Select(HWND hWnd)
 {
 	if (!hWnd)return nullptr;
-	m_Foucs = m_Index[hWnd];
-	for (auto& c : m_Index)
-	{
-		// 获取当前位置和大小
-		RECT rc;
-		GetWindowRect(c.second, &rc);
-
-		// 计算新位置
-		rc.left += 50;
-		rc.top += 50;
-		rc.right = rc.left + 200;
-		rc.bottom = rc.top + 100;
-
-		// 调用 SetWindowPos 函数
-		SetWindowPos(c.second, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-
-		// 隐藏子窗口
-		ShowWindow(c.second, SW_HIDE);
-	}
-	ShowWindow(m_Foucs, SW_SHOW);
-	
-	//MoveWindow(m_Index[hWnd], 0, 0, m_w, m_h - buttonH, false);
-	//Size(m_w, m_h);
-	//InvalidateRect(m_hWnd, NULL, true);
-	return m_Foucs;
+	HWND Foucs = m_Index[hWnd];
+	SwitchViewWindow(Foucs);
+	return Foucs;
 }
 TextOutWind::TextOutWind(HINSTANCE hInst)
 {
@@ -494,8 +513,8 @@ HWND KeyframeEdit::GethWnd()const
 }
 KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 {
-	m_LeftTime = 0;
-	m_RightTime = 3000;
+	m_StartTime = 0;
+	m_TimeRange = 3000;
 	m_Y = 0;
 	m_hInst = hInst;
 	m_ClassName = L"KeyframeWind";
@@ -589,7 +608,7 @@ void KeyframeEdit::MoveSize(int w, int h)
 		MoveWindow(m_hTime, WL_KeyframeBotten_Width, 0, (int)(width - WL_KeyframeBotten_Width), WL_KeyframeTime_Height, true);
 	if (m_hCanvas)
 		MoveWindow(m_hCanvas, WL_KeyframeBotten_Width, WL_KeyframeTime_Height, (int)(width - WL_KeyframeBotten_Width), (int)(height - WL_KeyframeTime_Height), true);
-
+	UpdateStepSize();
 }
 int KeyframeEdit::GetY()const
 {
@@ -603,25 +622,65 @@ void KeyframeEdit::MoveY(int y)
 }
 void KeyframeEdit::MoveTime(int x)
 {
-	LONG64 left = m_LeftTime;
-	if (left + x <= 0)
+	LONG64 left = m_StartTime;
+	if (left + x * m_StepSize <= 0)
 	{
-		left = m_RightTime - m_LeftTime;
-		m_LeftTime = 0;
-		m_RightTime = m_LeftTime + left;
+		left = m_TimeRange;
+		m_StartTime = 0;
+		m_TimeRange = left;
 		return;
 	}
-	m_LeftTime += x;
-	m_RightTime += x;
+	m_StartTime += (x * m_StepSize);
 }
-void KeyframeEdit::GetTime(ULONG64* left, ULONG64* right)const
+void KeyframeEdit::GetTime(ULONG64* start, ULONG64* range)const
 {
-	*left = m_LeftTime;
-	*right = m_RightTime;
+	*start = m_StartTime;
+	*range = m_TimeRange;
 }
 void KeyframeEdit::ScaleTime(int x)
 {
-	if (m_RightTime - m_LeftTime + x < 200)
-		return;
-	m_RightTime += x;
+	int minTimeView = 20;
+	int step = m_StepSize / 10;
+	if (-x * step >= m_TimeRange)
+	{
+		m_TimeRange = minTimeView;
+	}
+	else if (m_TimeRange + x > 500000000000)
+	{
+		m_TimeRange = 500000000000;
+	}
+	else
+	{
+		m_TimeRange += x < 0 ? (x * step) : (x * m_StepSize);
+	}
+	if (m_TimeRange < minTimeView)
+		m_TimeRange = minTimeView;
+	UpdateStepSize();
+}
+
+ULONG64 KeyframeEdit::GetStepSize()const
+{
+	return m_StepSize;
+}
+void KeyframeEdit::UpdateStepSize()
+{
+	// 获取窗口大小
+	RECT rect;
+	GetClientRect(m_hTime, &rect);
+	int width = rect.right - rect.left;
+	int height = rect.bottom - rect.top;
+
+	// 计算比例尺
+	double scale = (double)(width - 20) / (m_TimeRange);
+
+	// 计算最小步长
+	int minStepSize = 1;
+	minStepSize = pow(10, floor(log10(m_TimeRange)) - 1);
+	// 计算步长倍数
+	int multiplier = 1;
+	while (multiplier * minStepSize * scale < 10) {
+		multiplier++;
+	}
+	// 计算实际步长
+	m_StepSize = minStepSize * multiplier;
 }

@@ -20,6 +20,8 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         case TVN_BEGINDRAG:
         {
             gStartItem = Central_control->m_FileWind->GetMousePositionItem();
+            if (!gStartItem)
+                break;
             SetCapture(hWnd);
             gDragging = true;
             break;
@@ -116,6 +118,8 @@ LRESULT CALLBACK cFileWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPa
         {
             FileWind* filewind = Central_control->m_FileWind;
             HTREEITEM gAimItem = Central_control->m_FileWind->GetMousePositionItem();
+            //if (!gAimItem)
+            //    break;
             if (gAimItem == gStartItem)
                 break;
             if (Central_control->MoveFile_(filewind->GetItemObject(gStartItem), filewind->GetItemObject(gAimItem)))

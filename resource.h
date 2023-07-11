@@ -12,7 +12,6 @@
 #define IDD_CNAME                       131
 #define IDR_FILERIGHT                   134
 #define IDD_SETSIZE                     135
-#define IDD_ROTATE                      138
 #define IDB_FOLDER_NON_EMPTY            141
 #define IDB_FOLDER                      142
 #define IDB_FOLDER_OPENED_EMPTY         143
@@ -35,7 +34,6 @@
 #define IDB_PICTURE64                   160
 #define IDB_MESH64                      161
 #define IDD_KEYFR                       162
-#define IDD_KEYFRAME                    162
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
 #define IDC_IO_IN                       1008
@@ -52,20 +50,6 @@
 #define IDC_MAXIMIZE                    1064
 #define IDC_N_TITLE                     1084
 #define IDC_N_TYPE                      1085
-#define IDC_RO_FOV                      1086
-#define IDC_RO_TITLE                    1090
-#define IDC_RO_QUATERNION               1098
-#define IDC_RO_EULERANGLE               1099
-#define IDC_RO_X                        1100
-#define IDC_RO_XEDIT                    1101
-#define IDC_RO_Y                        1102
-#define IDC_RO_W                        1103
-#define IDC_RO_ZEDIT                    1104
-#define IDC_RO_YEDIT                    1105
-#define IDC_RO_TIP                      1106
-#define IDC_RO_Z                        1107
-#define IDC_RO_ERROR                    1108
-#define IDC_RO_WEDIT                    1109
 #define IDC_TRAN_SCA_TEXT               1110
 #define IDC_TRAN_POS_TEXT               1111
 #define IDC_TRAN_ROT_TEXT1              1112
@@ -81,9 +65,7 @@
 #define IDC_TRAN_ROT_X                  1120
 #define IDC_TRAN_ROT_Z                  1122
 #define IDC_FILE_VIEW                   1123
-#define IDC_LIST1                       1124
 #define IDC_TRAN_POS_Y                  1125
-#define IDC_SLIDER1                     1125
 #define IDC_TRAN_SCA_Z                  1126
 #define IDM_OPEN                        32775
 #define ID_GDI                          32780

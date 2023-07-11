@@ -684,10 +684,7 @@ Model::Model()
 	: m_Parent(nullptr), m_ModelMesh(nullptr), m_Material(nullptr),
 	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
 {
-	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	updateTransform();
 	m_Name = "新建模型";
 	m_Mode = ModelMode::MM_EDIT;
 }
@@ -696,10 +693,7 @@ Model::Model(std::string& name)
 	m_Position(Vector3(0.0f, 0.0f, 0.0f)), m_Scale(Vector3(1.0f, 1.0f, 1.0f)), m_Rotate(Rotation(0, Vector(0, 1, 0)))
 {
 	m_Name = name;
-	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	updateTransform();
 }
 Model::~Model() 
 {
@@ -719,10 +713,7 @@ void Model::move(const Vector3& offset, bool add) {
 	}
 	else {
 		m_Position = offset;
-		m_Transform = glm::mat4(1.0f);
-		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+		updateTransform();
 	}
 }
 
@@ -733,10 +724,7 @@ void Model::scale(const Vector3& scaling, bool multiply) {
 	}
 	else {
 		m_Scale = scaling;
-		m_Transform = glm::mat4(1.0f);
-		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+		updateTransform();
 	}
 }
 
@@ -747,10 +735,7 @@ void Model::rotate(const Rotation& quaternion, bool multiply) {
 	}
 	else {
 		m_Rotate = quaternion;
-		m_Transform = glm::mat4(1.0f);
-		m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-		m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-		m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+		updateTransform();
 	}
 }
 
@@ -781,10 +766,7 @@ Vector3 Model::getPosition() const {
 
 void Model::setPosition(const Vector3& position) {
 	m_Position = position;
-	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	updateTransform();
 }
 
 Vector3 Model::getScale() const {
@@ -793,10 +775,7 @@ Vector3 Model::getScale() const {
 
 void Model::setScale(const Vector3& scaling) {
 	m_Scale = scaling;
-	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	updateTransform();
 }
 
 Rotation Model::getRotation() const {
@@ -805,10 +784,7 @@ Rotation Model::getRotation() const {
 
 void Model::setRotation(const Rotation& quaternion) {
 	m_Rotate = quaternion;
-	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
-	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	updateTransform();
 }
 
 Vector3 Model::getWorldPosition() const {
@@ -1209,7 +1185,8 @@ bool MatFileReader::read(const std::string& filename)
 	return true;
 }
 
-Material* MatFileReader::getMaterial(const std::string& name) const {
+Material* MatFileReader::getMaterial(const std::string& name) const 
+{
 	auto it = m_Materials.find(name);
 	if (it != m_Materials.end()) {
 		return it->second;
@@ -1855,9 +1832,15 @@ ObjectType Keyframe<OBJ>::GetType()const
 void Model::updateTransform()
 {
 	m_Transform = glm::mat4(1.0f);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
-	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, (glm::vec3)m_Rotate.axis);
 	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
+	glm::vec3 axis = m_Rotate.axis;
+	if (glm::length(axis) < 0.1)
+	{
+		axis = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_Rotate.axis = Vector(0, 1, 0);
+	}
+	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, axis);
 }
 bool Model::SetKeyframe(ULONG64 time)
 {
@@ -1868,11 +1851,33 @@ bool Model::SetKeyframe(ULONG64 time)
 	m_keyframe->SetKeyframe(time,GetTransForm());
 	return true;
 }
+void Model::SetTransform(const glm::mat4& transform)
+{
+	// 提取位移信息
+	glm::vec3 translation = glm::vec3(transform[3]);
 
+	// 提取缩放信息
+	glm::vec3 scale;
+	scale.x = glm::length(glm::vec3(transform[0]));
+	scale.y = glm::length(glm::vec3(transform[1]));
+	scale.z = glm::length(glm::vec3(transform[2]));
+
+	// 提取旋转信息
+	glm::mat3 rotationMatrix(transform);
+	rotationMatrix[0] /= scale.x;
+	rotationMatrix[1] /= scale.y;
+	rotationMatrix[2] /= scale.z;
+	glm::quat rotation(rotationMatrix);
+	Quaternion qua(rotation.w, rotation.x, rotation.y, rotation.z);
+	// 将提取的信息存储到模型对象中
+	this->m_Position = translation;
+	this->m_Scale = scale;
+	this->m_Rotate = vec::Rotation(qua.getAngle(),qua.GetAxis());
+	updateTransform();
+}
 void Model::SetKeyframe(Keyframe<TransFrame>* NewKeyframe)
 {
 	m_keyframe = NewKeyframe;
-	
 }
 Keyframe<TransForm>* Model::CreateKryframe()
 {
@@ -1908,7 +1913,6 @@ TransForm Model::GetTransForm()const
 }
 glm::mat4 Model::GetTransform(ULONG64 time)
 {
-
 	if (m_Parent)
 		if (m_keyframe)
 		{

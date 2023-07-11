@@ -18,7 +18,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <boost/filesystem.hpp>
 #include<map>
 
 typedef ComUserCode(*UserCode)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -79,7 +78,7 @@ public:
 	UserCode MainWindUserCode;
 	Controller();
 	~Controller();
-	HWND CreateWind(HINSTANCE hInst);
+	HWND InitWindow(HINSTANCE hInst);
 	HWND GetBottomWindhWnd()const;
 	MainWind* GetMainWind();
 	InputOutput* GetIOWind();
@@ -147,22 +146,38 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 	//关键帧窗口相关函数
-
+	//切换运行模式
 	void SwitchRunMode();
+	//运行
 	void Run();
+	//暂停
 	void Suspend();
+	//终止
 	void Stop();
+	//设置运行时间
 	void SetTime(ULONG64 time);
-	void Reset();
+	//设置关键帧是否循环播放
 	void SetKeyframeLoop(bool);
+	//切换关键帧是否循环播放
 	void SwitchKeyframeLoop();
+	//获取关键帧是否循环播放
 	bool GetKeyframeLoop()const;
+	//获取程序时间
 	ULONG64 GetTime();
+	//获取程序开始时间
 	ULONG64 GetStartTime()const;
-	void GetTime(ULONG64* left, ULONG64* right)const;
+	//获取关键帧的时间显示范围
+	void GetTime(ULONG64* start, ULONG64* range)const;
+	//获取关键帧时间步长
+	ULONG64 GetKeyframeEditStepSize()const;
+	//获取关键帧文件视图的y轴偏移
 	int GetKeyframeEditY()const;
+	//移动关键帧文件视图的y轴偏移
 	void MoveKeyframeEditY(int y);
+	//整体移动关键帧视图的左右偏移
 	void MoveKeyframeEditTime(int x);
+	//缩放关键帧视图的刻度尺
+	void ScaleKeyframeEditTime(int scale);
 };
 
 void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path);

@@ -45,7 +45,7 @@ BottomWindow* Controller::GetBottom()
 {
 	return m_BottomWind;
 }
-HWND Controller::CreateWind(HINSTANCE hInst)
+HWND Controller::InitWindow(HINSTANCE hInst)
 {
 	m_TextWind = new TextOutWind(hInst);
 
@@ -97,6 +97,7 @@ HWND Controller::CreateWind(HINSTANCE hInst)
 	//添加关键帧编辑窗口到底部折叠窗口显示
 	m_BottomWind->AddWind(m_KeyframeWind->GethWnd(), L"关键帧");
 
+	m_BottomWind->Select(L"消息窗口");
 	Folder* a = new Folder("新建项目");
 	view = new Camera(
 		"新建摄像机", Vector(0, 0, 3), Vector(0, 0, 0), Vector(0, 1, 0), GetRect().right / GetRect().bottom);
@@ -728,6 +729,8 @@ void Controller::UpdateKeyframeView(ChildWindSign cws)const
 }
 bool Controller::MoveFile_(Object* aim, Object* parent)
 {
+	if (!parent)
+		parent = &m_RootFolder;
 	switch (parent->GetType())
 	{
 	case OT_FOLDER:
@@ -914,9 +917,13 @@ KeyframeEdit* Controller::GetKeyframeWind()const
 {
 	return m_KeyframeWind;
 }
-void Controller::GetTime(ULONG64* left, ULONG64* right)const
+void Controller::GetTime(ULONG64* start, ULONG64* range)const
 {
-	m_KeyframeWind->GetTime(left, right);
+	m_KeyframeWind->GetTime(start, range);
+}
+ULONG64 Controller::GetKeyframeEditStepSize()const
+{
+	return m_KeyframeWind->GetStepSize();
 }
 ULONG64 Controller::GetStartTime()const
 {
@@ -942,12 +949,6 @@ void Controller::SwitchRunMode()
 		Suspend();
 	else
 		Run();
-}
-void Controller::Reset()
-{
-	m_Mode = RUNMODE::RM_EDIT;
-	m_StartTime = 0;
-	m_RunTime = 0;
 }
 void Controller::SetKeyframeLoop(bool b)
 {
@@ -979,7 +980,7 @@ void Controller::MoveKeyframeEditTime(int x)
 }
 ULONG64 Controller::GetTime()
 {
-	if (m_Mode == RUNMODE::RM_EDIT)
+	if (m_Mode == RUNMODE::RM_EDIT || m_Mode == RUNMODE::RM_VIEW)
 		return m_RunTime;
 	m_RunTime = GetTickCount64() - m_StartTime;
 	//ULONG64 leftTime, rightTime;
@@ -999,17 +1000,17 @@ ULONG64 Controller::GetTime()
 void Controller::SetTime(ULONG64 time)
 {
 	m_RunTime = time;
-	m_StartTime = GetTickCount64() - time;
-	ULONG64 leftTime, rightTime;
-	GetTime(&leftTime, &rightTime);
-	if (time < leftTime)
+	m_StartTime = 0;
+	ULONG64 startTime, runTime;
+	GetTime(&startTime, &runTime);
+	if (time < startTime)
 	{
-		int x = time - leftTime - 500;
+		int x = time - startTime - 500;
 		MoveKeyframeEditTime(x);
 	}
-	else if (time > rightTime)
+	else if (time > runTime + startTime)
 	{
-		int x = time - rightTime + 500;
+		int x = time - runTime + startTime + 500;
 		MoveKeyframeEditTime(x);
 	}
 }
@@ -1102,12 +1103,23 @@ bool Controller::LoadModel(const std::string& path)
 		return false;
 	}
 	aimporter.FreeScene();
+	this->UpdateModels();
 	return true;
 }
 bool Controller::processModelNode(aiNode* node, const aiScene* scene, Model* parentModel, Folder* folder,const std::string& directory)
 {
 	Model* currentModel = parentModel;
 	std::string Output = node->mName.C_Str();
+
+	aiMatrix4x4 transformation = node->mTransformation;
+
+	// 转置变换矩阵
+	transformation.Transpose();
+
+	// 将Assimp的变换矩阵复制到OpenGL的矩阵
+	glm::mat4 modelMatrix;
+	memcpy(&modelMatrix[0][0], &transformation.a1, sizeof(float) * 16);
+
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		currentModel = new Model(Output);
@@ -1140,6 +1152,7 @@ bool Controller::processModelNode(aiNode* node, const aiScene* scene, Model* par
 			material->processMaterial(amesh, scene,folder, directory);
 			currentModel->SetMaterial(material);
 		}
+		currentModel->SetTransform(modelMatrix);
 	}
 	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
@@ -1157,3 +1170,7 @@ bool Controller::isSupportedModelFile(const std::string& extension)
 	return importer.IsExtensionSupported(extension.c_str());
 }
 
+void Controller::ScaleKeyframeEditTime(int scale)
+{
+	m_KeyframeWind->ScaleTime(scale);
+}

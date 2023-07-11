@@ -642,7 +642,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glm::mat4 modelTransform = glm::mat4(1.0f);
     for (const auto& model : models)
     {
-        modelTransform = model->GetGLTransform();
+        modelTransform = model->GetTransform(GetRunTime_g());
         CurrentShader->setMat4("model",modelTransform);
         Mesh* mesh = model->GetMesh();
         if (!mesh)
@@ -695,7 +695,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     {
         if (!model->GetMesh() || !model->IsSelected())
             continue;
-        modelTransform = model->GetGLTransform();
+        modelTransform = model->GetTransform(GetRunTime_g());
         CurrentShader->setMat4("model", modelTransform);
         Mesh* mesh = model->GetMesh();
         if (!mesh)

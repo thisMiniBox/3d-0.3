@@ -15,10 +15,12 @@ public:
 	~BottomWindow();
 	HWND CreateWind(HWND parent);
 	HWND GethWnd()const;
-	void AddWind(HWND hWnd, const std::wstring& text);
+	int AddWind(HWND hWnd, const std::wstring& text);
 	void DeleteWind(HWND hWnd);
 	void Size(int w, int h);
 	HWND Select(HWND hWnd);
+	HWND Select(const std::wstring& windowTitle);
+
 	static LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 private:
 	int m_w;
@@ -26,8 +28,10 @@ private:
 	HWND m_hWnd;
 	HWND m_Foucs;
 	UINT m_ChildWindNumber;
-	std::unordered_map<HWND, HWND>m_Index;
+	std::map<HWND, HWND>m_Index;
 	HINSTANCE m_hInst;
+	void SwitchViewWindow(HWND hWnd);
+	HWND FindValueByWindowTitle(const std::wstring& windowTitle);
 };
 
 typedef struct runMsg
@@ -103,9 +107,13 @@ class KeyframeEdit
 	std::wstring m_ButtenClassName;
 	HINSTANCE m_hInst;
 
-	ULONG64 m_LeftTime;
-	ULONG64 m_RightTime;
+	ULONG64 m_StartTime;
+	LONG64 m_TimeRange;
+	LONG64 m_StepSize;
+
 	int m_Y;
+
+	void UpdateStepSize();
 public:
 	KeyframeEdit(HINSTANCE hInst, HWND parent);
 	~KeyframeEdit();
@@ -115,8 +123,10 @@ public:
 	int GetY()const;
 	void MoveY(int y);
 	void MoveTime(int x);
-	void GetTime(ULONG64* left, ULONG64* right)const;
+	void GetTime(ULONG64* startTime, ULONG64* timeRange)const;
 	void ScaleTime(int x);
+	ULONG64 GetStepSize()const;
+
 	static LRESULT CALLBACK KeyframeWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeTimeProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK KeyframeFileProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

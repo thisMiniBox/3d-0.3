@@ -9,7 +9,7 @@ TreeControl::TreeControl(HWND hwndParent, HINSTANCE hInstance, HIMAGELIST imageL
     m_hImageList = imageList;
     // 创建树控件
     m_hwndTree = CreateWindowEx(0, WC_TREEVIEW, NULL, WS_VISIBLE | WS_CHILD | TVS_HASBUTTONS | TVS_LINESATROOT,
-        0, 0, 200, 300, hwndParent, (HMENU)ID_TREE_CONTROL, hInstance, NULL);
+        0, 0, 200, 300, hwndParent, 0, hInstance, NULL);
 
     if (m_hwndTree == NULL)
     {
@@ -79,7 +79,7 @@ void TreeControl::SetItemImage(HTREEITEM item, int imageIndex, int selectedImage
     // 设置节点的属性，包括图像索引
     SendMessage(m_hwndTree, TVM_SETITEM, 0, (LPARAM)&tvItem);
 }
-void TreeControl::MoveWind(int x, int y, int w, int h)
+void TreeControl::MoveWnd(int x, int y, int w, int h)
 {
     MoveWindow(m_hwndTree, x, y, w, h, true);
 }
@@ -87,7 +87,7 @@ HTREEITEM TreeControl::GetChildItem(HTREEITEM item)const
 {
     return TreeView_GetChild(m_hwndTree, item);
 }
-std::vector<HTREEITEM> TreeControl::GetAllChildeItem(HTREEITEM item)const
+std::vector<HTREEITEM> TreeControl::GetAllChildItem(HTREEITEM item)const
 {
     // 创建一个存储子节点的数组
     std::vector<HTREEITEM> childNodes;
@@ -103,7 +103,7 @@ std::vector<HTREEITEM> TreeControl::GetAllChildeItem(HTREEITEM item)const
 }
 void TreeControl::MoveItem(HTREEITEM moved, HTREEITEM parent)
 {
-    std::vector<HTREEITEM> ChildNodes = GetAllChildeItem(moved);
+    std::vector<HTREEITEM> ChildNodes = GetAllChildItem(moved);
     // 获取要移动节点的信息
     TVITEM item;
     item.mask = TVIF_HANDLE | TVIF_CHILDREN | TVIF_PARAM | TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
@@ -165,6 +165,8 @@ HTREEITEM TreeControl::GetItemOfPos(POINT cursorPos)const
 }
 LPARAM TreeControl::GetParamByItem(HTREEITEM item)const
 {
+    if (!item)
+        return 0;
     // 创建TVITEM结构体
     TVITEM tvItem;
     ZeroMemory(&tvItem, sizeof(tvItem));

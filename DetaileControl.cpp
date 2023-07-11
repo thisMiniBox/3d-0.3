@@ -53,11 +53,6 @@ Name_对象名称控件::Name_对象名称控件(HINSTANCE hIns, HWND parent, int x, int y, 
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_CNAME), parent, Dlgproc);
 	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
 }
-Rotation_旋转控件::Rotation_旋转控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
-{
-	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_ROTATE), parent, Dlgproc);
-	MoveWindow(m_hWnd, x, y, w, GetHeight(), true);
-}
 TransForm_变换控件::TransForm_变换控件(HINSTANCE hIns, HWND parent, int x, int y, int w)
 {
 	m_hWnd = CreateDialog(hIns, MAKEINTRESOURCE(IDD_TRANSFORM), parent, Dlgproc);
@@ -80,7 +75,7 @@ std::wstring NumberToWString(const double value) {
 
 void TransForm_变换控件::updateControl()
 {
-
+    SendMessage(m_hWnd, UM_UPDATE, 0, 0);
 }
 
 void PictureDataToBitmap(const PictureData& pictureData, HBITMAP& hBitmap)
@@ -187,4 +182,246 @@ int PictureControl::MoveWind_移动窗口(int x, int y, int w)
 PictureControl::~PictureControl()
 {
     SendMessage(m_hWnd, WM_CLOSE, 0, 0);
+}
+IndexControl::IndexControl(HINSTANCE hInstance, HWND parent, int x, int y, int w)
+{
+    WndClassName = L"IndexControl";
+    WNDCLASSEX wcex = { 0 };
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszClassName = WndClassName.c_str();
+    if (!RegisterClassEx(&wcex))
+    {
+        MessageBox(nullptr,
+            L"窗口类注册失败！",
+            L"错误",
+            MB_ICONERROR);
+    }
+     
+    // 执行应用程序初始化:
+    m_hWnd = CreateWindowW(
+        WndClassName.c_str(),
+        WndClassName.c_str(),
+        WS_CHILD | WS_BORDER,
+        x,
+        y,
+        w,
+        100,
+        nullptr,
+        nullptr,
+        hInstance,
+        nullptr);
+}
+TableControl::TableControl(HINSTANCE hInstance, HWND parent, int x, int y, int w)
+{
+    m_WndClassName = L"TableControl";
+    WNDCLASSEX wcex = { 0 };
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszClassName = m_WndClassName.c_str();
+    if (!RegisterClassEx(&wcex))
+    {
+        MessageBox(nullptr,
+            L"窗口类注册失败！",
+            L"错误",
+            MB_ICONERROR);
+    }
+
+    // 执行应用程序初始化:
+    m_hWnd = CreateWindowW(
+        m_WndClassName.c_str(),
+        m_WndClassName.c_str(),
+        WS_CHILD | WS_BORDER,
+        x,
+        y,
+        w,
+        100,
+        nullptr,
+        nullptr,
+        hInstance,
+        nullptr);
+    m_hInst = hInstance;
+}
+
+TableControl::~TableControl()
+{
+    // 销毁表格控件的窗口对象
+    DestroyWindow(m_hWnd);
+    UnregisterClass(L"TableControl", m_hInst);
+}
+
+int TableControl::AddColumn(const std::wstring& name,TableControlDataType dataType)
+{
+    switch (dataType)
+    {
+    case TableControlDataType::NUMBER:
+    {
+        std::vector<std::variant<std::wstring, int>> rowData;
+        rowData.push_back('i');
+        m_tableData.push_back(rowData);
+    }
+        break;
+    case TableControlDataType::CHAR:
+    {
+        std::vector<std::variant<std::wstring, int>> rowData;
+        rowData.push_back('c');
+        m_tableData.push_back(rowData);
+    }
+        break;
+    default:
+        return 0;
+        break;
+    }
+    int columnIndex = m_tableData.size();
+    m_ColumnNameIndex.insert(std::make_pair(name, columnIndex));
+    return columnIndex;
+}
+
+bool TableControl::DeleteColumn(const std::wstring& name)
+{
+    auto p = m_ColumnNameIndex.find(name);
+    if (p == m_ColumnNameIndex.end())
+        return false;
+    int index = (*p).second;
+    auto t = m_tableData.begin() + index - 1;
+    m_tableData.erase(t);
+    m_ColumnNameIndex.erase(p);
+    return true;
+}
+
+bool TableControl::DeleteRow(int id)
+{
+    if (id > m_tableData.size())
+        return false;
+    auto t = m_tableData.begin() + id - 1;
+    m_tableData.erase(t);
+
+    m_ColumnNameIndex.erase(p);
+    return true;
+}
+
+bool TableControl::DeleteColumn(int id)
+{
+    if (id < 0 || id >= static_cast<int>(m_tableData[0].size()))
+        return false;
+
+    // 删除对应的列数据
+    for (auto& row : m_tableData)
+    {
+        row.erase(row.begin() + id);
+    }
+
+    // 更新列索引
+    std::wstring columnName;
+    for (auto& pair : m_ColumnNameIndex)
+    {
+        if (pair.second == id)
+        {
+            columnName = pair.first;
+            break;
+        }
+    }
+    m_ColumnNameIndex.erase(columnName);
+    for (auto& pair : m_ColumnNameIndex)
+    {
+        if (pair.second > id)
+        {
+            pair.second--;
+        }
+    }
+
+    // 在表格控件中删除指定的列
+    // ...
+
+    return true;
+}
+
+bool TableControl::MoveRow(const std::wstring& name, int id)
+{
+    if (id < 0 || id >= static_cast<int>(m_tableData.size()))
+        return false;
+
+    // 移动行数据到指定位置
+    std::vector<std::variant<std::wstring, int>> row = m_tableData[id];
+    m_tableData.erase(m_tableData.begin() + id);
+    m_tableData.insert(m_tableData.begin() + id, row);
+
+    // 在表格控件中更新行的展示顺序
+    // ...
+
+    return true;
+}
+
+bool TableControl::MoveColumn(const std::wstring& name, int id)
+{
+    if (m_ColumnNameIndex.count(name) == 0 || id < 0 || id >= static_cast<int>(m_tableData[0].size()))
+        return false;
+
+    int columnIndex = m_ColumnNameIndex[name];
+
+    // 更新列索引，交换列的位置
+    for (auto& pair : m_ColumnNameIndex)
+    {
+        if (pair.second == id)
+        {
+            pair.second = columnIndex;
+        }
+        else if (pair.second == columnIndex)
+        {
+            pair.second = id;
+        }
+    }
+
+    // 更新每行数据中对应列的值
+    for (auto& row : m_tableData)
+    {
+        std::swap(row[columnIndex], row[id]);
+    }
+
+    // 在表格控件中更新列的展示顺序
+    // ...
+
+    return true;
+}
+
+bool TableControl::Set(int x, int y, const std::wstring& content)
+{
+    if (x < 0 || x >= static_cast<int>(m_tableData.size()) || y < 0 || y >= static_cast<int>(m_tableData[0].size()))
+        return false;
+
+    // 设置指定位置的单元格内容
+    m_tableData[x][y] = content;
+
+    // 在表格控件中更新指定位置的单元格展示内容
+    // ...
+
+    return true;
+}
+
+bool TableControl::Push(const std::wstring& content)
+{
+    // 将一行数据添加到表格的末尾
+    std::vector<std::variant<std::wstring, int>> row;
+    for (int i = 0; i < static_cast<int>(m_tableData[0].size()); i++)
+    {
+        row.emplace_back(L"");
+    }
+    row[0] = content;
+
+    m_tableData.push_back(row);
+
+    // 在表格控件中添加新的一行
+    // ...
+
+    return true;
 }
