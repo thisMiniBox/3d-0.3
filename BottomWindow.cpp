@@ -82,7 +82,10 @@ HWND  BottomWindow::FindValueByWindowTitle(const std::wstring& windowTitle)
 void BottomWindow::SwitchViewWindow(HWND hWnd)
 {
 	if (m_Foucs == hWnd)
+	{
 		printf_s("窗口相同");
+		return;
+	}
 	if(m_Foucs)
 		ShowWindow(m_Foucs, SW_HIDE);
 	ShowWindow(hWnd, SW_SHOW);
@@ -530,19 +533,49 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszClassName = m_ClassName.c_str();
 	// 注册窗口类
-	RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex))
+	{
+		DWORD error = GetLastError();
+		std::cout << "窗口类注册失败，错误代码：" << error << std::endl;
+		return;
+	}
+
 	wcex.lpszClassName = m_CanvasClassName.c_str();
 	wcex.lpfnWndProc = KeyframeCanvasProc;
-	RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex))
+	{
+		DWORD error = GetLastError();
+		std::cout << "画布窗口类注册失败，错误代码：" << error << std::endl;
+		return;
+	}
+
 	wcex.lpszClassName = m_TimeClassName.c_str();
 	wcex.lpfnWndProc = KeyframeTimeProc;
-	RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex))
+	{
+		DWORD error = GetLastError();
+		std::cout << "时间窗口类注册失败，错误代码：" << error << std::endl;
+		return;
+	}
+
 	wcex.lpszClassName = m_FileClassName.c_str();
 	wcex.lpfnWndProc = KeyframeFileProc;
-	RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex))
+	{
+		DWORD error = GetLastError();
+		std::cout << "文件窗口类注册失败，错误代码：" << error << std::endl;
+		return;
+	}
+
 	wcex.lpszClassName = m_ButtenClassName.c_str();
 	wcex.lpfnWndProc = KeyframeButtenProc;
-	RegisterClassEx(&wcex);
+	if (!RegisterClassEx(&wcex))
+	{
+		DWORD error = GetLastError();
+		std::cout << "按钮窗口类注册失败，错误代码：" << error << std::endl;
+		return;
+	}
+
 	m_hWnd = CreateWindowExW(
 		WS_EX_WINDOWEDGE,
 		m_ClassName.c_str(),
@@ -550,6 +583,12 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
 		parent, (HMENU)ChildWindSign::KeyframeWind, hInst, nullptr);
+	if (!m_hWnd)
+	{
+		DWORD error = GetLastError();
+		std::cout << "关键帧编辑窗口创建失败，错误代码：" << error << std::endl;
+		return;
+	}
 	m_hFile = CreateWindowExW(
 		0,
 		m_FileClassName.c_str(),
@@ -557,6 +596,12 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
 		m_hWnd, (HMENU)ChildWindSign::KF_FileWind, hInst, nullptr);
+	if (!m_hFile)
+	{
+		DWORD error = GetLastError();
+		std::cout << "文件窗口创建失败，错误代码：" << error << std::endl;
+		return;
+	}
 	m_hTime = CreateWindowExW(
 		0,
 		m_TimeClassName.c_str(),
@@ -564,13 +609,25 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
 		m_hWnd, (HMENU)ChildWindSign::KF_TimeWind, hInst, nullptr);
+	if (!m_hTime)
+	{
+		DWORD error = GetLastError();
+		std::cout << "时间窗口创建失败，错误代码：" << error << std::endl;
+		return;
+	}
 	m_hCanvas = CreateWindowExW(
 		0,
 		m_CanvasClassName.c_str(),
 		L"KeyframeWindows",
-		WS_CHILD | WS_VISIBLE| CS_DBLCLKS,
+		WS_CHILD | WS_VISIBLE | CS_DBLCLKS,
 		0, 0, 200, 100,
 		m_hWnd, (HMENU)ChildWindSign::KF_CanvasWind, hInst, nullptr);
+	if (!m_hCanvas)
+	{
+		DWORD error = GetLastError();
+		std::cout << "画布窗口创建失败，错误代码：" << error << std::endl;
+		return;
+	}
 	m_hButten = CreateWindowExW(
 		0,
 		m_ButtenClassName.c_str(),
@@ -578,12 +635,14 @@ KeyframeEdit::KeyframeEdit(HINSTANCE hInst, HWND parent)
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 200, 100,
 		m_hWnd, (HMENU)ChildWindSign::KF_ButtenWind, hInst, nullptr);
-	if (!m_hWnd)
+	if (!m_hButten)
 	{
-		std::cout << L"关键帧编辑窗口创建失败！" << std::endl;
+		DWORD error = GetLastError();
+		std::cout << "按钮窗口创建失败，错误代码：" << error << std::endl;
 		return;
 	}
 }
+
 KeyframeEdit::~KeyframeEdit()
 {
 	// 销毁窗口

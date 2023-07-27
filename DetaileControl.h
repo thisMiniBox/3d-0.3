@@ -52,6 +52,7 @@ public:
 	virtual _ControlType GetType()const override { return CT_TRANSFORM; }
 	static INT_PTR Dlgproc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	virtual void updateControl()override;
+	static void UpdateDialog(HWND hDlg, Object* focusOBJ);
 };
 class PictureControl : public DetaileControl_细节菜单控件组合 
 {
@@ -74,36 +75,36 @@ enum class TableControlDataType
 	NUMBER,
 	CHAR,
 };
-class TableControl :DetaileControl_细节菜单控件组合
-{
-public:
-	TableControl(HINSTANCE hInstance, HWND parent, int x, int y, int w);
-	~TableControl();
-	//返回添加后所在的列
-	int AddColumn(const std::wstring& name, TableControlDataType dataType=TableControlDataType::CHAR);
-	bool DeleteColumn(const std::wstring& name);
-	bool DeleteRow(int id);
-	bool DeleteColumn(int id);
-	bool MoveRow(const std::wstring& name, int id);
-	bool MoveColumn(const std::wstring& name, int id);
-	bool Set(int x, int y, const std::wstring&content);
-	bool Push(const std::wstring& content);
-private:
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	std::vector<std::vector<std::variant<std::wstring, int>>> m_tableData;
-	std::map<std::wstring, int>m_ColumnNameIndex;
-	std::wstring m_WndClassName;
-	HINSTANCE m_hInst
-};
-class IndexControl :DetaileControl_细节菜单控件组合
-{
-public:
-	IndexControl(HINSTANCE hInstance, HWND parent, int x, int y, int w);
-	~IndexControl();
-	bool AddList(const std::wstring& Name);
-private:
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	
-	std::wstring WndClassName;
-
-};
+//class TableControl :DetaileControl_细节菜单控件组合
+//{
+//public:
+//	TableControl(HINSTANCE hInstance, HWND parent, int x, int y, int w);
+//	~TableControl();
+//	//返回添加后所在的列
+//	int AddColumn(const std::wstring& name, TableControlDataType dataType=TableControlDataType::CHAR);
+//	bool DeleteColumn(const std::wstring& name);
+//	bool DeleteRow(int id);
+//	bool DeleteColumn(int id);
+//	bool MoveRow(const std::wstring& name, int id);
+//	bool MoveColumn(const std::wstring& name, int id);
+//	bool Set(int x, int y, const std::wstring&content);
+//	bool Push(const std::wstring& content);
+//private:
+//	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+//	std::vector<std::vector<std::variant<std::wstring, int>>> m_tableData;
+//	std::map<std::wstring, int>m_ColumnNameIndex;
+//	std::wstring m_WndClassName;
+//	HINSTANCE m_hInst;
+//};
+//class IndexControl :DetaileControl_细节菜单控件组合
+//{
+//public:
+//	IndexControl(HINSTANCE hInstance, HWND parent, int x, int y, int w);
+//	~IndexControl();
+//	bool AddList(const std::wstring& Name);
+//private:
+//	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+//	
+//	std::wstring WndClassName;
+//
+//};

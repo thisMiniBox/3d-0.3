@@ -1,4 +1,5 @@
 #pragma once
+
 #include<vector>
 #include<string>
 #include <iostream>
@@ -16,6 +17,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
+
 //#include<xlnt/xlnt.hpp>
 #include<assimp/scene.h>
 //声明类（方便定位）
@@ -29,6 +31,7 @@ class Camera;
 
 class PointLight;
 class DirectionalLight;
+class SkyBox;
 
 class Project;
 class Room;
@@ -74,7 +77,7 @@ public:
 	// 获取物体名称
 	const std::string GetName() const;
 	// 设置物体名称
-	void SetName(std::string NewName);
+	void SetName(const std::string& NewName);
 	//切换选中状态
 	virtual void ToggleSelection();
 	virtual void Selected();
@@ -126,30 +129,40 @@ public:
 	virtual bool IsStatic()const;
 
 	virtual bool SaveFile(const std::wstring path, SaveMode = SM_BINARY)const;
+	virtual bool LoadFile(const std::wstring path);
 
 	virtual void SetKeyframeLoop(bool);
 	virtual bool GetKeyframeLoop()const;
-	//virtual void UpdateClassInfo(const ClassInfo&) = 0;
-	//virtual ClassInfo* GainClassInfo() = 0;
+
+	virtual void KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong);
 };
 template<typename OBJ>
 class Keyframe :public Object
 {
 	std::vector<std::pair<ULONG64, OBJ>>m_keyframe;
 	OBJ m_TemporaryStorage;
+	Object* m_User;
 	bool m_loop;
+	void SetUserKeyframeToNull();
 public:
 	Keyframe(const std::string& name = "新建关键帧");
+	~Keyframe();
 	const std::vector<std::pair<ULONG64, OBJ>>& GetData()const;
 	void SetKeyframe(ULONG64 time, OBJ key);
 	void DeleteKeyframe(ULONG64 time);
 	OBJ* GetKeyframe(ULONG64 time);
 	void SetLoop(bool loop);
 	bool IsLoop()const;
+	void SetUser(Object*);
 	ObjectType GetType()const override;
 	void SetKeyframeLoop(bool) override;
 	bool GetKeyframeLoop()const override;
 	bool SaveFile(const std::wstring path, SaveMode)const override;
+	bool LoadFile(const std::wstring path)override;
+
+	OBJ* GetKeyframeData(ULONG64 time)const;
+
+	void KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong)override;
 };
 //材质信息结构体
 typedef struct _Material {
@@ -476,6 +489,7 @@ public:
 	glm::mat4 GetTransform(ULONG64 time);
 	void SetTransform(const glm::mat4&);
 	//bool processNode(aiNode* node, const aiScene* scene);
+	void KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong)override;
 private:
 	TransForm GetTransForm()const;
 	ModelMode m_Mode;
@@ -491,11 +505,9 @@ private:
 	glm::mat4 m_Transform;
 	std::vector<FACE> m_GDI_TriFaceData;
 };
-#include<unordered_map>
-//对象文件/占位子类
 class Folder : public Object
 {
-	std::unordered_map<std::string,Object*> m_Child;
+	std::map<std::string,Object*> m_Child;
 public:
 	Folder() { m_Name = "新建文件夹"; }
 	Folder(std::string NAME);
@@ -515,6 +527,14 @@ public:
 			a = new T(Name);
 			AddFile_添加文件(a);
 		}
+		a->SetParent(this);
+		return a;
+	}
+	template<typename T>
+	T* CreateFile_创建文件(const T& file)
+	{
+		T* a = new T(file);
+		AddFile_添加文件(a);
 		a->SetParent(this);
 		return a;
 	}
@@ -587,54 +607,59 @@ public:
 
 class PointLight : public Object
 {
+private:
+	Vector m_Position;                       // 点光源位置
+	Vector m_AmbientColor;                   // 环境光颜色
+	Vector m_DiffuseColor;                   // 漫反射颜色
+	Vector m_SpecularColor;                  // 镜面光颜色
+	float m_AttenuationConstant;             // 常数衰减因子
+	float m_AttenuationLinear;               // 线性衰减因子
+	float m_AttenuationQuadratic;            // 二次项衰减因子
 public:
-	PointLight(const std::string& name = "点光源", const vec::Vector& pos = vec::Vector3(0.f), const vec::Vector& col = vec::Vector(1.f), float intens = 100, float rng = 100)
-		: m_Position(pos), m_Color(col), m_Intensity(intens), m_Range(rng)
-	{
-		m_Name = name;
-	}
+	PointLight(const std::string& name = "点光源",
+		const Vector3& position = Vector3(0.f),
+		const Vector3& ambientColor = Vector3(0.0f, 0.0f, 0.0f),
+		const Vector3& diffuseColor = Vector3(1.0f, 1.0f, 1.0f),
+		const Vector3& specularColor = Vector3(1.0f, 1.0f, 1.0f),
+		float attenuationConstant = 1.0f,
+		float attenuationLinear = 0.09f,
+		float attenuationQuadratic = 0.032f);
+
 	~PointLight();
 
 	ObjectType GetType() const override;
-
-	void SetPosition(const Vector& position)override;    // 设置位置
-	Vector GetPosition() const override;				 // 获取位置
-	void Move(const Vector&)override;
-
-	void SetLightColor(const Vector& lightColor);        // 设置颜色
-	const Vector& GetLightColor() const;                 // 获取颜色
-
-	//设置颜色
-	void SetScale(const Vector& position)override;
-	//获取颜色
-	Vector GetScale() const override;
-	//获取光照信息
-	Rotation GetRotate()const override;
-	//设置光照信息
-	void SetRotate(const Rotation&)override;
-
-	void SetIntensity(float intensity);                  // 设置强度
-	float GetIntensity() const;                          // 获取强度
-
-	void SetRange(float range);                          // 设置灯半径
-	float GetRange() const;                              // 获取灯半径
-
 	_ControlType SetDetaileView()const override { return CT_NAME | CT_TRANSFORM | CT_FILEVIEW; }
-private:
-	Vector m_Position;                                   // 点光源位置
-	Vector m_Color;										 // 点光源颜色
-	float m_Intensity;                                   // 点光源强度
-	float m_Range;                                       // 点光照半径
+
+
+	// 成员变量的访问函数
+	Vector GetPosition() const override;
+	const Vector& GetAmbientColor() const;
+	const Vector& GetDiffuseColor() const;
+	const Vector& GetSpecularColor() const;
+	float GetAttenuationConstant() const;
+	float GetAttenuationLinear() const;
+	float GetAttenuationQuadratic() const;
+
+	// 成员变量的修改函数
+	void SetPosition(const Vector& position)override;
+	void SetAmbientColor(const Vector& ambientColor);
+	void SetDiffuseColor(const Vector& diffuseColor);
+	void SetSpecularColor(const Vector& specularColor);
+	void SetAttenuationConstant(float attenuationConstant);
+	void SetAttenuationLinear(float attenuationLinear);
+	void SetAttenuationQuadratic(float attenuationQuadratic);
+
+	void Move(const Vector3& dir)override;
 };
 
 class Room :public Object
 {
 public:
-	Room(const std::string& name = "新键场景");
+	Room(const std::string& name = "新建场景");
 	ObjectType GetType()const override;
 private:
 	Folder m_RoomContent;
-
+	//SkyBox m_Skybox;
 };
 class Project :public Object
 {
@@ -679,4 +704,13 @@ private:
 	Vector m_Direction;                                  // 光源方向
 	Vector m_Color;                                      // 光源颜色
 	float m_Intensity;                                   // 光源强度
+};
+class SkyBox :public Object
+{
+	static float skyboxVertices[];
+	
+public:
+
+	ObjectType GetType()const override;
+	static unsigned int loadCubemap(std::vector<std::string> faces);
 };

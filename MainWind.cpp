@@ -44,6 +44,7 @@ GDIWND::GDIWND()
     wcex.lpszClassName = WndClassName.c_str();
     // 注册窗口类
     RegisterClassEx(&wcex);
+    m_HighLightColor = GetHighLightColor_g() * 255;
 }
 GDIWND::~GDIWND()
 {
@@ -92,7 +93,7 @@ void GDIWND::Draw(const std::vector<Model*>& Models, const Camera& camera)
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP memBitmap = CreateCompatibleBitmap(hdc, m_width, m_height);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, memBitmap);
-    COLORREF color = RGB(200, 200, 100);
+    COLORREF color = RGB(m_HighLightColor.x, m_HighLightColor.y, m_HighLightColor.z);
     // 准备绘制三角形
     std::vector<Outface> faces;
     for (const auto& m : model)
@@ -132,7 +133,10 @@ void GDIWND::Draw(const std::vector<Model*>& Models, const Camera& camera)
     EndPaint(m_hWnd, &ps);
 }
 
-
+void GDIWND::SetHighLightColor(const Vector& color)
+{
+    m_HighLightColor = color * 255;
+}
 std::vector<Outface> GDIWND::ProjectTriangles(const std::vector<FACE>& faces, const Camera& camera,COLORREF color)
 {
     // 计算视图矩阵和投影矩阵
@@ -510,7 +514,7 @@ HWND OpenGLWnd::CreateWind(HWND Parent, int x, int y, int w, int h)
     skyboxShader->setInt("skybox", 0);
     skyboxShader = GetShader(SI_StrokeShader);
     skyboxShader->use();
-    skyboxShader->setVec3("color", glm::vec3(0.7, 0.7, 0.4));
+    skyboxShader->setVec3("color", (glm::vec3)(GetHighLightColor_g()));
     ShowWindow(m_hWnd, SW_SHOW);
     UpdateWindow(m_hWnd);
     return m_hWnd;
@@ -557,6 +561,15 @@ void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out)
         if (i->GetMesh())
             out.push_back(i);
         GetChildModel(i->GetChildModel(), out);
+    }
+}
+void OpenGLWnd::SetHighLightColor(const Vector& color)
+{
+    OpenGLShader* shader = GetShader(SI_StrokeShader);
+    if (shader != nullptr)
+    {
+        shader->use();
+        shader->setVec3("color", (glm::vec3)color);
     }
 }
 void OpenGLWnd::DeleteModelBuffer(Model* model)
@@ -611,6 +624,7 @@ void OpenGLWnd::DeleteModelBuffer(Model* model)
 }
 void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
 {
+    ULONG64 NowTime = GetRunTime_g();
     std::vector<Model*> models;
     GetChildModel(Models, models);
     PAINTSTRUCT ps;
@@ -642,7 +656,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     glm::mat4 modelTransform = glm::mat4(1.0f);
     for (const auto& model : models)
     {
-        modelTransform = model->GetTransform(GetRunTime_g());
+        modelTransform = model->GetTransform(NowTime);
         CurrentShader->setMat4("model",modelTransform);
         Mesh* mesh = model->GetMesh();
         if (!mesh)
@@ -695,7 +709,7 @@ void OpenGLWnd::Draw(const std::vector<Model*>& Models, const Camera& camera)
     {
         if (!model->GetMesh() || !model->IsSelected())
             continue;
-        modelTransform = model->GetTransform(GetRunTime_g());
+        modelTransform = model->GetTransform(NowTime);
         CurrentShader->setMat4("model", modelTransform);
         Mesh* mesh = model->GetMesh();
         if (!mesh)
@@ -729,29 +743,25 @@ void OpenGLWnd::SetMaterialData(OpenGLShader* shader, Material* material,const C
     {
         const PointLight* pointL = pointLights[i];
         glm::vec3 lightPos = pointL->GetPosition();
-        glm::vec3 lightColor = pointL->GetLightColor().Normalize();
-
+        glm::vec3 color = pointL->GetAmbientColor();
         shader->setVec3("pointLights[" + std::to_string(i) + "].position", lightPos);
-        shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", lightColor * glm::vec3(0.2));
-        shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", lightColor * glm::vec3(0.7));
-        shader->setVec3("pointLights[" + std::to_string(i) + "].specular", lightColor);
+        shader->setVec3("pointLights[" + std::to_string(i) + "].ambient", color * glm::vec3(0.2));
+        color = pointL->GetDiffuseColor();
+        shader->setVec3("pointLights[" + std::to_string(i) + "].diffuse", color * glm::vec3(0.7));
+        color = pointL->GetSpecularColor();
+        shader->setVec3("pointLights[" + std::to_string(i) + "].specular", color);
 
-        float cons, line, quad;
-        calculateAttenuationFactors(pointL->GetRange(), pointL->GetIntensity(), cons, line, quad);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].constant", cons);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].linear", line);
-        shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", quad);
+        shader->setFloat("pointLights[" + std::to_string(i) + "].constant", pointL->GetAttenuationConstant());
+        shader->setFloat("pointLights[" + std::to_string(i) + "].linear", pointL->GetAttenuationLinear());
+        shader->setFloat("pointLights[" + std::to_string(i) + "].quadratic", pointL->GetAttenuationQuadratic());
     }
 
 
     shader->setVec3("viewPos", camera.GetPosition());
 
     shader->setVec3("material.ambient", material->getKa());
-    shader->setVec3("material.diffuse", material->getKd());
-    //shader->setVec3("material.specular", material->getKs());
-    shader->setVec3("material.specular", glm::vec3(0.1f));
     //shader->setFloat("material.shininess", material->getNs());
-    shader->setFloat("material.shininess", 12);
+    shader->setFloat("material.shininess", 1);
 
 
     Picture* texture = material->getMapKd();
@@ -761,8 +771,26 @@ void OpenGLWnd::SetMaterialData(OpenGLShader* shader, Material* material,const C
         shader->setInt("material.diffuseTexture", num);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_Textures[texture]->id);
-        num++;
+        shader->setVec4("material.diffuse", glm::vec4((glm::vec3)material->getKd(), 0.0f));
     }
+    else
+    {
+        shader->setVec4("material.diffuse", glm::vec4((glm::vec3)material->getKd(), 2.0f));
+    }
+    num++;
+    texture = material->getMapKs();
+    if (texture)
+    {
+        shader->setInt("material.specularTexture", num);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_Textures[texture]->id);
+        shader->setVec4("material.specular", glm::vec4((glm::vec3)material->getKs(), 0.0f));
+    }
+    else
+    {
+        shader->setVec4("material.specular", glm::vec4((glm::vec3)material->getKs(), 2.0f));
+    }
+    num++;
 }
 void calculateAttenuationFactors(float radius, float intensity, float& constant, float& linear, float& quadratic)
 {

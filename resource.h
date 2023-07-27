@@ -34,6 +34,7 @@
 #define IDB_PICTURE64                   160
 #define IDB_MESH64                      161
 #define IDD_KEYFR                       162
+#define IDD_PopVectorWind               163
 #define IDC_height                      1008
 #define IDC_N_NAME                      1008
 #define IDC_IO_IN                       1008
@@ -67,6 +68,22 @@
 #define IDC_FILE_VIEW                   1123
 #define IDC_TRAN_POS_Y                  1125
 #define IDC_TRAN_SCA_Z                  1126
+#define ID_PW_OK                        1126
+#define ID_PW_CANCEL                    1127
+#define IDC_PW_X                        1128
+#define IDC_PW_RX                       1129
+#define IDC_PW_TEXTX                    1130
+#define IDC_PW_Y                        1131
+#define IDC_PW_RY                       1132
+#define IDC_PW_TEXTY                    1133
+#define IDC_PW_X3                       1134
+#define IDC_PW_Z                        1134
+#define IDC_PW_RZ                       1135
+#define IDC_PW_TEXTZ                    1136
+#define IDC_PW_CX                       1138
+#define IDC_PW_C                        1139
+#define IDC_PW_CY                       1139
+#define IDC_PW_CZ                       1140
 #define IDM_OPEN                        32775
 #define ID_GDI                          32780
 #define ID_ACCELERATOR32784             32784
@@ -79,6 +96,20 @@
 #define ID_FM_UPDATE                    32809
 #define ID_FM_COPY                      32813
 #define IDM_SAVE                        32814
+#define ID_32815                        32815
+#define ID_32816                        32816
+#define ID_32817                        32817
+#define ID_32818                        32818
+#define ID_CHOESE_COLOR                 32819
+#define ID_CHOOSE_COLOR                 32820
+#define ID_CHOOSE_GRID                  32821
+#define ID_CHOOSE_FILL_COLOR            32822
+#define ID_32823                        32823
+#define ID_32824                        32824
+#define ID_32825                        32825
+#define ID_MOVE                         32826
+#define ID_SCALE                        32827
+#define ID_ROTATE                       32828
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -86,9 +117,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        163
-#define _APS_NEXT_COMMAND_VALUE         32815
-#define _APS_NEXT_CONTROL_VALUE         1126
+#define _APS_NEXT_RESOURCE_VALUE        164
+#define _APS_NEXT_COMMAND_VALUE         32829
+#define _APS_NEXT_CONTROL_VALUE         1139
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

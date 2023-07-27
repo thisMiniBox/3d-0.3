@@ -394,7 +394,7 @@ const std::string Object::GetName() const
 }
 
 // 设置物体名称
-void Object::SetName(std::string NewName)
+void Object::SetName(const std::string& NewName)
 {
 	m_Name = NewName;
 }
@@ -520,7 +520,6 @@ Matrix4 Camera::GetProjection() const
 }
 Rotation Camera::GetRotate()const
 {
-	
 	return Rotation(vec::DegToRad(m_Field), m_Direction);
 }
 void Camera::SetRotate(const Rotation& rot)
@@ -704,6 +703,8 @@ Model::~Model()
 		m_ModelMesh->Dereference(this);
 	if (m_Material)
 		m_Material->Dereference(this);
+	if (m_keyframe)
+		m_keyframe->SetUser(nullptr);
 }
 
 void Model::move(const Vector3& offset, bool add) {
@@ -1063,7 +1064,7 @@ PictureData Picture::GetPicture()const
 }
 PictureData Picture::LoadPicture(const std::string& path)
 {
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	m_Data = stbi_load(path.c_str(), &m_Width, &m_Height, &m_NrComponents, 0);
 	if (m_Data)
 	{
@@ -1259,6 +1260,14 @@ ObjectType PointLight::GetType()const
 PointLight::~PointLight()
 {
 }
+PointLight::PointLight(const std::string& name, const Vector3& position,
+	const Vector3& ambientColor, const Vector3& diffuseColor, const Vector3& specularColor,
+	float attenuationConstant, float attenuationLinear, float attenuationQuadratic)
+	:m_Position(position),m_AmbientColor(ambientColor),m_DiffuseColor(diffuseColor),m_SpecularColor(specularColor),
+	m_AttenuationConstant(attenuationConstant),m_AttenuationLinear(attenuationLinear),m_AttenuationQuadratic(attenuationQuadratic)
+{
+	m_Name = name;
+}
 void PointLight::SetPosition(const Vector& position)
 {
 	m_Position = position;
@@ -1271,50 +1280,42 @@ Vector PointLight::GetPosition() const
 {
 	return m_Position;
 }
-
-void PointLight::SetLightColor(const Vector& lightColor)
-{
-	m_Color = lightColor;
+const Vector& PointLight::GetAmbientColor() const {
+	return m_AmbientColor;
 }
-const Vector& PointLight::GetLightColor() const
-{
-	return m_Color;
+const Vector& PointLight::GetDiffuseColor() const {
+	return m_DiffuseColor;
 }
-//设置颜色
-void PointLight::SetScale(const Vector& color)
-{
-	SetLightColor(color);
+const Vector& PointLight::GetSpecularColor() const {
+	return m_SpecularColor;
 }
-//获取颜色
-Vector PointLight::GetScale() const
-{
-	return GetLightColor();
+float PointLight::GetAttenuationConstant() const {
+	return m_AttenuationConstant;
 }
-Rotation PointLight::GetRotate()const
-{
-	return Rotation(0, vec::Vector3(m_Intensity, 0, m_Range));
+float PointLight::GetAttenuationLinear() const {
+	return m_AttenuationLinear;
 }
-void PointLight::SetRotate(const Rotation& rot)
-{
-	SetIntensity(rot.axis.x);
-	SetRange(rot.axis.z);
-}
-void PointLight::SetIntensity(float intensity)
-{
-	m_Intensity = intensity;
-}
-float PointLight::GetIntensity() const
-{
-	return m_Intensity;
+float PointLight::GetAttenuationQuadratic() const {
+	return m_AttenuationQuadratic;
 }
 
-void PointLight::SetRange(float range)
-{
-	m_Range = range;
+void PointLight::SetAmbientColor(const Vector& ambientColor) {
+	m_AmbientColor = ambientColor;
 }
-float PointLight::GetRange() const
-{
-	return m_Range;
+void PointLight::SetDiffuseColor(const Vector& diffuseColor) {
+	m_DiffuseColor = diffuseColor;
+}
+void PointLight::SetSpecularColor(const Vector& specularColor) {
+	m_SpecularColor = specularColor;
+}
+void PointLight::SetAttenuationConstant(float attenuationConstant) {
+	m_AttenuationConstant = attenuationConstant;
+}
+void PointLight::SetAttenuationLinear(float attenuationLinear) {
+	m_AttenuationLinear = attenuationLinear;
+}
+void PointLight::SetAttenuationQuadratic(float attenuationQuadratic) {
+	m_AttenuationQuadratic = attenuationQuadratic;
 }
 void Object::ToggleSelection()
 {
@@ -1730,8 +1731,14 @@ Keyframe<OBJ>::Keyframe(const std::string& name)
 {
 	m_loop = false;
 	m_Name = name;
+	m_User = nullptr;
 }
-
+template<typename OBJ>
+Keyframe<OBJ>::~Keyframe()
+{
+	if (m_User)
+		SetUserKeyframeToNull();
+}
 template<typename OBJ>
 void Keyframe<OBJ>::SetKeyframe(ULONG64 time, OBJ key)
 {
@@ -1749,6 +1756,22 @@ void Keyframe<OBJ>::SetKeyframe(ULONG64 time, OBJ key)
 
 	// 根据关键帧的时间戳从小到大对 vector 进行排序
 	std::sort(m_keyframe.begin(), m_keyframe.end(), [](const std::pair<ULONG64, OBJ>& a, const std::pair<ULONG64, OBJ>& b) { return a.first < b.first; });
+}
+template<typename OBJ>
+void Keyframe<OBJ>::SetUserKeyframeToNull()
+{
+	if (m_User)
+		switch (m_User->GetType())
+		{
+		case OT_MODEL:
+		{
+			Model* model = dynamic_cast<Model*>(m_User);
+			model->SetKeyframe(nullptr);
+			break;
+		}
+		default:
+			break;
+		}
 }
 template<typename OBJ>
 void Keyframe<OBJ>::DeleteKeyframe(ULONG64 time)
@@ -1779,10 +1802,28 @@ bool Keyframe<OBJ>::IsLoop()const
 	return m_loop;
 }
 template<typename OBJ>
+void Keyframe<OBJ>::SetUser(Object* user)
+{
+	m_User = user;
+}
+template<typename OBJ>
+OBJ* Keyframe<OBJ>::GetKeyframeData(ULONG64 time)const
+{
+	for (auto keyData : m_keyframe)
+	{
+		if (keyData.first == time) {
+			return &keyData.second;
+		}
+	}
+	return nullptr;
+}
+template<typename OBJ>
 OBJ* Keyframe<OBJ>::GetKeyframe(ULONG64 time)
 {
-	if (m_keyframe.empty() || time < m_keyframe.front().first)
+	if (m_keyframe.empty())
 		return nullptr;
+	if (time < m_keyframe.front().first)
+		return &m_keyframe.front().second;
 	if (time > m_keyframe.back().first)
 		if (m_loop)
 			return GetKeyframe(time % m_keyframe.back().first);
@@ -1833,7 +1874,6 @@ void Model::updateTransform()
 {
 	m_Transform = glm::mat4(1.0f);
 	m_Transform = glm::translate(m_Transform, (glm::vec3)m_Position);
-	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
 	glm::vec3 axis = m_Rotate.axis;
 	if (glm::length(axis) < 0.1)
 	{
@@ -1841,6 +1881,7 @@ void Model::updateTransform()
 		m_Rotate.axis = Vector(0, 1, 0);
 	}
 	m_Transform = glm::rotate(m_Transform, (float)m_Rotate.angle, axis);
+	m_Transform = glm::scale(m_Transform, (glm::vec3)m_Scale);
 }
 bool Model::SetKeyframe(ULONG64 time)
 {
@@ -1850,6 +1891,18 @@ bool Model::SetKeyframe(ULONG64 time)
 	}
 	m_keyframe->SetKeyframe(time,GetTransForm());
 	return true;
+}
+void Model::KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong)
+{
+	HDC hdc = GetDC(hWnd);
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	if (!m_keyframe)
+	{
+		DrawTextW(hdc, L"未创建关键帧，双击创建", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+		return;
+	}
+	m_keyframe->KeyframeCanvasPaint(hWnd, ShowTimeStart, ShowTimeLong);
 }
 void Model::SetTransform(const glm::mat4& transform)
 {
@@ -1877,7 +1930,11 @@ void Model::SetTransform(const glm::mat4& transform)
 }
 void Model::SetKeyframe(Keyframe<TransFrame>* NewKeyframe)
 {
+	if (m_keyframe)
+		m_keyframe->SetUser(nullptr);
 	m_keyframe = NewKeyframe;
+	if (m_keyframe)
+		m_keyframe->SetUser(this);
 }
 Keyframe<TransForm>* Model::CreateKryframe()
 {
@@ -1970,6 +2027,10 @@ bool Object::SaveFile(const std::wstring path, SaveMode sm)const
 {
 	return false;
 }
+bool Object::LoadFile(const std::wstring path)
+{
+	return false;
+}
 void Object::SetKeyframeLoop(bool b)
 {
 	return;
@@ -1977,6 +2038,13 @@ void Object::SetKeyframeLoop(bool b)
 bool Object::GetKeyframeLoop()const
 {
 	return false;
+}
+void Object::KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong)
+{
+	HDC hdc = GetDC(hWnd);
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	DrawTextW(hdc, L"目标不可用", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 }
 template<typename OBJ>
 void Keyframe<OBJ>::SetKeyframeLoop(bool b)
@@ -1993,38 +2061,6 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 {
 	switch (mode)
 	{
-	//case SM_XLSX:
-	//{
-	//	xlnt::workbook wb;
-	//	xlnt::worksheet ws = wb.active_sheet();
-
-	//	ws.cell("A1").value(OBJ::GetStrType());
-	//	std::stringstream ss;
-	//	ss << OBJ::GetDataType();
-	//	std::string line;
-	//	int column = 2;
-	//	while (std::getline(ss, line))
-	//	{
-	//		ws.cell(column, 1).value(line);
-	//		column++;
-	//	}
-	//	int row_num = 2;
-	//	for (const auto& frame : m_keyframe) {
-	//		ws.cell(xlnt::cell_reference(1, row_num)).value(frame.first);
-	//		ss.clear();
-	//		ss << frame.second.GetStrData();
-	//		column = 2;
-	//		while (std::getline(ss, line))
-	//		{
-	//			ws.cell(column, row_num).value(line);
-	//			column++;
-	//		}
-	//		row_num++;
-	//	}
-	//	wb.save(path);
-	//	return true;
-	//	break;
-	//}
 	case SM_TEXT:
 	{
 		std::ofstream fout(path);
@@ -2043,6 +2079,7 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 			fout << data.first << ' ' << str << std::endl;
 		}
 		fout.close();
+		RenameFile(path, path + L".TfKeyframe");
 		return true;
 		break;
 	}
@@ -2053,6 +2090,52 @@ bool Keyframe<OBJ>::SaveFile(const std::wstring path, SaveMode mode) const
 		break;
 	}
 	return false;
+}
+template<typename OBJ>
+void Keyframe<OBJ>::KeyframeCanvasPaint(HWND hWnd, ULONG64 ShowTimeStart, ULONG64 ShowTimeLong)
+{
+	RECT rect;
+	HDC hdc = GetDC(hWnd);
+	GetClientRect(hWnd, &rect);
+	auto keyframe = &m_keyframe;
+	int width = rect.right;
+	rect.top = 0;
+	for (auto k : *keyframe)
+	{
+		if (k.first < ShowTimeStart)
+			continue;
+		if (k.first > ShowTimeLong + ShowTimeStart)
+			break;
+		int x = (int)(((float)k.first - ShowTimeStart) / (ShowTimeLong) * (width - 20)) + 10;
+		rect.left = x - 2;
+		rect.right = x + 2;
+		HBRUSH hBrushC = CreateSolidBrush(RGB(180, 20, 20));
+		FillRect(hdc, &rect, hBrushC);
+		DeleteObject(hBrushC);
+	}
+}
+template<typename OBJ>
+bool Keyframe<OBJ>::LoadFile(const std::wstring path)
+{
+	std::ifstream file(path);
+	if (!file) {
+		std::cerr << "文件打开失败" << std::endl;
+		OutMessage_g("文件打开失败", MSGtype::_Error);
+		return false;
+	}
+	std::string line;
+	std::getline(file, line);
+	std::istringstream iss(line);
+	OBJ transform;
+	ULONG64 time = 0;
+	while (std::getline(file, line)) {
+		iss.str(line);
+		iss >> time;
+		iss >> transform;
+		m_keyframe.push_back(std::make_pair(time, transform));
+	}
+	file.close();
+	return true;
 }
 void Material::InitReferenceP(Object* obj)
 {
@@ -2283,4 +2366,83 @@ bool Project::LoadProject(const std::string& path)
 Room::Room(const std::string& name)
 {
 	m_Name = name;
+}
+float SkyBox::skyboxVertices[] = {
+	// positions          
+	-1.0f,  1.0f, -1.0f,
+	-1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f, -1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+
+	-1.0f, -1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f, -1.0f,  1.0f,
+	-1.0f, -1.0f,  1.0f,
+
+	-1.0f,  1.0f, -1.0f,
+	 1.0f,  1.0f, -1.0f,
+	 1.0f,  1.0f,  1.0f,
+	 1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f,  1.0f,
+	-1.0f,  1.0f, -1.0f,
+
+	-1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	 1.0f, -1.0f, -1.0f,
+	 1.0f, -1.0f, -1.0f,
+	-1.0f, -1.0f,  1.0f,
+	 1.0f, -1.0f,  1.0f
+};
+ObjectType SkyBox::GetType()const
+{
+	return OT_SKYBOX;
+}
+unsigned int SkyBox::loadCubemap(std::vector<std::string> faces)
+{
+	unsigned int textureID;
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+	stbi_set_flip_vertically_on_load(false);
+	int width, height, nrChannels;
+	for (unsigned int i = 0; i < faces.size(); i++)
+	{
+		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+			);
+			stbi_image_free(data);
+		}
+		else
+		{
+			std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+			stbi_image_free(data);
+		}
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	return textureID;
 }

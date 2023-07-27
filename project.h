@@ -1,67 +1,74 @@
-#pragma once
+ï»¿#pragma once
+#include<Windows.h>
+#include<CommCtrl.h>
 #include<thread>
 #include <mutex>
-#include"×Ö·û×ª»».h"
+#include<time.h>
+#include<math.h>
+#include<map>
+#include<filesystem>
+
+#include"resource.h"
+
+#include"å­—ç¬¦è½¬æ¢.h"
+#include"xzdll.hpp"
 #include"WndData.h"
 #include"MainWind.h"
 #include"DetaileWind.h"
-#include"resource.h"
-#include<time.h>
-#include<math.h>
-#include<unordered_set>
-#include<CommCtrl.h>
-#include"Tree_Ê÷¿Ø¼ş.h"
+#include"Tree_æ ‘æ§ä»¶.h"
 #include"BottomWindow.h"
 #include"FileWind.h"
 #include"Object.h"
-#include"xzdll.hpp"
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include<map>
 
 typedef ComUserCode(*UserCode)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 class Controller
 {
-	HINSTANCE m_hInst;				//ÊµÀı
-	Folder m_RootFolder;			//×ÊÔ´ÎÄ¼ş¼Ğ
-	Folder* m_FocusFolder;			//²Ù×÷ÎÄ¼ş¼Ğ
-	std::wstring m_CurrentPath;		//²Ù×÷ÎÄ¼ş¼ĞµØÖ·×Ö·û´®
-	Object* m_Focus;				//½¹µã¶ÔÏó
+	HINSTANCE m_hInst;				//å®ä¾‹
+	Folder m_RootFolder;			//èµ„æºæ–‡ä»¶å¤¹
+	Folder* m_FocusFolder;			//æ“ä½œæ–‡ä»¶å¤¹
+	std::wstring m_CurrentPath;		//æ“ä½œæ–‡ä»¶å¤¹åœ°å€å­—ç¬¦ä¸²
+	Object* m_Focus;				//ç„¦ç‚¹å¯¹è±¡
 
-	std::vector<Model*>m_Models;	//ÁÙÊ±´æ´¢Ä£ĞÍË÷Òı
-	std::vector<PointLight*>m_PointLights; //ÁÙÊ±´æ´¢µã¹âÔ´Êı¾İ
+	std::vector<Model*>m_Models;	//ä¸´æ—¶å­˜å‚¨æ¨¡å‹ç´¢å¼•
+	std::vector<PointLight*>m_PointLights; //ä¸´æ—¶å­˜å‚¨ç‚¹å…‰æºæ•°æ®
 
-	BottomWindow* m_BottomWind;		//µ×²¿´°¿Ú
-	InputOutput* m_IOWind;			//¿ØÖÆÌ¨´°¿Ú
-	KeyframeEdit* m_KeyframeWind;	//¹Ø¼üÖ¡±à¼­´°¿Ú
+	BottomWindow* m_BottomWind;		//åº•éƒ¨çª—å£
+	InputOutput* m_IOWind;			//æ§åˆ¶å°çª—å£
+	KeyframeEdit* m_KeyframeWind;	//å…³é”®å¸§ç¼–è¾‘çª—å£
 
-	HIMAGELIST m_ImageList;			//ÌùÍ¼ÁĞ±í
-	std::map<int, int>m_ImageIndex;	//ÌùÍ¼Ë÷Òı
+	HIMAGELIST m_ImageList;			//è´´å›¾åˆ—è¡¨
+	std::map<int, int>m_ImageIndex;	//è´´å›¾ç´¢å¼•
 
-	float m_ActualMaxFPS;			//×î´óÖ¡Êı
-	float m_SetFPS;					//Éè¶¨Ö¡Êı
+	float m_ActualMaxFPS;			//æœ€å¤§å¸§æ•°
+	float m_SetFPS;					//è®¾å®šå¸§æ•°
 
-	HMODULE m_hDll;					//dllº¯ÊıÖ¸Õë
+	HMODULE m_hDll;					//dllå‡½æ•°æŒ‡é’ˆ
 
-	RUNMODE m_Mode;					//ÔËĞĞ×´Ì¬
-	ULONG64 m_StartTime;			//ÓÎÏ·ÔËĞĞÊ±¼ä
+	RUNMODE m_Mode;					//è¿è¡ŒçŠ¶æ€
+	ULONG64 m_StartTime;			//æ¸¸æˆè¿è¡Œæ—¶é—´
 	ULONG64 m_RunTime;
 
 	std::map<int, ShaderPath>m_ShaderIDPath;
+
+	Vector3 m_HighLightColor;
 
 	void LoadPngFromResources(int);
 	ReturnedOfLoadFile LoadObj(const std::string& filePath);
 	ReturnedOfLoadFile LoadCommand(const std::wstring& filePath);
 	ReturnedOfLoadFile LoadDLL(const std::wstring& filePath);
 	//bool LoadXlsx(const std::wstring& filePath);
-
+	template <typename T>
+	T extractTransform(const std::vector<std::pair<float, T>>& transforms, float time);
 	bool LoadModel(const std::string& filePath);
 	bool isSupportedModelFile(const std::string& filepath);
 	bool processModelNode(aiNode* node, const aiScene* scene, Model* parent,Folder* folder,const std::string& directory);
 public:
-	//´°¿ÚĞÅÏ¢
+	//çª—å£ä¿¡æ¯
 	HWND m_hWnd;
 
 	MainWind* m_MainWind;
@@ -69,11 +76,11 @@ public:
 	WndMsg m_MenuWind;
 	FileWind* m_FileWind;
 	DetaileWind* m_EditWind;
-	//ÎÄ¼ş¶ÁÈ¡×´Ì¬
+	//æ–‡ä»¶è¯»å–çŠ¶æ€
 	bool m_FileLoad;
-	//Ä£ĞÍÊı¾İ
-	char Model_att;//ÏÔÊ¾Ä£Ê½
-	//ÉãÏñ»ú£¨µ±Ç°ÊÓ½Ç£©
+	//æ¨¡å‹æ•°æ®
+	char Model_att;//æ˜¾ç¤ºæ¨¡å¼
+	//æ‘„åƒæœºï¼ˆå½“å‰è§†è§’ï¼‰
 	Camera* view;
 	UserCode MainWindUserCode;
 	Controller();
@@ -85,58 +92,58 @@ public:
 	BottomWindow* GetBottom();
 	KeyframeEdit* GetKeyframeWind()const;
 	void Size(int w, int h);
-	//×ÅÉ«Æ÷
+	//ç€è‰²å™¨
 	void AddShader(int ID, std::string vsPath, std::string fsPath);
-	//ÔËĞĞ×´Ì¬
+	//è¿è¡ŒçŠ¶æ€
 	void SetRunMode(RUNMODE);
 	RUNMODE GetRunMode()const;
-	//»ñÈ¡ÌùÍ¼ÁĞ±í
+	//è·å–è´´å›¾åˆ—è¡¨
 	HIMAGELIST GetImageList()const;
-	//»ñÈ¡ÌùÍ¼ÁĞ±íµÄÌùÍ¼Ë÷Òı
+	//è·å–è´´å›¾åˆ—è¡¨çš„è´´å›¾ç´¢å¼•
 	int GetImageListIndex(int);
 	std::map<int, int>& GetImageListIndex();
-	//ÉèÖÃÖ¡Êı
+	//è®¾ç½®å¸§æ•°
 	void SetFPS(float);
 	void __UpdateFPS(float);
-	//»ñÈ¡µ±Ç°Ö¡Êı
+	//è·å–å½“å‰å¸§æ•°
 	float GetMaxFPS()const;
 	float GetSetFPS()const;
-	//ÉÏ´«ÏûÏ¢
+	//ä¸Šä¼ æ¶ˆæ¯
 	void OutMessage(const std::string&, MSGtype type = _Message);
-	//ÉÏ´«ÏûÏ¢
+	//ä¸Šä¼ æ¶ˆæ¯
 	void OutMessage(const std::wstring& str, MSGtype eype = _Message);
-	//¸üĞÂÏûÏ¢´°¿Ú
+	//æ›´æ–°æ¶ˆæ¯çª—å£
 	void updateMsg(const HDC&);
-	//¸üĞÂÄ£ĞÍÊı¾İ
+	//æ›´æ–°æ¨¡å‹æ•°æ®
 	std::vector<Model*>& UpdateModels();
 	RECT GetRect()const;
-	//ĞŞ¸ÄÎÄ¼şÃû³Æ
+	//ä¿®æ”¹æ–‡ä»¶åç§°
 	void SetFileName(Object*, const std::wstring& NewName);
-	//¿ØÖÆÆ÷´°¿ÚÊä³ö
+	//æ§åˆ¶å™¨çª—å£è¾“å‡º
 	void Print(const std::wstring&);
 	bool Command(const std::wstring&, bool ignoreOutput = false);
 	bool Command(const CommandData&, bool ignoreOutput = false);
 	CommandData ParseCommand(const wchar_t* command);
-	//¼ÓÔØÎÄ¼ş
+	//åŠ è½½æ–‡ä»¶
 	ReturnedOfLoadFile LoadFile(const std::wstring& path);
-	//·µ»ØËùÓĞ¶ÔÏó
+	//è¿”å›æ‰€æœ‰å¯¹è±¡
 	std::vector<Model*>& GetModels();
 	std::vector<PointLight*>& GetAllPointLight();
-	//Ìí¼Ó¶ÔÏóµ½´Ë½ÚµãÏÂ
+	//æ·»åŠ å¯¹è±¡åˆ°æ­¤èŠ‚ç‚¹ä¸‹
 	HTREEITEM AddObject(Object* a, HTREEITEM parent = TVI_ROOT);
-	//Ñ°ÕÒÎÄ¼ş
+	//å¯»æ‰¾æ–‡ä»¶
 	Object* SearchObject(std::wstring filename);
-	//´´½¨ÎïÆ·
+	//åˆ›å»ºç‰©å“
 	Object* CreateObject(Folder* parent = nullptr, std::string Name = "", ObjectType type = ObjectType::OT_FOLDER);
-	//É¾³ı¶ÔÏó
+	//åˆ é™¤å¯¹è±¡
 	void DeleteObject(Object* obj,HTREEITEM=nullptr);
-	//»ñÈ¡µ±Ç°ÊµÀı
+	//è·å–å½“å‰å®ä¾‹
 	HINSTANCE GethInstance()const;
-	//ÉèÖÃ½¹µã
+	//è®¾ç½®ç„¦ç‚¹
 	void SetFoucusObjcet(Object*);
-	//»ñÈ¡½¹µã¶ÔÏó
+	//è·å–ç„¦ç‚¹å¯¹è±¡
 	Object* GetFocusObject()const;
-	//¸üĞÂ´°¿Ú
+	//æ›´æ–°çª—å£
 	void UpdateFileView()const;
 	void UpdateDetaileViev()const;
 	void UpdateKeyframeView(ChildWindSign = ChildWindSign::KeyframeWind)const;
@@ -145,39 +152,42 @@ public:
 	/*void UpdateBottomView()const;*/
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	//¹Ø¼üÖ¡´°¿ÚÏà¹Øº¯Êı
-	//ÇĞ»»ÔËĞĞÄ£Ê½
+	//å…³é”®å¸§çª—å£ç›¸å…³å‡½æ•°
+	//åˆ‡æ¢è¿è¡Œæ¨¡å¼
 	void SwitchRunMode();
-	//ÔËĞĞ
+	//è¿è¡Œ
 	void Run();
-	//ÔİÍ£
+	//æš‚åœ
 	void Suspend();
-	//ÖÕÖ¹
+	//ç»ˆæ­¢
 	void Stop();
-	//ÉèÖÃÔËĞĞÊ±¼ä
+	//è®¾ç½®è¿è¡Œæ—¶é—´
 	void SetTime(ULONG64 time);
-	//ÉèÖÃ¹Ø¼üÖ¡ÊÇ·ñÑ­»·²¥·Å
+	//è®¾ç½®å…³é”®å¸§æ˜¯å¦å¾ªç¯æ’­æ”¾
 	void SetKeyframeLoop(bool);
-	//ÇĞ»»¹Ø¼üÖ¡ÊÇ·ñÑ­»·²¥·Å
+	//åˆ‡æ¢å…³é”®å¸§æ˜¯å¦å¾ªç¯æ’­æ”¾
 	void SwitchKeyframeLoop();
-	//»ñÈ¡¹Ø¼üÖ¡ÊÇ·ñÑ­»·²¥·Å
+	//è·å–å…³é”®å¸§æ˜¯å¦å¾ªç¯æ’­æ”¾
 	bool GetKeyframeLoop()const;
-	//»ñÈ¡³ÌĞòÊ±¼ä
+	//è·å–ç¨‹åºæ—¶é—´
 	ULONG64 GetTime();
-	//»ñÈ¡³ÌĞò¿ªÊ¼Ê±¼ä
+	//è·å–ç¨‹åºå¼€å§‹æ—¶é—´
 	ULONG64 GetStartTime()const;
-	//»ñÈ¡¹Ø¼üÖ¡µÄÊ±¼äÏÔÊ¾·¶Î§
+	//è·å–å…³é”®å¸§çš„æ—¶é—´æ˜¾ç¤ºèŒƒå›´
 	void GetTime(ULONG64* start, ULONG64* range)const;
-	//»ñÈ¡¹Ø¼üÖ¡Ê±¼ä²½³¤
+	//è·å–å…³é”®å¸§æ—¶é—´æ­¥é•¿
 	ULONG64 GetKeyframeEditStepSize()const;
-	//»ñÈ¡¹Ø¼üÖ¡ÎÄ¼şÊÓÍ¼µÄyÖáÆ«ÒÆ
+	//è·å–å…³é”®å¸§æ–‡ä»¶è§†å›¾çš„yè½´åç§»
 	int GetKeyframeEditY()const;
-	//ÒÆ¶¯¹Ø¼üÖ¡ÎÄ¼şÊÓÍ¼µÄyÖáÆ«ÒÆ
+	//ç§»åŠ¨å…³é”®å¸§æ–‡ä»¶è§†å›¾çš„yè½´åç§»
 	void MoveKeyframeEditY(int y);
-	//ÕûÌåÒÆ¶¯¹Ø¼üÖ¡ÊÓÍ¼µÄ×óÓÒÆ«ÒÆ
+	//æ•´ä½“ç§»åŠ¨å…³é”®å¸§è§†å›¾çš„å·¦å³åç§»
 	void MoveKeyframeEditTime(int x);
-	//Ëõ·Å¹Ø¼üÖ¡ÊÓÍ¼µÄ¿Ì¶È³ß
+	//ç¼©æ”¾å…³é”®å¸§è§†å›¾çš„åˆ»åº¦å°º
 	void ScaleKeyframeEditTime(int scale);
+
+	Vector GetHighLightColor()const;
+	void SetHighLightColor(const Vector& color);
 };
 
 void loadFileThread(HWND hWnd, Controller* current_project, std::wstring path);

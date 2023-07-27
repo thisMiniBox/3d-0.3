@@ -10,6 +10,7 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
+Vector GetHighLightColor_g();
 void GetChildModel(const std::vector<Model*>& Models, std::vector<Model*>& out);
 ULONG64 GetRunTime_g();
 enum MainWindType
@@ -32,6 +33,7 @@ public:
 	virtual void SetRect(RECT NewRect);
 	virtual HWND CreateWind(HWND Parent, int x = 0, int y = 0, int w = 600, int h = 400) = 0;
 	virtual void Draw(const std::vector<Model*>& model,const Camera& camera) = 0;
+	virtual void SetHighLightColor(const Vector& color) = 0;
 	virtual int GetType() = 0;
 protected:
 	HWND m_hWnd;
@@ -66,6 +68,7 @@ private:
 
 class GDIWND :public MainWind
 {
+	vec::Vector m_HighLightColor;
 public:
 	GDIWND();
 	~GDIWND();
@@ -74,6 +77,7 @@ public:
 	int GetType() { return MGDIWND; }
 	static LRESULT CALLBACK WndProcGDI(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	std::vector<Outface> ProjectTriangles(const std::vector<FACE>&, const Camera&, COLORREF color = 0);
+	void SetHighLightColor(const Vector& color);
 };
 #include<glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -101,6 +105,7 @@ public:
 	static LRESULT CALLBACK WndProcOpenGL(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void ResetOpenGLViewport();
 	void DeleteModelBuffer(Model* model);
+	void SetHighLightColor(const Vector& color);
 private:
 	void SetMaterialData(OpenGLShader* shader, Material* material, const Camera& camera);
 	HGLRC m_hglrc;

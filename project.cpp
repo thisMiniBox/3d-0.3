@@ -24,6 +24,7 @@ Controller::Controller()
 	m_KeyframeWind = nullptr;
 	m_StartTime = 0;
 	m_RunTime = 0;
+	m_HighLightColor = Vector{ 0.7, 0.7, 0.4 };
 }
 HWND Controller::GetBottomWindhWnd()const
 {
@@ -131,6 +132,8 @@ HWND Controller::InitWindow(HINSTANCE hInst)
 	LoadPngFromResources(IDB_MESH64);
 	LoadPngFromResources(IDB_PICTURE64);
 	LoadPngFromResources(IDB_MATERIAL64);
+
+	SetHighLightColor(m_HighLightColor);
 	return m_hWnd;
 }
 void Controller::LoadPngFromResources(int png)
@@ -191,6 +194,16 @@ void Controller::updateMsg(const HDC& hdc)
 }
 HTREEITEM Controller::AddObject(Object* a, HTREEITEM parent)
 {
+	if (!a) {
+		std::cout << "错误：" << "添加内容为空" << std::endl;
+		OutMessage(L"添加内容为空", _Error);
+		return nullptr;
+	}
+	else if (a->GetName().empty()) {
+		std::cout << "错误：" << "添加内容名称为空" << std::endl;
+		OutMessage(L"添加内容名称为空", _Error);
+		return nullptr;
+	}
 	m_Models.clear();
 	m_RootFolder.AddFile_添加文件(a);
 	return m_FileWind->AddItem(*a, parent);
@@ -314,6 +327,8 @@ std::vector<Model*>& Controller::UpdateModels()
 
 void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 {
+	if (!obj)
+		return;
 	if (m_EditWind->GetTarget() == obj)
 	{
 		m_Focus = obj->GetParent();
@@ -335,8 +350,9 @@ void Controller::DeleteObject(Object* obj,HTREEITEM hTree)
 
 ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 {
+	std::filesystem::path filepath(path);
 	OutMessage(L"开始加载文件" + path);
-	std::wstring extension = path.substr(path.find_last_of('.'));
+	std::wstring extension = filepath.extension();
 	ReturnedOfLoadFile error = ReturnedOfLoadFile::_Fail;
 	if (extension == L".obj")
 	{
@@ -346,16 +362,15 @@ ReturnedOfLoadFile Controller::LoadFile(const std::wstring& path)
 	{
 		if (LoadModel(wstrstr(path)))
 			error = _Succese;
-		error= _Fail;
+		else
+			error = _Fail;
 	}
-
-	//else if (extension == L".xlsx")
-	//{
-	//	if (LoadXlsx(path))
-	//		error = _Succese;
-	//	else
-	//		error = _Fail;
-	//}
+	else if (extension == L".TfKeyframe")
+	{
+		Keyframe<TransForm>* tk = new Keyframe<TransForm>(filepath.filename().string());
+		tk->LoadFile(path);
+		AddObject(tk);
+	}
 	else if (extension == L".xzcom")
 	{
 		error |= LoadCommand(path);
@@ -424,295 +439,119 @@ inline FaceData_面信息 faceData(std::string cin) {
 
 ReturnedOfLoadFile Controller::LoadObj(const std::string& filePath)
 {
-	FILE* file = nullptr;
-	fopen_s(&file, filePath.c_str(), "r");
-	if (!file)
-		return ReturnedOfLoadFile::_FailToOpenFile;
-	int pos = filePath.find_last_of('\\');
-	if (pos == -1)
-		pos = filePath.find_last_of('/');
-	std::string FolderPath = filePath.substr(0, pos + 1);
-	std::vector<Vector3>vertexs;
-	std::vector<Vector3>normals;
-	std::vector<Vector2>texCoords;
-	std::vector<FaceData_面信息>faceIndices;
-	std::vector<Model*>Models;
-	MatFileReader* mtl_材质 = new MatFileReader;
-	Material* CurrentMaterial = nullptr;
-
 	ReturnedOfLoadFile Error = ReturnedOfLoadFile::_ModelFail;
-	char c = 0;
-	size_t charLocate = 0;
-	size_t m = 0;
 
-	Model* NewModel = nullptr;
-	Model* RootModel = new Model;
-	RootModel->SetName(filePath.substr(pos + 1));
-	Model* parentModel = RootModel;
-
-	vec::Vector vector;
-	vec::Vector2 vector2d;
-	FaceData_面信息 Face;
-	std::string FileData;
-	std::string w;
-	while (1)
+	// 打开obj文件
+	std::ifstream objFile(filePath);
+	if (!objFile.is_open())
 	{
-		c = fgetc(file);
-		if (c == EOF)break;
-		if (c == '\n')
+		std::cout << "Failed to open obj file: " << filePath << std::endl;
+		return ReturnedOfLoadFile::_FailToOpenFile;
+	}
+
+	// 创建临时文件夹路径
+	std::string tempFolderPath = "./temporary";
+	std::filesystem::create_directory(tempFolderPath);
+
+	// 获取obj文件名
+	std::filesystem::path objPath(filePath);
+	std::string objFileName = objPath.filename().generic_string();
+
+	// 构建临时文件路径
+	std::string tempObjFilePath = tempFolderPath + "/" + objFileName;
+
+	// 复制obj文件到临时文件夹
+	std::filesystem::copy_file(filePath, tempObjFilePath, std::filesystem::copy_options::overwrite_existing);
+
+	// 遍历obj文件内容，查找mtllib指令
+	std::string mtlFileName;
+	std::string line;
+	while (std::getline(objFile, line))
+	{
+		if (line.substr(0, 7) == "mtllib ")
 		{
-			if (FileData.size() > 0)
-			{
-				//获取了一行信息后进行解析
-				charLocate = FileData.find_first_of(' ');
-				if (charLocate == -1)
-				{
-					FileData.clear();
-					continue;
-				}
-				w = FileData.substr(0, charLocate);
-				if (w == "v")
-				{
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_of(' ');
-					vector.SetX(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					charLocate = (FileData = FileData.substr(charLocate + 1)).find_first_of(' ');
-					vector.SetY(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					charLocate = (FileData = FileData.substr(charLocate + 1)).find_first_of(' ');
-					vector.SetZ(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					vertexs.push_back(vector);
-				}
-				else if (w == "vn")
-				{
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_of(' ');
-					vector.SetX(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					charLocate = (FileData = FileData.substr(charLocate + 1)).find_first_of(' ');
-					vector.SetY(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					charLocate = (FileData = FileData.substr(charLocate + 1)).find_first_of(' ');
-					vector.SetZ(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					normals.push_back(vector);
-				}
-				else if (w == "vt")
-				{
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_of(' ');
-					vector2d.setX(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					charLocate = (FileData = FileData.substr(charLocate + 1)).find_first_of(' ');
-					vector2d.setY(std::stod((w = FileData.substr(0, charLocate)).c_str()));
-					texCoords.push_back(vector2d);
-				}
-				else if (w == "f")
-				{
-					if (!NewModel)return ReturnedOfLoadFile::_DataError;
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					charLocate = (FileData = FileData.substr(charLocate)).find_last_not_of(' ');
-					FileData = FileData.substr(0, charLocate + 1);
-					FileData += ' ';
-					std::vector<std::string>vertexIncludeInLine;
-					while (1)
-					{
-						charLocate = FileData.find_first_of(' ');
-						if (charLocate == 0xFFFFFFFFFFFFFFFF)break;
-						vertexIncludeInLine.push_back(FileData.substr(0, charLocate));
-						FileData = FileData.substr(charLocate + 1);
-					}
-					for (int i = 2; i < vertexIncludeInLine.size(); i++)
-					{
-						NewModel->GetMesh()->m_FaceIndices.push_back(faceData(vertexIncludeInLine[0] + ' ' + vertexIncludeInLine[i - 1] + ' ' + vertexIncludeInLine[i]));
-					}
-				}
-				else if (w == "g" || w == "o" || w == "mg")
-				{
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					FileData = FileData.substr(charLocate);
-					if (FileData == "default")
-						parentModel = RootModel;
-					std::string ModelName = FileData + "网格模型";
-					NewModel = new Model(ModelName);
-					parentModel->addChildModel(NewModel);
-					NewModel->SetMesh(new Mesh(FileData));
-					NewModel->SetMaterial(CurrentMaterial);
-					Models.push_back(NewModel);
-				}
-				else if (w == "usemtl")
-				{
-					if (!mtl_材质)
-					{
-						FileData.clear();
-						continue;
-					}
-					if (!NewModel)return ReturnedOfLoadFile::_FailedToCreateFile;
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					FileData = FileData.substr(charLocate);
-					//NewModel->SetMaterial(mtl_材质->getMaterial(FileData));
-					CurrentMaterial = mtl_材质->getMaterial(FileData);
-					NewModel->SetMaterial(CurrentMaterial);
-				}
-				else if (w == "mtllib")
-				{
-					charLocate = (FileData = FileData.substr(charLocate)).find_first_not_of(' ');
-					if (!mtl_材质->read(FolderPath.c_str() + FileData.substr(charLocate)))
-					{
-						delete mtl_材质;
-						mtl_材质 = nullptr;
-					}
-				}
-				FileData.clear();
-			}
-			continue;
+			mtlFileName = line.substr(7);
+			break;
 		}
-		FileData.push_back(c);
 	}
-	if (Models.size() != 0)
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedVertex;
-	int result = 0;
-	bool map = false;
-	for (const auto& i : Models)
+
+	objFile.close();
+
+	// 如果找到了关联的mtl文件
+	if (!mtlFileName.empty())
 	{
-		if (!i->GetMaterial())
-			continue;
-		if (i->GetMaterial()->getMapKa())
-			if (i->GetMaterial()->getMapKa()->GetPicture().m_Data)
-			{
-				result++;
-				map = true;
-			}
-		if (i->GetMaterial()->getMapKd())
-			if (i->GetMaterial()->getMapKd()->GetPicture().m_Data)
-			{
-				result++;
-				map = true;
-			}
-		if (i->GetMaterial()->getMapKs())
-			if (i->GetMaterial()->getMapKs()->GetPicture().m_Data)
-			{
-				result++;
-				map = true;
-			}
+		// 构建mtl文件的完整路径
+		std::filesystem::path mtlPath = objPath.parent_path() / mtlFileName;
+		std::string tempMtlFilePath = tempFolderPath + "/" + mtlFileName;
+
+		// 复制mtl文件到临时文件夹
+		std::filesystem::copy_file(mtlPath, tempMtlFilePath, std::filesystem::copy_options::overwrite_existing);
 	}
-	if (!map || result > 0)
+
+	// 使用Assimp库加载obj文件
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(tempObjFilePath, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialMaps;
+		std::cout << "Failed to load obj model: " << importer.GetErrorString() << std::endl;
+		return ReturnedOfLoadFile::_DataError;
 	}
 
+	// 在这里进行进一步的处理和操作，例如访问模型数据、渲染等
 
-	std::vector<vec::Vector> child_vertex_data;
-	std::vector<vec::Vector> child_normal_data;
-	std::vector<vec::Vector2> child_texcoord_data;
-	std::vector<FaceData_面信息> child_face_data;
-	std::map<int, int> vertex_index;
-	std::map<int, int> normal_index;
-	std::map<int, int> texcoord_index;
-
-	// 遍历子模型
-	for (auto child : Models)
+	std::string Output;
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		vertex_index.clear();
-		normal_index.clear();
-		texcoord_index.clear();
-		child_vertex_data.clear();
-		child_normal_data.clear();
-		child_texcoord_data.clear();
-		child_face_data.clear();
-
-		// 获取子模型需要的顶点、法向量和纹理坐标数据
-		for (const auto& face : child->GetMesh()->m_FaceIndices)
-		{
-			FaceData_面信息 new_face = face;  // 复制原始三角面
-
-			// 修改三角面中的索引，以反映新的数据位置
-			for (int i = 0; i < 3; ++i)  // 顶点索引
-			{
-				int index = new_face.a[3 * i];
-				if (index < 0)
-					index += (vertexs.size() + 1);
-				if (0 != vertex_index[index])
-				{
-					new_face.a[3 * i] = vertex_index[index];
-					continue;
-				}
-				child_vertex_data.push_back(vertexs[index - 1]);
-				new_face.a[3 * i] = (int)child_vertex_data.size();
-				vertex_index[index] = new_face.a[3 * i];
-			}
-
-			for (int i = 0; i < 3; ++i)  // 法向量索引
-			{
-				int index = new_face.a[3 * i + 2];
-				if (index < 0)
-					index += (normals.size() + 1);
-				if (0 != normal_index[index])
-				{
-					new_face.a[3 * i + 2] = normal_index[index];
-					continue;
-				}
-				child_normal_data.push_back(normals[index - 1]);
-				new_face.a[3 * i + 2] = (int)child_normal_data.size();
-				normal_index[index] = new_face.a[3 * i + 2];
-			}
-
-			for (int i = 0; i < 3; ++i)  // 纹理坐标索引
-			{
-				int index = new_face.a[3 * i + 1];
-				if (index < 0)
-					index += (texCoords.size() + 1);
-				if (0 != texcoord_index[index])
-				{
-					new_face.a[3 * i + 1] = texcoord_index[index];
-					continue;
-				}
-				child_texcoord_data.push_back(texCoords[index - 1]);
-				new_face.a[3 * i + 1] = (int)child_texcoord_data.size();
-				texcoord_index[index] = new_face.a[3 * i + 1];
-			}
-
-			// 将修改后的三角面添加到子模型的面数据中
-			child_face_data.push_back(new_face);
-		}
-
-		// 将数据分配给子模型
-
-		child->GetMesh()->m_VertexPosition = (child_vertex_data);
-		child->GetMesh()->m_Normal = (child_normal_data);
-		child->GetMesh()->m_TexCoords = (child_texcoord_data);
-		child->GetMesh()->m_FaceIndices.clear();
-		child->GetMesh()->m_FaceIndices = (child_face_data);
+		cout << "ERROR::ASSIMP::" << importer.GetErrorString() << endl;
+		Output = "加载出错";
+		Output += importer.GetErrorString();
+		OutMessage(Output, _Error);
+		importer.FreeScene();
+		return ReturnedOfLoadFile::_DataError;
 	}
-	vertexs.clear();
-	normals.clear();
-	texCoords.clear();
-	faceIndices.clear();
-
-	Model* MObj = new Model();
-	MObj->SetName(filePath.substr(pos + 1));
-	m_RootFolder.AddFile_添加文件(MObj);
-	Folder* ModelFolder = dynamic_cast<Folder*>(m_RootFolder.CreateFile_创建文件<Folder>(filePath.substr(pos + 1) + "资源"));
-	Folder* ModelMeshFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("网格文件夹"));
-	Folder* ModelMaterialFolder = dynamic_cast<Folder*>(ModelFolder->CreateFile_创建文件<Folder>("材质文件夹"));
-
-	for (auto& child : Models)
+	aiNode* node = scene->mRootNode;
+	Output = objFileName;
+	if (!node)
 	{
-		MObj->addChildModel(child);
-		ModelMeshFolder->AddFile_添加文件(child->GetMesh());
+		OutMessage(L"模型未包含节点", _Error);
+		std::cout << "模型未包含节点" << std::endl;
+		importer.FreeScene();
+		return ReturnedOfLoadFile::_DataError;
 	}
-	if (mtl_材质)
-		for (auto& Mat : mtl_材质->m_Materials)
-		{
-			ModelMaterialFolder->AddFile_添加文件(Mat.second);
-		}
-	if (mtl_材质)
-		for (auto& picture : mtl_材质->m_Picture)
-		{
-			ModelMaterialFolder->AddFile_添加文件(picture.second);
-		}
-	fclose(file);
-	if (mtl_材质)
+	Folder* folder = m_FocusFolder->CreateFile_创建文件<Folder>(Output);
+	if (!folder)
 	{
-		Error |= ReturnedOfLoadFile::_SuccessfullyLoadedMaterialFile;
-		delete mtl_材质;
-		mtl_材质 = nullptr;
+		OutMessage(L"文件夹创建失败", _Error);
+		std::cout << "文件夹创建失败" << std::endl;
+		importer.FreeScene();
+		return ReturnedOfLoadFile::_FailedToCreateFile;
 	}
+	Model* parentModel = dynamic_cast<Model*>(this->CreateObject(folder, Output, OT_MODEL));
+	if (!parentModel)
+	{
+		OutMessage(L"模型创建失败", _Error);
+		std::cout << "模型创建失败" << std::endl;
+		importer.FreeScene();
+		return ReturnedOfLoadFile::_FailedToCreateFile;
+	}
+	if (!processModelNode(node, scene, parentModel, folder, objPath.parent_path().string() + '\\'))
+	{
+		importer.FreeScene();
+		return ReturnedOfLoadFile::_FailedToCreateFile;
+	}
+	importer.FreeScene();
+	this->UpdateModels();
+
+
+	// 加载完成后，删除临时文件
+	std::filesystem::remove(tempObjFilePath);
+	if (!mtlFileName.empty())
+	{
+		std::filesystem::path tempMtlPath = tempFolderPath + "/" + mtlFileName;
+		std::filesystem::remove(tempMtlPath);
+	}
+	importer.FreeScene();
 	return Error;
 }
 void Controller::UpdateFileView()const
@@ -729,6 +568,8 @@ void Controller::UpdateKeyframeView(ChildWindSign cws)const
 }
 bool Controller::MoveFile_(Object* aim, Object* parent)
 {
+	if (!aim)
+		return false;
 	if (!parent)
 		parent = &m_RootFolder;
 	switch (parent->GetType())
@@ -746,11 +587,28 @@ bool Controller::MoveFile_(Object* aim, Object* parent)
 	}
 	case OT_MODEL:
 	{
-		if (aim->GetType() == OT_MODEL)
+		switch (aim->GetType())
+		{
+		case OT_MODEL:
 		{
 			Model* pmodel = dynamic_cast<Model*>(parent);
 			Model* model = dynamic_cast<Model*>(aim);
 			model->SetModelParent(pmodel);
+			break;
+		}
+		case OT_KEYFRAME:
+		{
+			Keyframe<TransForm>* key = dynamic_cast<Keyframe<TransForm>*>(aim);
+			if (!key)
+				return false;
+			Model* pmodel = dynamic_cast<Model*>(parent);
+			pmodel->SetKeyframe(key);
+			return false;
+			break;
+		}
+		default:
+			return false;
+			break;
 		}
 		break;
 	}
@@ -1014,35 +872,15 @@ void Controller::SetTime(ULONG64 time)
 		MoveKeyframeEditTime(x);
 	}
 }
-//bool Controller::LoadXlsx(const std::wstring& filePath)
-//{
-//	xlnt::workbook wb;
-//	try
-//	{
-//		wb.load(filePath); // 文件名可以根据实际情况修改
-//	}
-//	catch (const std::exception& ex)
-//	{
-//		OutMessage(L"文件打开失败", _Error);
-//		return false;
-//	}
-//
-//	// 遍历所有工作表
-//	for (const auto& ws : wb)
-//	{
-//		std::cout << "Sheet: " << ws.title() << std::endl;
-//
-//		// 遍历所有行和列，并输出每个单元格的值
-//		for (const auto& row : ws.rows())
-//		{
-//			for (auto cell : row)
-//			{
-//				std::cout << cell.to_string() << "\t";
-//			}
-//			std::cout << std::endl;
-//		}
-//	}
-//}
+//assimp库数据转换
+Vector3 aiVector3dToVector3(const aiVector3D& av3)
+{
+	return Vector3(av3.x, av3.y, av3.z);
+}
+Vector3 aiVector3dToVector3(const aiColor3D& av3)
+{
+	return Vector3(av3.r, av3.g, av3.b);
+}
 bool Controller::LoadModel(const std::string& path)
 {
 	// 读取模型文件到内存缓冲区
@@ -1097,15 +935,128 @@ bool Controller::LoadModel(const std::string& path)
 		aimporter.FreeScene();
 		return false;
 	}
-	if (!processModelNode(node, scene, parentModel, folder, path.substr(0, pos + 1)))
+	if (!processModelNode(node, scene, parentModel, folder->CreateFile_创建文件(Folder("网格与材质")), path.substr(0, pos + 1)))
 	{
 		aimporter.FreeScene();
 		return false;
+	}
+	Folder* amiFolder = folder->CreateFile_创建文件(Folder("动画"));
+	
+	UINT AnimationsSize = scene->mNumAnimations;
+	for(UINT animationIndex =0; animationIndex <AnimationsSize;++animationIndex)
+	{
+		aiAnimation* animation = scene->mAnimations[animationIndex]; // 根据索引获取特定的动画
+		unsigned int numChannels = animation->mNumChannels; // 动画通道数
+
+		for (unsigned int i = 0; i < numChannels; i++) {
+			aiNodeAnim* channel = animation->mChannels[i]; // 获取每个通道
+
+			std::string nodeName = channel->mNodeName.data; // 节点名称
+			unsigned int numPositionKeys = channel->mNumPositionKeys; // 位置关键帧数量
+			unsigned int numRotationKeys = channel->mNumRotationKeys; // 旋转关键帧数量
+			unsigned int numScalingKeys = channel->mNumScalingKeys; // 缩放关键帧数量
+			Keyframe<TransFrame>* keyData = new Keyframe<TransFrame>(nodeName);
+			amiFolder->AddFile_添加文件(keyData);
+			TransForm key;
+			std::set<float>times;
+			std::vector<std::pair<float, Vector3>>Positions;
+			std::vector<std::pair<float, Vector3>>Scales;
+			std::vector<std::pair<float, Quaternion>>Rotates;
+			for (unsigned int j = 0; j < numPositionKeys; j++) {
+				aiVector3D position = channel->mPositionKeys[j].mValue; // 关键帧位置
+				float timeInSeconds = channel->mPositionKeys[j].mTime / animation->mTicksPerSecond * 1000; // 关键帧时间（秒）
+				Vector3 pos(position.x, position.y, position.z);
+				Positions.push_back(std::pair(timeInSeconds, pos));
+				times.insert(timeInSeconds);
+			}
+			for (unsigned int j = 0; j < numScalingKeys; j++) {
+				aiVector3D scale = channel->mScalingKeys[j].mValue;
+				float timeInSeconds = channel->mScalingKeys[j].mTime / animation->mTicksPerSecond * 1000;
+				Vector3 sca(scale.x, scale.y, scale.z);
+				Scales.push_back(std::pair(timeInSeconds, sca));
+				times.insert(timeInSeconds);
+			}
+			for (UINT j = 0; j < numRotationKeys; j++) {
+				aiQuaternion rotation = channel->mRotationKeys[j].mValue;
+				Quaternion internalQuaternion(rotation.w, rotation.x, rotation.y, rotation.z);
+				float timeInSeconds = channel->mRotationKeys[j].mTime / animation->mTicksPerSecond * 1000;
+				Rotates.push_back(std::pair(timeInSeconds, internalQuaternion));
+				times.insert(timeInSeconds);
+			}
+			for (auto keytime : times)
+			{
+				key.Position = extractTransform(Positions, keytime);
+				key.Scale = extractTransform(Scales, keytime);
+				Quaternion q = extractTransform(Rotates, keytime);
+				key.Rotate = Rotation(q.getAngle(), q.GetAxis());
+				keyData->SetKeyframe(keytime, key);
+			}
+		}
+	}
+
+	// 检查场景是否为空以及是否存在摄像机
+	if (scene && scene->HasCameras())
+	{
+		// 遍历所有的摄像机
+		for (unsigned int i = 0; i < scene->mNumCameras; ++i)
+		{
+			aiCamera* camera = scene->mCameras[i];
+			Camera* camera_ = new Camera(camera->mName.C_Str(),
+				aiVector3dToVector3(camera->mPosition), aiVector3dToVector3(camera->mPosition + camera->mLookAt),
+				aiVector3dToVector3(camera->mUp), 
+				camera->mAspect, camera->mHorizontalFOV, camera->mClipPlaneNear, camera->mClipPlaneFar);
+			AddObject(camera_);
+		}
+	}
+
+	if (scene && scene->HasLights())
+	{
+		for (UINT i = 0; i < scene->mNumLights; i++)
+		{
+			aiLight* aLight = scene->mLights[i];
+			auto type = aLight->mType;
+			switch (type)
+			{
+			case aiLightSource_UNDEFINED:
+				// 处理未定义类型的光源
+				break;
+			case aiLightSource_DIRECTIONAL:
+				// 处理方向光源
+				break;
+			case aiLightSource_POINT:
+			{
+				// 处理点光源
+				PointLight* ptLnt = new PointLight(aLight->mName.C_Str(), aiVector3dToVector3(aLight->mPosition),
+					aiVector3dToVector3(aLight->mColorAmbient), aiVector3dToVector3(aLight->mColorDiffuse), aiVector3dToVector3(aLight->mColorSpecular),
+					aLight->mAttenuationConstant, aLight->mAttenuationLinear, aLight->mAttenuationQuadratic);
+				folder->AddFile_添加文件(ptLnt);
+			}
+				break;
+			case aiLightSource_SPOT:
+				// 处理聚光灯光源
+				break;
+			case aiLightSource_AMBIENT:
+				// 处理环境光源
+				break;
+			case aiLightSource_AREA:
+				// 处理区域光源
+				break;
+			case _aiLightSource_Force32Bit:
+				// 处理32位强制类型（如果需要）
+				break;
+			default:
+				// 处理其他未知类型的光源
+				break;
+			}
+		}
 	}
 	aimporter.FreeScene();
 	this->UpdateModels();
 	return true;
 }
+
+
+
 bool Controller::processModelNode(aiNode* node, const aiScene* scene, Model* parentModel, Folder* folder,const std::string& directory)
 {
 	Model* currentModel = parentModel;
@@ -1173,4 +1124,42 @@ bool Controller::isSupportedModelFile(const std::string& extension)
 void Controller::ScaleKeyframeEditTime(int scale)
 {
 	m_KeyframeWind->ScaleTime(scale);
+}
+Vector Controller::GetHighLightColor()const
+{
+	return m_HighLightColor;
+}
+void Controller::SetHighLightColor(const Vector& color)
+{
+	Vector positiveColor = color;
+	positiveColor.x = std::abs(positiveColor.x);
+	positiveColor.y = std::abs(positiveColor.y);
+	positiveColor.z = std::abs(positiveColor.z);
+
+	float maxComponent = std::max(positiveColor.x, std::max(positiveColor.y, positiveColor.z));
+	float scaleFactor = 1.0f;
+
+	if (maxComponent > 1.0f)
+	{
+		scaleFactor = 1.0f / maxComponent;
+	}
+
+	Vector scaledColor = positiveColor * scaleFactor;
+
+	m_HighLightColor = scaledColor;
+	m_MainWind->SetHighLightColor(scaledColor);
+}
+// 提取相应时间的变换
+template <typename T>
+T Controller::extractTransform(const std::vector<std::pair<float, T>>& transforms, float time) {
+	auto compare = [](const std::pair<float, T>& a, const std::pair<float, T>& b) {
+		return a.first < b.first;
+	};
+	auto it = std::lower_bound(transforms.begin(), transforms.end(), std::pair<float, T>(time, T()), compare);
+
+	if (it == transforms.end()) {
+		return transforms.back().second;
+	}
+
+	return it->second;
 }

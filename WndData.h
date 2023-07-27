@@ -12,6 +12,8 @@ int getBit(int num, int pos);
 void ReplaceChar(std::string& str, char from, char to);
 std::string GetFileExtension(const std::string& path);
 std::wstring GetFileExtension(const std::wstring& path);
+bool RenameFile(const std::string& originalFilename, const std::string& newFilename);
+bool RenameFile(const std::wstring& originalFilename, const std::wstring& newFilename);
 
 //子窗口标识
 enum class ChildWindSign
@@ -52,6 +54,22 @@ enum UserWinMessage
 {
 	UM_CREATE_TIMER = WM_USER + 1,//创建定时器，定时器间隔时间
 	UM_UPDATE,
+	UM_GETDATA,
+};
+enum UserWinMessageWparam
+{
+	UMW_INT,
+	UMW_UINT,
+	UMW_LONGLONG,
+	UMW_ULONGLONG,
+	UMW_SHORT,
+	UMW_USHORT,
+	UMW_FLOAT,
+	UMW_DOUBLE,
+
+	UMW_CHAR,
+	UMW_UCHAR,
+	UMW_STRING,
 };
 //消息窗口运行模式
 enum MSGMode
@@ -85,6 +103,7 @@ enum ObjectType
 	OT_PREJECT,				//项目
 	OT_BUTTON,				//交互键
 	OT_UI,					//固定ui 
+	OT_SKYBOX,
 };
 //加载文件返回
 enum ReturnedOfLoadFile :unsigned int
@@ -217,11 +236,18 @@ typedef struct TransForm
 	{
 		std::stringstream ss(data);
 
-		ss >> Position.x >> Position.y >> Position.z;
+		ss >> Position.x	>> Position.y	 >> Position.z;
 
-		ss >> Scale.x >> Scale.y >> Scale.z;
+		ss >> Scale.x		>> Scale.y		 >> Scale.z;
 
 		ss >> Rotate.axis.x >> Rotate.axis.y >> Rotate.axis.z >> Rotate.angle;
+	}
+	friend std::istream& operator>>(std::istream& is, TransForm& transform) {
+		is >> transform.Position.x		>> transform.Position.y		>> transform.Position.z;
+		is >> transform.Scale.x			>> transform.Scale.y		>> transform.Scale.z;
+		is >> transform.Rotate.axis.x	>> transform.Rotate.axis.y	>> transform.Rotate.axis.z >> transform.Rotate.angle;
+
+		return is;
 	}
 }TransFrame;
 enum class RUNMODE

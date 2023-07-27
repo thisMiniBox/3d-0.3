@@ -3,7 +3,7 @@
 #include <codecvt>
 #include <locale>
 #include<Windows.h>
-#include<commctrl.h>
+#include<CommCtrl.h>
 #include<iostream>
 #include"stb_image.h"
 std::string wstr_str(const std::wstring& ws);

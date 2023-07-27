@@ -102,6 +102,9 @@
     <ClInclude Include="OpenGLData.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="PopWind.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="主窗口.cpp">
@@ -174,6 +177,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="OpenGLData.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="PopWind.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

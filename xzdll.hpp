@@ -45,7 +45,7 @@ typedef struct _DllMessageOut
 typedef struct CommandUser
 {
     CommandAct Act;
-    wchar_t Parameter[64];
+    wchar_t Parameter[64] = { 0 };
     CommandUser() :Act(CommandAct::UNKNOWN) {}
 }ComUserCode, CUC;
 typedef struct CommandData

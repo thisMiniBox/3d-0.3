@@ -9,7 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <queue>
-
+#include"PopWind.h"
 
 //菜单消息处理
 LRESULT __stdcall Menu(HINSTANCE, HWND, UINT, WPARAM, LPARAM, Controller*);

@@ -174,14 +174,14 @@ namespace vec {
 
         // 重载<<运算符，实现向量的输出格式化，返回一个输出流对象
         friend std::ostream& operator<<(std::ostream& os, const Vector& v) {
-            os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+            os << "(" << v.x << ", " << v.y << ", " << v.z << ")" << std::endl;
             return os;
         }
         // 宽字符标准输出函数
         friend std::wostream& operator<<(std::wostream& os, const Vector& v) {
             os << L"(" << std::setw(8) << std::fixed << std::setprecision(2) << v.x << L", "
                 << std::setw(8) << std::fixed << std::setprecision(2) << v.y << L", "
-                << std::setw(8) << std::fixed << std::setprecision(2) << v.z << L")";
+                << std::setw(8) << std::fixed << std::setprecision(2) << v.z << L")" << std::endl;
             return os;
         }
 

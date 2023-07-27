@@ -25,6 +25,12 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         DialogBox(hInst, MAKEINTRESOURCE(IDD_SETSIZE), hWnd, SetSize);
         break;
     }
+    case ID_CHOOSE_COLOR:
+    {
+        Vector3 vec = GetVectorByPopWind(cp->GetHighLightColor(), L"设置颜色", L"r", L"g", L"b", hWnd);
+        cp->SetHighLightColor(vec);
+        break;
+    }
     case IDM_OPEN:
     {
         std::wstring path = MenuGetPath();
@@ -44,11 +50,19 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
             Controller->OutMessage("未选择任何目标", _Warning);
             break;
         }
-        WCHAR szFile[MAX_PATH] = { 0 };
+        
+        std::wstring str = str_wstr(Controller->GetFocusObject()->GetName());
+        WCHAR szFile[MAX_PATH];
+        if (wcsncpy_s(szFile, MAX_PATH, str.c_str(), _TRUNCATE) == 0) {
+            std::wcout << L"成功初始化数组：" << szFile << std::endl;
+        }
+        else {
+            std::wcerr << L"初始化数组失败" << std::endl;
+        }
         OPENFILENAME ofn = { 0 };
         ofn.lStructSize = sizeof(ofn);
         ofn.hwndOwner = hWnd;
-        ofn.lpstrFilter = TEXT("以文本格式保存(*.txt)\0*.txt\0以xlsx格式保存\0*.xlsx\0以二进制格式保存(*.*)\0*.*\0");
+        ofn.lpstrFilter = TEXT("以文本格式保存(*.txt)\0*.*\0以二进制格式保存(*.*)\0*.*\0");
         ofn.lpstrFile = szFile;
         ofn.nMaxFile = MAX_PATH;
         ofn.lpstrTitle = TEXT("选择保存文件位置");
@@ -96,6 +110,53 @@ LRESULT __stdcall Menu(HINSTANCE hInst, HWND hWnd, UINT msg, WPARAM wP, LPARAM l
         {
             Controller->OutMessage("获取地址失败", MSGtype::_Error);
         }
+        break;
+    }
+    case ID_MOVE:
+    {
+        Object* obj = cp->GetFocusObject();
+        if (!obj)
+            break;
+        Vector change = GetVectorByPopWind(Vector(0), L"移动多少", L"X", L"Y", L"Z", hWnd);
+        obj->Move(change);
+        cp->UpdateDetaileViev();
+        break;
+    }
+    case ID_SCALE:
+    {
+        Object* obj = cp->GetFocusObject();
+        if (!obj)
+            break;
+        Vector change = GetVectorByPopWind(Vector(1), L"再缩放多少", L"X", L"Y", L"Z", hWnd);
+        obj->Scale(change);
+        cp->UpdateDetaileViev();
+        break;
+    }
+    case ID_ROTATE:
+    {
+        Object* obj = cp->GetFocusObject();
+        if (!obj)
+            break;
+
+        Vector RotationVector = GetVectorByPopWind(Vector(0), L"再次旋转多少,只记录绝对值最大的值", L"X", L"Y", L"Z", hWnd);
+
+        // 找到绝对值最大的分量
+        float maxComponent = std::max({ std::abs(RotationVector.x), std::abs(RotationVector.y), std::abs(RotationVector.z) });
+
+        // 确定旋转轴
+        Vector3 rotationAxis;
+        if (maxComponent == std::abs(RotationVector.x)) {
+            rotationAxis = Vector3(RotationVector.x < 0 ? -1 : 1, 0, 0);
+        }
+        else if (maxComponent == std::abs(RotationVector.y)) {
+            rotationAxis = Vector3(0, RotationVector.y < 0 ? -1 : 1, 0);
+        }
+        else {
+            rotationAxis = Vector3(0, 0, RotationVector.z < 0 ? -1 : 1);
+        }
+
+        obj->Rotate(vec::Rotation(vec::DegToRad(maxComponent), rotationAxis));
+        cp->UpdateDetaileViev();
         break;
     }
     case ID_GDI:
