@@ -4,7 +4,6 @@
 ## 依赖库
 glad<br>
 glm<br>
-xlnt<br>
 stb_image<br>
 assimp<br>
 
